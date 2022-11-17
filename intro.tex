@@ -2,28 +2,165 @@
 
 % ================================= Global settings
 
-% Support for German letters
-\usepackage[utf8]{inputenc}
-\usepackage[T1]{fontenc}
-\usepackage[ngerman]{babel}
-\usepackage{amsmath} % for \begin{equation*}
-\usepackage{amsfonts} % for \mathbb{N}, etc...
-
-% Margins
-\usepackage[margin=2cm]{geometry}
-%\topmargin -1.5in
-%\textheight 10.8in
-%\oddsidemargin -.25in
-%\evensidemargin -.25in
-%\textwidth 7in
-
-% Sets no indent globally
-%\setlength\parindent{0pt}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{cite}
+\usepackage{hyperref}
 
 % =================================================
 
 \begin{document}
 
+\section{Introduction}
 
+Propositional satisfiability problem (SAT) is the problem of determining whether a propositional formula in conjunctive normal form (CNF) is satisfiable, i.e. if there exists a truth assignment of variables that satisfies the formula.
+Such assignments are called models.
+Propositional formulas can be thought of as finite sets of clauses, which in turn are finite sets of literals.
+A literal is either a propositional variable or its negation.
+Given a CNF formula, a model thus satisfies all its clauses, that is, it sets at least one literal in each clause to true.
+Propositional model counting, \#SAT, is a related but harder problem of determining the amount of satisfying truth assignments of a CNF formula.
+
+The complexity class P consists of all problems that can be solved in polynomial time; NP is a class of all problems the solutions of which can be verified in polynomial time. SAT is well known to be NP-complete.
+The counting counterpart of NP is the class \#P.
+\#SAT has been shown to be \#P-complete and remains \#P-hard even when syntactical restrictions on the input CNF formulas are introduced \cite{DBLP:conf/sat/GanianS17}.
+However, there has been research on structural restrictions \cite{DBLP:conf/sat/GanianS17, DBLP:conf/sat/CapelliDM14, DBLP:conf/sat/GanianPSSS22, DBLP:conf/sat/SaetherTV14, DBLP:journals/dam/FischerMR08} which lead to efficient algorithms for \#SAT.
+
+Structural restrictions are defined according to a parameter on some graph associated with the problem instance.
+In case of \#SAT, such graphs often describe the relationship between the variables and/or clauses of the formula.
+%Common examples include {\em primal}, {\em dual} and {\em incidence graphs}.
+A certain parameter $k$, usually a positive integer, is then determined for this graphic representation of a propositional formula. 
+If it's then possible to show that for some fixed $k$, there exists an algorithm that can compute \#SAT in time $f(k)n^{O(1)}$, where $f$ is a computable function and $n$ is the size of the formula, we say that \#SAT is {\em fixed-parameter tractable} when parameterized by $k$ \cite{DBLP:conf/sat/GanianS17}.
+As one can see, for a fixed $k$ the term $f(k)$ is a constant, basically meaning that the runtime of the parameterized algorithm is polynomial for such $k$, and such algorithm can therefore be assumed efficient (tractable). The class of fixed parameter tractable problems is denoted FPT.
+Its non-parameterized counterpart, FP, is the class of functional problems solvable in polynomial time.
+
+Among structural parameters presented in this thesis are {\em treewidth}, {\em disjoint branches}, {\em twin-width}, {\em ps-width} and {\em signed clique-width}.
+
+\subsection{Consensus Treewidth}
+
+There are several graphical models one can define for propositional formulas.
+Among common ones are {\em primal}, {\em dual} and {\em incidence graphs}.
+In a primal graph, variables of the formula are the graph's vertices, and two vertices are connected by an edge iff both corresponding variables appear together in a clause.
+A dual graph's vertices are its clauses, and two vertices are adjacent iff their corresponding clauses share a variable.
+An incidence graph is a bipartite graph with variables and clauses both being vertices, and a variable is connected with a clause by an edge iff the variable appears in the clause.
+Several other graphical models have been studied, of particular interest in this thesis is the {\em consensus graph}, since a parameter {\em consensus treewidth} can be derived from it under which \#SAT becomes fixed-parameter tractable \cite{DBLP:conf/sat/GanianS17}.
+A consensus graph has as its vertices the clauses of the formula, and two clauses are connected by an edge iff the clauses do not clash, that is, there exists no literal in one of the clauses that appears negated in the other clause.
+
+To determine treewidth, one needs to compute a {\em tree decomposition} of the graph.
+A tree decomposition is a tree whose vertices are collections, called {\em bags}, of the graph's vertices that satisfy several conditions.
+The treewidth can then be calculated by comparing all possible tree decompositions of a graph.
+Informally speaking, treewidth is a measure of how ``tree-like'' a graph is.
+In particular, trees have treewidth 1, and $k$-cliques have treewidth $k-1$.
+There exist fixed-parameter algorithms that can compute treewidth exactly, as well as more efficient approximation algorithms.
+Another important concept is {\em nice tree decompositions}, which impose several more restrictions on the trees, but in turn allow for efficient dynamic programming algorithms on them.
+It has been known for a while that \#SAT is fixed parameter tractable when parameterized by the treewidth of the primal, dual or incidence graph of the input; a more recent result is tractability when parameterized by the treewidth of its consensus graph \cite{DBLP:conf/sat/GanianS17}.
+
+The dynamic algorithm for \#SAT parameterized by consensus treewidth accepts as input the CNF formula and its consensus graph.
+It first computes its nice tree decomposition and traverses its nodes in leaf-to-root fashion.
+On each step, the algorithms fills two tables that count satisfying and invalidating assignments of the clauses below the current node.
+Due to the nature of nice tree decompositions, the algorithm only has to deal with  four distinct types of nodes.
+At the end, the amount of models of the formula is stored in one of the tables at the root node.
+Using this method, \#SAT can be solved in worst-case time of $2^{O(k)} n(n+\delta)$, where $n$ is the size of the formula and $\delta$ the runtime of arithmetic operations \cite{DBLP:conf/sat/GanianS17}.
+
+\subsection{Disjoint Branches}
+
+It's also possible to define special {\em hypergraphs} that represent a CNF formula.
+A hypergraph is a generalization of the more common graphs, where edges may connect not just two, but any amount of vertices.
+For this thesis, a hypergraph where the vertices are the variables of the formula, and hyperedges represent clauses (every edge connects the vertices whose respective variables appear in the clause), will be most useful.
+
+There are several ways to define acyclicity on hypergraphs, the most studied being $\alpha$- (most general), $\beta$- and $\gamma$-acyclicity (least general).
+All three notions can be defined using {\em join trees}, which are special trees whose nodes are the hypergraph's hyperedges (some other conditions must also be fulfilled).
+A {\em disjoint branches decomposition} of a hypergraph is a join tree that has another restriction, namely that any two vertices in the tree that appear on different branches, map to disjoint hyperedges of the hypergraph.
+In case of CNF formulas, such two hyperedges represent clauses that share no variables.
+Having a disjoint branches decomposition is another acyclicity notion that lies strictly between $\beta$- and $\gamma$-acyclicity.
+Hypergraphs that always have a disjoint branches decomposition regardless of which hyperedge is chosen as the root are $\gamma$-acyclic \cite{DBLP:conf/sat/CapelliDM14}.
+
+It has been shown that \#SAT is \#P-hard for CNF formulas that admit $\alpha$-acyclic hypergraphs and FP for formulas with $\gamma$-acyclic hypergraphs, however time complexity with respect to $\beta$-acyclicity remains open.
+Capelli et al. proved that \#SAT is FP for formulas whose hypergraphs admit a disjoint branches decomposition \cite{DBLP:conf/sat/CapelliDM14}.
+
+Solving \#SAT in this case is two-step. Firstly, a disjoint branches decomposition of the formula's hypergraph is computed.
+This is done by determining specific orderings of hyperedges, represented by a data structure called {\em PQF-tree}, and then performing certain transformations on them.
+Then, the algorithm traverses the computed decomposition from leaf to root, all while filling out a table of specific values.
+The amount of models is then stored in this table at the root of the decomposition.
+This algorithm allows to solve \#SAT in polynomial time \cite{DBLP:conf/sat/CapelliDM14}.
+
+\subsection{Signed twin-width}
+
+An important concept required for {\em twin-width} is {\em trigraphs}, which is a graph that has two classes of edges, namely black and red edges.
+{\em Contractions} of a trigraph are such transformations of a trigraph that two vertices are contracted into a single one, and its new edges are determined according to the membership of the old edges to one of the two edge classes.
+A graph whose subgraph, induced by the red edges, has maximum degree at most $d$, is called a {\em d-trigraph}.
+A contraction of a $d$-trigraph is called {\em d-contraction} if it is a $d$-trigraph itself.
+If there exists a sequence of $d$-contractions such that a graph is contracted to single vertex, the graph is called {\em d-collapsible}. The twin-width of a graph is then the minimum $d$ for which it is $d$-collapsible \cite{DBLP:conf/sat/GanianPSSS22}.
+
+Furthermore, the notion of {\em signed graphs} is important; such graphs distinguish two disjoint sets of edges, namely positive and negative edges.
+In this thesis, twin-width is determined for signed incidence graphs of a formula.
+That is, the vertices are either variables or clauses of the formula, and two vertices are connected by a positive edge if the variable appears positively in the clause, or by a negative edge if the variable appears negated.
+A {\em signed trigraph} distinguishes, apart from positive and negative edges, also red edges. Twin-width is defined for signed trigraphs in the same way as for the unsigned ones \cite{DBLP:conf/sat/GanianPSSS22}.
+
+Contraction sequences can also be represented as vertex partitions of the original graph.
+A set of vertices maps to a vertex in the contraction, and represents all vertices that were contracted into the one mapped by the set.
+This allows for a simplified representation of contraction sequences.
+Since the incidence graph is bipartite, it's useful to restrict contractions to those that preserve the two classes of vertices.
+This gives rise to a notion called {\em bipartite contraction sequences}, which are the aforementioned contraction sequences with an additional condition, namely that in each contraction, only two vertices from the same class are contracted.
+Note that no sequence of bipartite $d$-contractions can end in a single vertex.
+However, they can end in two-vertex graphs; minimal such $d$ that the signed incidence graph of a propositional formula has a bipartite $d$-contraction sequence ending in a two-vertex graph is defined to be the {\em signed twin-width} of the formula. In other words, it is the minimal red degree of all bipartite contraction sequences of the incidence graph \cite{DBLP:conf/sat/GanianPSSS22}.
+
+Given a CNF formula, its incidence graph and its contraction sequence, \#SAT is fixed-parameter tractable parameterized by $k$ plus signed twin-width of the formula, where $k$ is the bound on positive literals, i.e. when only counting models with at most $k$ literals set to true.
+However, there is no known FP algorithm for computing contraction sequences yet \textbf{[NOTE: no algorithm]}; as such, the algorithm assumes that it is already known \cite{DBLP:conf/sat/GanianPSSS22}.
+
+The algorithm is again dynamic.
+Accepting on input a propositional formula, its incidence graph and its contraction sequence, it first computes a bipartite contraction sequence, which is possible in linear time.
+Then, the algorithm fills out a table of specific values for each contraction in the sequence.
+These values are mappings of {\em profiles}, which are specific set of variables of the formula that satisfy specific conditions.
+At the end, the number of models is stored in the table at the last contraction, the two-vertex graph.
+Assuming that a contraction sequence is known on input, the algorithm is fixed-parameter tractable \cite{DBLP:conf/sat/GanianPSSS22}.
+
+\subsection{ps-width}
+
+For ps-width we consider {\em branch decompositions} of propositional formulas (a similar notion as compared with those for hypergraphs).
+A branch decomposition is a tree where vertices map to variables and clauses of the formula.
+This mapping (a set of variables and clauses) also defines {\em cuts} of the formula, which break it into four subformulas, each of which is achieved by removing clauses and then literals according to the contents of the set.
+The nature of cutting formulas reflects in the fact (which will be useful for the algorithm implementation) that a clause is satisfied by an assignment if at least one of its (cut-down) versions is satisfied in one of the subformulas.
+Moreover, we call a subset of clauses {\em precisely satisfiable} under an assignment if the assignment only satisfies this subset of clauses and doesn't satisfy any other clause \cite{DBLP:conf/sat/SaetherTV14}.
+
+For a given cut, we consider two specific subformulas it forms and define families of all precisely satisfiable subsets they have.
+The maximum cardinality of the two families is denoted {\em ps-value} of the cut.
+For the branch decomposition of a formula, its {\em ps-width} is defined as the maximum ps-value of all cuts represented by the decomposition.
+Finally, the ps-width of a formula is then defined as the minimum ps-width over all branch decompositions of the formula \cite{DBLP:conf/sat/SaetherTV14}.
+
+There exists an FPT algorithm for \#SAT when parameterized by ps-width.
+Given a branch decomposition \textbf{[NOTE: need an algorithm for computing branch decompositions]}, it first computes, for each node (cut) in the tree, the precisely satisfiable subsets of clauses.
+This is done dynamically, beginning at the leaves or the root of the tree (depending on which set is being computed).
+Then, while traversing the nodes of the decomposition, the algorithm updates a table of values at each step.
+At the end, the table at the root node contains the amount of models of the formula.
+This method allows to solve \#SAT in time $O(k^3 s(m+n))$, where $k$ is the ps-width, $m$ the amount of clauses, $n$ the amount of vertices, and $s$ the size of the formula \cite{DBLP:conf/sat/SaetherTV14}.
+\textbf{[NOTE: not sure what size $s$ is]} 
+
+\subsection{Signed clique-width}
+
+Another parameter is clique-width which, informally speaking, is a measure of how difficult it is to construct a colored graph (where the amount of colors is fixed) while using several specific operations.
+The clique-width is defined as the minimum $k$ such that a graph can be constructed using these operations using at most $k$ colors \cite{DBLP:journals/dam/FischerMR08}.
+
+To solve \#SAT we consider three following graphical representations of the input formula: a signed incidence graph, where edges also bear information on whether literals appear positively or negatively in a clause; its unsigned version; and the primal graph.
+A {\em parse tree} is a tree whose root is the (signed or unsigned) incidence graph, leaves are singleton graphs (one-vertex graphs), and all other nodes are intermediate graphs obtained by the specific operations related to clique-width (mentioned above).
+Edges of a parse tree are also annotated to represent the operations used \cite{DBLP:journals/dam/FischerMR08}.
+
+There exists an algorithm which, for a given graph and a given $k$ either correctly decides that the clique-width is larger than $k$, or outputs a corresponding parse tree of size exponential in $k$, in polynomial time.
+This fact can be used to construct a parse tree for an input propositional formula, which in turn can be used to determine the amount of models.
+The algorithms traverses the tree beginning at the leaves, filling out a table of values.
+Once the root is reached, the final answer to the problem is stored in its table.
+This algorithm runs in time linear in the size of the parse tree, and exponential in signed clique-width \cite{DBLP:journals/dam/FischerMR08}.
+
+\subsection{Parameter hierarchy}
+
+TODO
+
+- bounded tree-width $\Rightarrow$ bounded clique-width
+
+- see diagram in one of the papers
+ 
+% ---------- Bibliography
+
+\bibliographystyle{abbrv}
+\bibliography{references}
 
 \end{document}
