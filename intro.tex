@@ -6,6 +6,13 @@
 \usepackage{amsfonts}
 \usepackage{cite}
 \usepackage{hyperref}
+\usepackage{tikz}
+\usepackage{subcaption}
+\usepackage{float}
+
+%\usepackage[margin=2cm]{geometry}
+
+\tikzstyle{hyperedge} = [fill,opacity=.5,fill opacity=.5,line cap=round, line join=round, line width=0pt]
 
 % =================================================
 
@@ -23,7 +30,7 @@ Propositional model counting, \#SAT, is a related but harder problem of determin
 The complexity class P consists of all problems that can be solved in polynomial time; NP is a class of all problems the solutions of which can be verified in polynomial time. SAT is well known to be NP-complete.
 The counting counterpart of NP is the class \#P.
 \#SAT has been shown to be \#P-complete and remains \#P-hard even when syntactical restrictions on the input CNF formulas are introduced \cite{DBLP:conf/sat/GanianS17}.
-However, there has been research on structural restrictions \cite{DBLP:conf/sat/GanianS17, DBLP:conf/sat/CapelliDM14, DBLP:conf/sat/GanianPSSS22, DBLP:conf/sat/SaetherTV14, DBLP:journals/dam/FischerMR08} which lead to efficient algorithms for \#SAT.
+However, there has been research on structural restrictions \cite{DBLP:conf/sat/GanianS17, DBLP:conf/sat/CapelliDM14, DBLP:conf/sat/GanianPSSS22, DBLP:conf/sat/SaetherTV14, DBLP:journals/dam/FischerMR08, DBLP:journals/jda/SamerS10, DBLP:journals/fuin/GanianHO13} which lead to efficient algorithms for \#SAT.
 
 Structural restrictions are defined according to a parameter on some graph associated with the problem instance.
 In case of \#SAT, such graphs often describe the relationship between the variables and/or clauses of the formula.
@@ -33,131 +40,231 @@ If it's then possible to show that for some fixed $k$, there exists an algorithm
 As one can see, for a fixed $k$ the term $f(k)$ is a constant, basically meaning that the runtime of the parameterized algorithm is polynomial for such $k$, and such algorithm can therefore be assumed efficient (tractable). The class of fixed parameter tractable problems is denoted FPT.
 Its non-parameterized counterpart, FP, is the class of functional problems solvable in polynomial time.
 
-Among structural parameters presented in this thesis are {\em treewidth}, {\em disjoint branches}, {\em twin-width}, {\em ps-width} and {\em signed clique-width}.
+This thesis is organized as follows.
+In Section 2, we provide the necessary formal definitions, in particular with regards to graphical representations of formulas, and introduce several structural restrictions, among which are {\em treewidth}, {\em clique-width}, {\em disjoint branches}, {\em twin-width}, {\em rank-width}, {\em ps-width}, and others.
+\textbf{[TODO: don't forget organization]}
 
-\subsection{Consensus Treewidth}
+% ---- NEW
+\section{Preliminaries}
 
-There are several graphical models one can define for propositional formulas.
-Among common ones are {\em primal}, {\em dual} and {\em incidence graphs}.
+We first introduce some notions from graph theory which will be useful in this thesis.
+We will use these notions to represent propositional formulas, and then perform transformations on them to obtain the desired width parameters.
+For examples, see Fig. \ref{fig:graphs}.\\
+
+\begin{figure}
+	\centering
+	\begin{subfigure}[b]{0.22\textwidth}
+		\include{graphics/consensus-graph}
+		\caption{}
+		\label{fig:consensus}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.38\textwidth}
+		\include{graphics/hypergraph}
+		\caption{}
+		\label{fig:hypergraph}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.3\textwidth}
+		\include{graphics/trigraph}
+		\caption{}
+		\label{fig:trigraph}
+	\end{subfigure}
+	\caption{
+		Some graphical representations of the formula $C_1 \land C_2 \land C_3$ with $C_1 = \{x\}$, $C_2 = \{x,y\}$ and $C_3=\{\neg x, \neg z, w\}$.
+		Here, (a) is the consensus graph, (b) the primal hypergraph, and (c) the signed incidence graph (negative edges are dashed).
+		Notice how in (a), $C_3$ does not have any edges, as its literal $\neg x$ appears negated in all other clauses.
+	}
+	\label{fig:graphs}
+\end{figure}
+
+\noindent
+\textbf{Graphs}.
+A graph is a pair $G = (V,E)$ with a vertex set $V$ and an edge set $E$.
+An edge $e=uv$ connects the vertex $u$ to $v$.
+A graph is called {\em bipartite} if the vertices can be partitioned into two disjoint sets, and every edge has endpoints in both sets.
+There are several commonly known graphs one can define for CNF formulas, such as {\em primal, dual} and {\em incidence graphs}.
 In a primal graph, variables of the formula are the graph's vertices, and two vertices are connected by an edge iff both corresponding variables appear together in a clause.
 A dual graph's vertices are its clauses, and two vertices are adjacent iff their corresponding clauses share a variable.
 An incidence graph is a bipartite graph with variables and clauses both being vertices, and a variable is connected with a clause by an edge iff the variable appears in the clause.
-Several other graphical models have been studied, of particular interest in this thesis is the {\em consensus graph}, since a parameter {\em consensus treewidth} can be derived from it under which \#SAT becomes fixed-parameter tractable \cite{DBLP:conf/sat/GanianS17}.
-A consensus graph has as its vertices the clauses of the formula, and two clauses are connected by an edge iff the clauses do not clash, that is, there exists no literal in one of the clauses that appears negated in the other clause.
+A more recently studied graph is the {\em consensus graph}, where the vertices are the clauses of the formula, and two vertices are connected by an edge iff the clauses do not clash, that is, there exists no literal in one of the clauses that appears negated in the other clause.\\
 
-To determine treewidth, one needs to compute a {\em tree decomposition} of the graph.
-A tree decomposition is a tree whose vertices are collections, called {\em bags}, of the graph's vertices that satisfy several conditions.
-The treewidth can then be calculated by comparing all possible tree decompositions of a graph.
-Informally speaking, treewidth is a measure of how ``tree-like'' a graph is.
-In particular, trees have treewidth 1, and $k$-cliques have treewidth $k-1$.
-There exist fixed-parameter algorithms that can compute treewidth exactly, as well as more efficient approximation algorithms.
-Another important concept is {\em nice tree decompositions}, which impose several more restrictions on the trees, but in turn allow for efficient dynamic programming algorithms on them.
-It has been known for a while that \#SAT is fixed parameter tractable when parameterized by the treewidth of the primal, dual or incidence graph of the input; a more recent result is tractability when parameterized by the treewidth of its consensus graph \cite{DBLP:conf/sat/GanianS17}.
+\noindent
+\textbf{Hypergraphs}.
+A hypergraph $H=(V,E)$ with vertex set $V$ and (hyper)edge set $E$ is a generalized notion of graphs, where edges may connect not only two, but any amount of vertices.
+As such, an edge is a set of vertices it connects.
+A CNF formula can be represented by a primal hypergraph, whose vertices are the formula's variables, and hyperedges are the clauses, i.e. hyperedges connect the variables that appear in the clause.\\
 
-The dynamic algorithm for \#SAT parameterized by consensus treewidth accepts as input the CNF formula and its consensus graph.
-It first computes its nice tree decomposition and traverses its nodes in leaf-to-root fashion.
-On each step, the algorithms fills two tables that count satisfying and invalidating assignments of the clauses below the current node.
-Due to the nature of nice tree decompositions, the algorithm only has to deal with  four distinct types of nodes.
-At the end, the amount of models of the formula is stored in one of the tables at the root node.
-Using this method, \#SAT can be solved in worst-case time of $2^{O(k)} n(n+\delta)$, where $n$ is the size of the formula and $\delta$ the runtime of arithmetic operations \cite{DBLP:conf/sat/GanianS17}.
+\noindent
+\textbf{Trigraphs.}
+A trigraph $G=(V,E,E')$ is a graph that distinguishes two classes of edges, $E$ and $E'$.
+Often such two classes are positive and negative edges, denoted $E_+$ and $E_-$, respectively, in which case the trigraph is called a {\em signed graph}.
+A {\em signed trigraph} distinguishes, apart from positive and negative edges, also one more class of edges.
+With a CNF formula we associate a signed bipartite incidence graph, where the two classes of vertices are the formula's clauses and variables, and an edge connects a variable with the clause where it appears, with the appropriate sign (according to whether the variable occurs positively or negatively in the clause).
 
-\subsection{Disjoint Branches}
+\subsection{Width Parameters}
 
-It's also possible to define special {\em hypergraphs} that represent a CNF formula.
-A hypergraph is a generalization of the more common graphs, where edges may connect not just two, but any amount of vertices.
-For this thesis, a hypergraph where the vertices are the variables of the formula, and hyperedges represent clauses (every edge connects the vertices whose respective variables appear in the clause), will be most useful.
+We now proceed with an introduction of many parameters used to describe the structure of graphs, the so-called {\em width parameters}. \\
 
-There are several ways to define acyclicity on hypergraphs, the most studied being $\alpha$- (most general), $\beta$- and $\gamma$-acyclicity (least general).
-All three notions can be defined using {\em join trees}, which are special trees whose nodes are the hypergraph's hyperedges (some other conditions must also be fulfilled).
-A {\em disjoint branches decomposition} of a hypergraph is a join tree that has another restriction, namely that any two vertices in the tree that appear on different branches, map to disjoint hyperedges of the hypergraph.
-In case of CNF formulas, such two hyperedges represent clauses that share no variables.
-Having a disjoint branches decomposition is another acyclicity notion that lies strictly between $\beta$- and $\gamma$-acyclicity.
-Hypergraphs that always have a disjoint branches decomposition regardless of which hyperedge is chosen as the root are $\gamma$-acyclic \cite{DBLP:conf/sat/CapelliDM14}.
+\noindent
+\textbf{Treewidth} \cite{DBLP:conf/sat/GanianS17}.
+For a simple, undirected, finite graph $G = (V,E)$ we define a {\em tree decomposition} to be a pair $(T, B)$, where $T$ is a tree, $B$ a set of {\em bags}, and the vertices of $T$ are the bags.
+Each bag is a set of the graph's vertices.
+Moreover, a tree decomposition has to fulfil the following two conditions:
+\begin{enumerate}
+	\item for any edge $uv\in E$ there exists some bag $B' \in B$ such that $\{u,v\} \subseteq B'$, and
+	\item for any vertex $v\in V$, $T[\{ b \in B \; | \; v \in b \}]$ is a connected tree with at least one node.
+\end{enumerate}
+Informally speaking, tree decompositions are a structured way to ``break down'' a graph into its parts.
+We define the {\em width} of a tree decomposition to be its maximum bag size minus one, and the {\em treewidth} of $G$, $\textbf{tw}(G)$, to be the minimum width over all its tree decompositions.\\
 
-It has been shown that \#SAT is \#P-hard for CNF formulas that admit $\alpha$-acyclic hypergraphs and FP for formulas with $\gamma$-acyclic hypergraphs, however time complexity with respect to $\beta$-acyclicity remains open.
-Capelli et al. proved that \#SAT is FP for formulas whose hypergraphs admit a disjoint branches decomposition \cite{DBLP:conf/sat/CapelliDM14}.
+\noindent 
+\textbf{Disjoint branches} \cite{DBLP:conf/sat/CapelliDM14}.
+A join tree of a hypergraph $H=(V,E)$ is a pair $(\mathcal{T}, \lambda)$, where $\mathcal{T}=(N,T)$ is a tree with node set $N$ and edge set $T$, and $\lambda : N \rightarrow E$ is a bijection from tree's nodes to hypergraph's edges, which fulfils the following:
+\begin{enumerate}
+	\item for every $e\in E$, there exists a $t\in T$ such that $\lambda(t)=e$, and
+	\item for every $v\in V$, $\mathcal{T}[\{ n \in N \; | \; v \in \lambda(n) \}]$ is a connected subtree of $\mathcal{T}$.
+\end{enumerate}
+Notice how the definition is similar to that of tree decompositions.
+A join tree where for every two nodes $n, n'$ on different branches, $\lambda(n) \cap \lambda(n') = \emptyset$, is called a {\em disjoint branches decomposition}. 
+Such decompositions represent a way to ``break down'' a hypergraph into disjoint parts (recall that $\lambda(n)$ is a hypergraph's edge).
 
-Solving \#SAT in this case is two-step. Firstly, a disjoint branches decomposition of the formula's hypergraph is computed.
-This is done by determining specific orderings of hyperedges, represented by a data structure called {\em PQF-tree}, and then performing certain transformations on them.
-Then, the algorithm traverses the computed decomposition from leaf to root, all while filling out a table of specific values.
-The amount of models is then stored in this table at the root of the decomposition.
-This algorithm allows to solve \#SAT in polynomial time \cite{DBLP:conf/sat/CapelliDM14}.
+We now consider acyclicity of hypergraphs.
+In contrast to graphs, there is not just one single but several notions of acyclicity for hypergraphs, such as $\alpha$- (most general), $\beta$- and $\gamma$-acyclicity (least general), all of which can be defined using join trees.
 
-\subsection{Signed twin-width}
+A hypergraph is said to be $\alpha$-acyclic if it has a join tree.
+One shortcoming of this definition is that a subhypergraph of an $\alpha$-acyclic hypergraph is not necessarily $\alpha$-acyclic itself.
+Thus, a more restrictive notion of $\beta$-acyclicity was introduced, which requires that a hypergraph and all its subhypergraphs be $\alpha$-acyclic.
+Admitting a disjoint branches decomposition is itself another notion of hypergraph acyclicity, which lies strictly between $\beta$- and $\gamma$-acyclicity.
+As such, having a disjoint branches decomposition implies $\beta$- and $\alpha$-acyclicity.
+Finally, a hypergraph is $\gamma$-acyclic if it admits a disjoint branches decomposition for any choice of hyperedge as the root.
 
-An important concept required for {\em twin-width} is {\em trigraphs}, which is a graph that has two classes of edges, namely black and red edges.
-{\em Contractions} of a trigraph are such transformations of a trigraph that two vertices are contracted into a single one, and its new edges are determined according to the membership of the old edges to one of the two edge classes.
-A graph whose subgraph, induced by the red edges, has maximum degree at most $d$, is called a {\em d-trigraph}.
+Using the four introduced notions of acyclicity, we define the respective classes of hypergraphs, i.e. $\alpha$-, $\beta$-, $\gamma$-acyclic hypergraphs, as well as hypergraphs that admit a disjoint branches decomposition. \\
+
+\noindent
+\textbf{Twin-width} \cite{DBLP:conf/sat/GanianPSSS22}.
+Consider a trigraph $G=(V,E,R)$ that distinguishes between black ($E$) and red ($R$) edges.
+A trigraph whose subgraph induced by the red edges, that is $G[R]$, has maximum degree at most $d$, is called a {\em d-trigraph}.
+
+A {\em contraction} of a trigraph $G$ is a trigraph $G'=G/u,v$ that is a result of contracting two vertices $u,v \in V(G)$ into a single vertex $w$, where the edges of $w$ are determined according to the following:
+\begin{itemize}
+	\item $wx \in E(G')$ iff $ux, vx \in E(G)$,
+	\item $wx \not\in E(G') \cup R(G')$ iff $ux, vx \not\in E(G)\cup R(G),$
+	\item $wx \in R(G')$ otherwise.
+\end{itemize}
+Intuitively, red edges represent ``errors'' that occur during a contraction.
 A contraction of a $d$-trigraph is called {\em d-contraction} if it is a $d$-trigraph itself.
-If there exists a sequence of $d$-contractions such that a graph is contracted to single vertex, the graph is called {\em d-collapsible}. The twin-width of a graph is then the minimum $d$ for which it is $d$-collapsible \cite{DBLP:conf/sat/GanianPSSS22}.
+If there exists a sequence of $d$-contractions such that a graph is contracted into a single vertex, the graph is called {\em d-collapsible}.
+The {\em twin-width} $\textbf{tww}(G)$ of a trigraph $G$ is then the minimal $d$ for which it is $d$-collapsible.
 
-Furthermore, the notion of {\em signed graphs} is important; such graphs distinguish two disjoint sets of edges, namely positive and negative edges.
-In this thesis, twin-width is determined for signed incidence graphs of a formula.
-That is, the vertices are either variables or clauses of the formula, and two vertices are connected by a positive edge if the variable appears positively in the clause, or by a negative edge if the variable appears negated.
-A {\em signed trigraph} distinguishes, apart from positive and negative edges, also red edges. Twin-width is defined for signed trigraphs in the same way as for the unsigned ones \cite{DBLP:conf/sat/GanianPSSS22}.
+For bipartite trigraphs it is helpful to restrict contraction sequences to those where only vertices from the same partition are contracted.
+That is, for a bipartite trigraph $G$ with $V(G) = A \cup B$, $A \cap B = \emptyset$, there is no contraction of the form $G/a,b$ in the sequence, where $a\in A, b\in B$.
+Such sequences are called {\em bipartite contraction sequences}.
+Notice that no bipartite contraction sequence can end in a single-vertex graph and therefore $d$-collapsibility does not apply.
 
-Contraction sequences can also be represented as vertex partitions of the original graph.
-A set of vertices maps to a vertex in the contraction, and represents all vertices that were contracted into the one mapped by the set.
-This allows for a simplified representation of contraction sequences.
-Since the incidence graph is bipartite, it's useful to restrict contractions to those that preserve the two classes of vertices.
-This gives rise to a notion called {\em bipartite contraction sequences}, which are the aforementioned contraction sequences with an additional condition, namely that in each contraction, only two vertices from the same class are contracted.
-Note that no sequence of bipartite $d$-contractions can end in a single vertex.
-However, they can end in two-vertex graphs; minimal such $d$ that the signed incidence graph of a propositional formula has a bipartite $d$-contraction sequence ending in a two-vertex graph is defined to be the {\em signed twin-width} of the formula. In other words, it is the minimal red degree of all bipartite contraction sequences of the incidence graph \cite{DBLP:conf/sat/GanianPSSS22}.
+We introduce another definition.
+Say a bipartite trigraph $G$ is {\em bipartitely $d$-collapsible} if there exists a sequence of bipartite $d$-contractions such that $G$ is collapsed into a graph with two vertices.
+Then, the {\em signed twin-width} $\textbf{stww}(G)$ of a bipartite trigraph $G$ is the minimal $d$ for which it is bipartitely $d$-collapsible.
+In other words, it is the minimal red degree of all bipartite contraction sequences of $G$.\\
 
-Given a CNF formula, its incidence graph and its contraction sequence, \#SAT is fixed-parameter tractable parameterized by $k$ plus signed twin-width of the formula, where $k$ is the bound on positive literals, i.e. when only counting models with at most $k$ literals set to true.
-However, there is no known FP algorithm for computing contraction sequences yet \textbf{[NOTE: no algorithm]}; as such, the algorithm assumes that it is already known \cite{DBLP:conf/sat/GanianPSSS22}.
+\noindent
+\textbf{Clique-width} \cite{DBLP:journals/dam/FischerMR08}.
+Colored graphs are graphs with vertices annotated by an integer (color) in $\{1,...,k\}$.
+Consider the following set of operations on colored graphs:
+\begin{enumerate}
+	\item Disjoint union $\oplus$, where $V(A \oplus B)=\{ (v,\, \lambda(v)) \; | \; v \in V(A) \text{ or } v\in V(B) \}$, and $\lambda(v)=$ ``$A$'' if $v\in A$, and $\lambda(v)=$ ``$B$'' if $v\in B$,
+	\item Recoloring $\rho_{i,j}(I)$, resulting in a graph where vertices colored $i$ are re-colored $j$,
+	\item Edge creation:
+	\begin{enumerate}
+		\item for unsigned graphs, $\mu_{i,j}(I)$ results in a graph where all vertices colored $i$ are adjacent to all vertices colored $j$,
+		\item for signed graphs, $\mu_{i,j}^+(I)$ or $\mu_{i,j}^-(I)$ result in a graph where all vertices colored $i$ are connected to all vertices colored $j$ by a positive or negative edge, respectively. In case of bipartite graphs, vertices from different vertex partitions are not connected.
+	\end{enumerate}
+\end{enumerate}
 
-The algorithm is again dynamic.
-Accepting on input a propositional formula, its incidence graph and its contraction sequence, it first computes a bipartite contraction sequence, which is possible in linear time.
-Then, the algorithm fills out a table of specific values for each contraction in the sequence.
-These values are mappings of {\em profiles}, which are specific set of variables of the formula that satisfy specific conditions.
-At the end, the number of models is stored in the table at the last contraction, the two-vertex graph.
-Assuming that a contraction sequence is known on input, the algorithm is fixed-parameter tractable \cite{DBLP:conf/sat/GanianPSSS22}.
+\noindent
+Notice that the disjoint union is used to introduce single-vertex graphs and avoid name conflicts between vertices.
+As an example, consider how one can create cliques using two colors: beginning with two single-vertex graphs $A, B$ colored, say, red (1) and blue (2) respectively, a 2-clique can be obtained as $\mu_{1,2}(A \oplus B)$, a 3-clique as $\mu_{1,2}(\rho_{2,1}(\mu_{1,2}(A \oplus B)) \oplus B)$, and so on.
 
-\subsection{ps-width}
+{\em Clique-width} $\textbf{cw}(G)$ is defined as the minimal $k$ such that $G$ can be obtained from colored single-vertex graphs using the operations above.
+From the example above it is easy to see that cliques have clique-width at most 2.\\
 
-For ps-width we consider {\em branch decompositions} of propositional formulas (a similar notion as compared with those for hypergraphs).
-A branch decomposition is a tree where vertices map to variables and clauses of the formula.
-This mapping (a set of variables and clauses) also defines {\em cuts} of the formula, which break it into four subformulas, each of which is achieved by removing clauses and then literals according to the contents of the set.
-The nature of cutting formulas reflects in the fact (which will be useful for the algorithm implementation) that a clause is satisfied by an assignment if at least one of its (cut-down) versions is satisfied in one of the subformulas.
-Moreover, we call a subset of clauses {\em precisely satisfiable} under an assignment if the assignment only satisfies this subset of clauses and doesn't satisfy any other clause \cite{DBLP:conf/sat/SaetherTV14}.
+\noindent
+\textbf{Branch-width} \cite{DBLP:journals/jct/OumS06}.
+Branch-width is defined via set functions.
+A set function $f$ maps a subset to a number, i.e. $f : 2^V \rightarrow \mathbb{Z}$, where $V$ is a finite set.
+If for all $X,Y \subseteq V$ it holds that $f(X)+f(Y) \geq f(X\cap Y) + f(X\cup Y)$, $f$ is called {\em submodular}.
+Moreover, if for all $X\subseteq V$, $f(X) = f(V \setminus X)$, $f$ is said to be {\em symmetric}.
 
-For a given cut, we consider two specific subformulas it forms and define families of all precisely satisfiable subsets they have.
-The maximum cardinality of the two families is denoted {\em ps-value} of the cut.
-For the branch decomposition of a formula, its {\em ps-width} is defined as the maximum ps-value of all cuts represented by the decomposition.
-Finally, the ps-width of a formula is then defined as the minimum ps-width over all branch decompositions of the formula \cite{DBLP:conf/sat/SaetherTV14}.
+A {\em branch decomposition} of a symmetric, submodular function $f$ is a pair $(T, \lambda)$, where $T$ is a subcubic tree (i.e., every vertex is incident with at most three edges), and $\lambda$ a bijective function from $V$ to the leaves of $T$.
+If $\lambda$ is surjective, the branch decomposition is said to be {\em partial}.
 
-There exists an FPT algorithm for \#SAT when parameterized by ps-width.
-Given a branch decomposition \textbf{[NOTE: need an algorithm for computing branch decompositions]}, it first computes, for each node (cut) in the tree, the precisely satisfiable subsets of clauses.
-This is done dynamically, beginning at the leaves or the root of the tree (depending on which set is being computed).
-Then, while traversing the nodes of the decomposition, the algorithm updates a table of values at each step.
-At the end, the table at the root node contains the amount of models of the formula.
-This method allows to solve \#SAT in time $O(k^3 s(m+n))$, where $k$ is the ps-width, $m$ the amount of clauses, $n$ the amount of vertices, and $s$ the size of the formula \cite{DBLP:conf/sat/SaetherTV14}.
-\textbf{[NOTE: not sure what size $s$ is]} 
+For a (partial) branch decomposition $\mathcal{T} = (T,\lambda)$ of $f$ and some edge $e$, $T \setminus e$ is a forest that consists of two connected subtrees of $T$.
+Thus $e$ defines a partition $(X,Y)$ of the leaves of the branch decomposition.
+The width of the edge $e$ is defined as $f(\lambda^{-1}(X)) = f(\lambda^{-1}(Y))$, and the width of a branch decomposition as the maximum width of all edges of $T$.
+Then, the {\em branch width} $\mathbf{bw}(f)$ of a symmetric, submodular function $f$ is the minimum width over all its branch decompositions.\\
 
-\subsection{Signed clique-width}
+\noindent
+\textbf{Rank-width} \cite{DBLP:journals/fuin/GanianHO13}.
+The definition of rank-width utilizes concepts used in the definition of branch-width.
+Consider a simple graph $G$, subsets $X,Y \subseteq V(G)$ and let $\mathbf{A}_G[X,Y]$ be a binary matrix.
+The entry $a_{x,y}$ of $\mathbf{A}_G[X,Y]$ is 1 iff $xy \in E(G)$, where $x\in X, y\in Y$.
 
-Another parameter is clique-width which, informally speaking, is a measure of how difficult it is to construct a colored graph (where the amount of colors is fixed) while using several specific operations.
-The clique-width is defined as the minimum $k$ such that a graph can be constructed using these operations using at most $k$ colors \cite{DBLP:journals/dam/FischerMR08}.
+A {\em cut-rank function} is a symmetric, submodular function $\rho_G : 2^{V(G)} \rightarrow \mathbb{Z}$ such that $\rho_G(X)=\rho_G(V(G)\setminus X) = \text{rank}(\mathbf{A}_G[X, V(G)\setminus X])$.
+A {\em rank decomposition} is the branch decomposition of $\rho_G$.
+Then, {\em rank-width} $\textbf{rw}(G)$ is the branch-width of $\rho_G$. \\
 
-To solve \#SAT we consider three following graphical representations of the input formula: a signed incidence graph, where edges also bear information on whether literals appear positively or negatively in a clause; its unsigned version; and the primal graph.
-A {\em parse tree} is a tree whose root is the (signed or unsigned) incidence graph, leaves are singleton graphs (one-vertex graphs), and all other nodes are intermediate graphs obtained by the specific operations related to clique-width (mentioned above).
-Edges of a parse tree are also annotated to represent the operations used \cite{DBLP:journals/dam/FischerMR08}.
 
-There exists an algorithm which, for a given graph and a given $k$ either correctly decides that the clique-width is larger than $k$, or outputs a corresponding parse tree of size exponential in $k$, in polynomial time.
-This fact can be used to construct a parse tree for an input propositional formula, which in turn can be used to determine the amount of models.
-The algorithms traverses the tree beginning at the leaves, filling out a table of values.
-Once the root is reached, the final answer to the problem is stored in its table.
-This algorithm runs in time linear in the size of the parse tree, and exponential in signed clique-width \cite{DBLP:journals/dam/FischerMR08}.
+\noindent
+\textbf{ps-width} \cite{DBLP:conf/sat/SaetherTV14}.
+ps-width, in contrast to most width parameters introduced above, is defined specifically for propositional formulas.
+For a propositional formula $F$, let $\text{var}(F)$ denote the set of variables of $F$, and $\text{cla}(F)$ the set of its clauses.
+For a set $C \subseteq \text{cla}(F)$, we say $C$ is {\em precisely satisfiable} in $F$ if there exists some assignment $\tau$ such that $\tau(c)=1$ for all $c\in C$, and $\tau(c)=0$ for all $c \in \text{cla}(F)\setminus C$.
+By $\mathcal{PS}(F)$ we denote the set of all sets $C$ such that $C \subseteq \text{cla}(F)$ and $C$ is precisely satisfiable.
 
-\subsection{Parameter hierarchy}
 
-TODO
+A {\em branch decomposition} of a formula $F$ is a pair $(T, \delta)$, where $T$ is a rooted binary tree, and $\delta$ a bijection from the leaves of $T$ to $\text{var}(F) \cup \text{cla}(F)$.
+For an internal (non-leaf) node $v$ of $T$, let $\delta(v) = \{ \delta(l) \; | \; l \text{ is a leaf of subtree rooted in } v \}$.
+For any node $v$ of $T$, $\delta(v)$ describes certain cuts of the propositional formula.
+Let $F_v$ be then a formula induced by the clauses in cla$(F)\setminus \delta(v)$ and variables in $\delta(v)$, and $F_{\overline{v}}$ a formula induced by the clauses in $\delta(v)$ and the variables in var$(F)\setminus \delta(v)$.
 
-- bounded tree-width $\Rightarrow$ bounded clique-width
+{\em ps-value} ps$(\delta(v))$ of a cut $\delta(v)$ is defined as max$\{|\mathcal{PS}(F_v)|, |\mathcal{PS}(F_{\overline{v}})|\}$, and the {\em ps-width} of a branch decomposition $(T,\delta)$ as max$\{ \text{ps}(\delta(v)) \; | \; v \in V(T) \}$. 
+Then, the {\em ps-width} $\mathbf{psw}(F)$ of a formula $F$ is the minimal ps-width over all its branch decompositions.\\
 
-- see diagram in one of the papers
- 
+\begin{table}
+	\centering
+	\begin{tabular}{r | l}
+		\textbf{structural restriction} & \textbf{complexity} \\
+		\hline
+		primal/dual/incidence treewidth & FPT \cite{DBLP:journals/jda/SamerS10} \\
+		consensus treewidth & FPT \cite{DBLP:conf/sat/GanianS17} \\
+		\hline
+		$\alpha$-acyclic hypergraph & \#P \cite{DBLP:conf/sat/CapelliDM14} \\
+		disjoint branches & FP \cite{DBLP:conf/sat/CapelliDM14} \\
+		$\gamma$-acyclic hypergraph & FP \cite{DBLP:conf/sat/CapelliDM14} \\
+		\hline
+		signed incidence clique-width & FPT \cite{DBLP:journals/dam/FischerMR08} \\
+		incidence clique-width & XP \cite{DBLP:conf/isaac/SlivovskyS13} \\
+		\hline
+		signed incidence rank-width & FPT \cite{DBLP:journals/fuin/GanianHO13} \\
+		signed incidence twin-width plus $k$ & FPT \cite{DBLP:conf/sat/GanianPSSS22} \\
+		ps-width & FPT \cite{DBLP:conf/sat/SaetherTV14}
+	\end{tabular}
+	\caption{Complexity results for width parameters on \#SAT instances}
+	\label{table:complexity}
+\end{table}
+
+\noindent
+\textbf{Width parameters for propositional formulas}.
+It's possible to introduce structural restrictions on formulas by restricting their graphical representations using the width parameters.
+Usually, we are interested in such classes of formulas where the graphical representation is of some bounded width.
+
+For some propositional formula we say that it is of width $k$ if some its graphical representation has width $k$.
+We also usually mention which representation is used for determining the width parameter. As such, we refer to {\em primal treewidth}, {\em signed incidence clique-width}, and so on.
+
+Many efficient \#SAT algorithms have been developed for specific classes of formulas with bounded width parameters.
+For an overview, refer to Table \ref{table:complexity}.
+
+\subsection{Hierarchy of Width Parameters}
+
+
 % ---------- Bibliography
 
 \bibliographystyle{abbrv}

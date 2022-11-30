@@ -1,0 +1,20 @@
+\begin{tikzpicture}[nodes=circle, nodes=draw, font=\footnotesize, minimum size=21pt]
+	% consensus
+	\node (x) at (0, -0.6) {$x$};
+	\node (y) at (0, -1.4) {$y$};
+	\node (z) at (0, -2.2) {$z$};
+	\node (w) at (0, -3) {$w$};
+	
+	\node (c1) at (2,-1) {$C_1$};
+	\node (c2) at (2,-1.8) {$C_2$};
+	\node (c3) at (2,-2.6) {$C_3$};
+	
+	\draw (x) to (c1);
+	\draw (x) to (c2);
+	\draw[dashed] (x) to (c3);
+	
+	\draw (y) to (c2);
+	
+	\draw[dashed] (z) to (c3);
+	\draw (w) to (c3);
+\end{tikzpicture}
