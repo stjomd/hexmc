@@ -1,2 +1,5 @@
 *.pdf
 .texpadtmp/
+
+.DS_Store
+
