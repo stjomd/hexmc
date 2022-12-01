@@ -9,8 +9,7 @@
 \usepackage{tikz}
 \usepackage{subcaption}
 \usepackage{float}
-
-%\usepackage[margin=2cm]{geometry}
+\usepackage[shortlabels]{enumitem}
 
 \tikzstyle{hyperedge} = [fill,opacity=.5,fill opacity=.5,line cap=round, line join=round, line width=0pt]
 
@@ -96,7 +95,7 @@ A CNF formula can be represented by a primal hypergraph, whose vertices are the 
 \noindent
 \textbf{Trigraphs.}
 A trigraph $G=(V,E,E')$ is a graph that distinguishes two classes of edges, $E$ and $E'$.
-Often such two classes are positive and negative edges, denoted $E_+$ and $E_-$, respectively, in which case the trigraph is called a {\em signed graph}.
+Often such two classes are positive and negative edges, denoted $E^+$ and $E^-$, respectively, in which case the trigraph is called a {\em signed graph}.
 A {\em signed trigraph} distinguishes, apart from positive and negative edges, also one more class of edges.
 With a CNF formula we associate a signed bipartite incidence graph, where the two classes of vertices are the formula's clauses and variables, and an edge connects a variable with the clause where it appears, with the appropriate sign (according to whether the variable occurs positively or negatively in the clause).
 
@@ -145,7 +144,7 @@ Consider a trigraph $G=(V,E,R)$ that distinguishes between black ($E$) and red (
 A trigraph whose subgraph induced by the red edges, that is $G[R]$, has maximum degree at most $d$, is called a {\em d-trigraph}.
 
 A {\em contraction} of a trigraph $G$ is a trigraph $G'=G/u,v$ that is a result of contracting two vertices $u,v \in V(G)$ into a single vertex $w$, where the edges of $w$ are determined according to the following:
-\begin{itemize}
+\begin{itemize}[--]
 	\item $wx \in E(G')$ iff $ux, vx \in E(G)$,
 	\item $wx \not\in E(G') \cup R(G')$ iff $ux, vx \not\in E(G)\cup R(G),$
 	\item $wx \in R(G')$ otherwise.
@@ -153,17 +152,20 @@ A {\em contraction} of a trigraph $G$ is a trigraph $G'=G/u,v$ that is a result 
 Intuitively, red edges represent ``errors'' that occur during a contraction.
 A contraction of a $d$-trigraph is called {\em d-contraction} if it is a $d$-trigraph itself.
 If there exists a sequence of $d$-contractions such that a graph is contracted into a single vertex, the graph is called {\em d-collapsible}.
-The {\em twin-width} $\textbf{tww}(G)$ of a trigraph $G$ is then the minimal $d$ for which it is $d$-collapsible.
+The {\em twin-width} $\textbf{tww}(G)$ of a trigraph $G$ is then the minimal $d$ for which it is $d$-collapsible. \\
 
-For bipartite trigraphs it is helpful to restrict contraction sequences to those where only vertices from the same partition are contracted.
-That is, for a bipartite trigraph $G$ with $V(G) = A \cup B$, $A \cap B = \emptyset$, there is no contraction of the form $G/a,b$ in the sequence, where $a\in A, b\in B$.
-Such sequences are called {\em bipartite contraction sequences}.
-Notice that no bipartite contraction sequence can end in a single-vertex graph and therefore $d$-collapsibility does not apply.
+% NOTE! signed twin-width. Commented out, if necessary, repeat this in the main part of the thesis.
+%
+%
+%For bipartite trigraphs it is helpful to restrict contraction sequences to those where only vertices from the same partition are contracted.
+%That is, for a bipartite trigraph $G$ with $V(G) = A \cup B$, $A \cap B = \emptyset$, there is no contraction of the form $G/a,b$ in the sequence, where $a\in A, b\in B$.
+%Such sequences are called {\em bipartite contraction sequences}.
+%Notice that no bipartite contraction sequence can end in a single-vertex graph and therefore $d$-collapsibility does not apply.
 
-We introduce another definition.
-Say a bipartite trigraph $G$ is {\em bipartitely $d$-collapsible} if there exists a sequence of bipartite $d$-contractions such that $G$ is collapsed into a graph with two vertices.
-Then, the {\em signed twin-width} $\textbf{stww}(G)$ of a bipartite trigraph $G$ is the minimal $d$ for which it is bipartitely $d$-collapsible.
-In other words, it is the minimal red degree of all bipartite contraction sequences of $G$.\\
+%We introduce another definition.
+%Say a bipartite trigraph $G$ is {\em bipartitely $d$-collapsible} if there exists a sequence of bipartite $d$-contractions such that $G$ is collapsed into a graph with two vertices.
+%Then, the {\em signed twin-width} $\textbf{stww}(G)$ of a bipartite trigraph $G$ is the minimal $d$ for which it is bipartitely $d$-collapsible.
+%In other words, it is the minimal red degree of all bipartite contraction sequences of $G$.\\
 
 \noindent
 \textbf{Clique-width} \cite{DBLP:journals/dam/FischerMR08}.
@@ -181,13 +183,14 @@ Consider the following set of operations on colored graphs:
 
 \noindent
 Notice that the disjoint union is used to introduce single-vertex graphs and avoid name conflicts between vertices.
+In particular, $G \oplus G \neq G$.
 As an example, consider how one can create cliques using two colors: beginning with two single-vertex graphs $A, B$ colored, say, red (1) and blue (2) respectively, a 2-clique can be obtained as $\mu_{1,2}(A \oplus B)$, a 3-clique as $\mu_{1,2}(\rho_{2,1}(\mu_{1,2}(A \oplus B)) \oplus B)$, and so on.
 
 {\em Clique-width} $\textbf{cw}(G)$ is defined as the minimal $k$ such that $G$ can be obtained from colored single-vertex graphs using the operations above.
 From the example above it is easy to see that cliques have clique-width at most 2.\\
 
 \noindent
-\textbf{Branch-width} \cite{DBLP:journals/jct/OumS06}.
+\textbf{Branch-width} \cite{DBLP:journals/jct/OumS06, DBLP:journals/jgt/Oum08}.
 Branch-width is defined via set functions.
 A set function $f$ maps a subset to a number, i.e. $f : 2^V \rightarrow \mathbb{Z}$, where $V$ is a finite set.
 If for all $X,Y \subseteq V$ it holds that $f(X)+f(Y) \geq f(X\cap Y) + f(X\cup Y)$, $f$ is called {\em submodular}.
@@ -199,7 +202,13 @@ If $\lambda$ is surjective, the branch decomposition is said to be {\em partial}
 For a (partial) branch decomposition $\mathcal{T} = (T,\lambda)$ of $f$ and some edge $e$, $T \setminus e$ is a forest that consists of two connected subtrees of $T$.
 Thus $e$ defines a partition $(X,Y)$ of the leaves of the branch decomposition.
 The width of the edge $e$ is defined as $f(\lambda^{-1}(X)) = f(\lambda^{-1}(Y))$, and the width of a branch decomposition as the maximum width of all edges of $T$.
-Then, the {\em branch width} $\mathbf{bw}(f)$ of a symmetric, submodular function $f$ is the minimum width over all its branch decompositions.\\
+Then, the {\em branch-width} of a symmetric, submodular function $f$ is the minimum width over all its branch decompositions.
+
+\textbf{[NOTE: check source \cite{DBLP:journals/jgt/Oum08}.]} 
+For graphs, branch-width is defined on the set of edges.
+For a subset $X \subseteq E(G)$ on a graph $G$, let mid$(X)$ be the set of vertices incident both with an edge in $X$ and an edge in $E(G) \setminus X$.
+Consider a symmetric, submodular function $\mu_G = |\text{mid}(X)|$.
+The {\em branch-width} $\mathbf{bw}(G)$ of a graph $G$ is defined as the branch-width of $\mu_G$. \\
 
 \noindent
 \textbf{Rank-width} \cite{DBLP:journals/fuin/GanianHO13}.
@@ -228,6 +237,22 @@ Let $F_v$ be then a formula induced by the clauses in cla$(F)\setminus \delta(v)
 {\em ps-value} ps$(\delta(v))$ of a cut $\delta(v)$ is defined as max$\{|\mathcal{PS}(F_v)|, |\mathcal{PS}(F_{\overline{v}})|\}$, and the {\em ps-width} of a branch decomposition $(T,\delta)$ as max$\{ \text{ps}(\delta(v)) \; | \; v \in V(T) \}$. 
 Then, the {\em ps-width} $\mathbf{psw}(F)$ of a formula $F$ is the minimal ps-width over all its branch decompositions.\\
 
+\noindent
+\textbf{MIM-width} \cite{DBLP:conf/sat/SaetherTV14}.
+We once again define {\em branch decompositions}, this time for graphs in general.
+A branch decomposition of a graph $G$ is a pair $(T, \delta)$ where $T$ is a rooted binary tree, and $\delta$ a bijection between the leaves of $T$ and $V(G).$
+For internal nodes of $T$, $\delta$ is defined in a similar fashion as in branch decompositions of formulas.
+A node $n$ analogously defines a cut of the graph, and partitions it, in accordance with $\delta(n)$, into two parts, denoted $(V_n, \overline{V_n})$.
+
+For a graph $G$ and a subset of vertices $E \subseteq E(G)$, a {\em bigraph bipartization} is a bipartite graph $G[E, \overline{E}]$ that is a subgraph of $G$ and that only contains edges with endpoints in both $E$ and $\overline{E} = E(G) \setminus E$.
+
+Consider $G[V_n, \overline{V_n}]$.
+An independent set that is also an induced subgraph is called an {\em induced matching}.
+We define {\em MIM-value} of a cut $(V_n, \overline{V_n})$ to be the size of the maximum induced matching of $G[V_n, \overline{V_n}]$.
+The {\em MIM-width} of a branch decomposition is the maximum MIM-value over all cuts defined by every node.
+Then, the {\em MIM-width} $\mathbf{mimw}(G)$ of a graph $G$ is the minimum MIM-width over all branch decompositions of $G$.\\
+
+
 \begin{table}
 	\centering
 	\begin{tabular}{r | l}
@@ -243,8 +268,8 @@ Then, the {\em ps-width} $\mathbf{psw}(F)$ of a formula $F$ is the minimal ps-wi
 		signed incidence clique-width & FPT \cite{DBLP:journals/dam/FischerMR08} \\
 		incidence clique-width & XP \cite{DBLP:conf/isaac/SlivovskyS13} \\
 		\hline
-		signed incidence rank-width & FPT \cite{DBLP:journals/fuin/GanianHO13} \\
 		signed incidence twin-width plus $k$ & FPT \cite{DBLP:conf/sat/GanianPSSS22} \\
+		signed incidence rank-width & FPT \cite{DBLP:journals/fuin/GanianHO13} \\
 		ps-width & FPT \cite{DBLP:conf/sat/SaetherTV14}
 	\end{tabular}
 	\caption{Complexity results for width parameters on \#SAT instances}
@@ -262,7 +287,59 @@ We also usually mention which representation is used for determining the width p
 Many efficient \#SAT algorithms have been developed for specific classes of formulas with bounded width parameters.
 For an overview, refer to Table \ref{table:complexity}.
 
-\subsection{Hierarchy of Width Parameters}
+\subsection{Hierarchy}
+
+Before proceeding to algorithms for \#SAT, we provide a review of the relationships between the width parameters.
+Recall that $\mathbf{tw}$, $\mathbf{tww}$, $\mathbf{cw}$, $\mathbf{bw}$, $\mathbf{rw}$, $\mathbf{psw}$, $\mathbf{mimw}$ denote treewidth, twin-width, clique-width, branch-width, rank-width, ps-width, and MIM-width, respectively.
+The following results have been established:
+\begin{itemize}[--]
+	\item $\mathbf{tww}(G) \leq 2\cdot \mathbf{cw}(G)$ \cite{DBLP:conf/sat/GanianPSSS22}
+	\item $\mathbf{cw}(G) \leq 2^{\mathbf{tw}(G)+1}+1$ \cite{DBLP:journals/dam/FischerMR08}
+	\item $\mathbf{rw}(G) \leq \mathbf{cw}(G) \leq 2^{\mathbf{rw}(G)+1}-1$ \cite{DBLP:journals/fuin/GanianHO13}
+	\item $\mathbf{cw}(G) \leq 2^{\mathbf{rw}(G)/2-1}$ \cite{DBLP:journals/fuin/GanianHO13}
+	\item $\mathbf{rw}(G) \leq \mathbf{bw}(G) \leq \mathbf{tw}(G)+1$ \cite{DBLP:journals/fuin/GanianHO13, DBLP:journals/jgt/Oum08}
+	\item $\mathbf{mimw}(G) \leq \mathbf{cw}(G)$ \cite{DBLP:conf/sat/SaetherTV14}
+	\item $\mathbf{psw}(F) \leq m^{\textbf{mimw}(G_F)}$, for a CNF formula $F$ with $m$ clauses and with incidence graph $G_F$ \cite{DBLP:conf/sat/SaetherTV14}.
+\end{itemize}
+
+\noindent
+Let \textbf{a}$(G$) and \textbf{b}$(G)$ be two width parameters.
+If there exists a computable function $f$ such that $\mathbf{a}(G) \leq f(\mathbf{b}(G))$ for all $G$, parameter \textbf{a} is said to {\em dominate} parameter \textbf{b} \cite{DBLP:conf/sat/GanianS17}.
+Otherwise the two parameters are said to be {\em incomparable}.
+With the results above, we establish the domination hierarchy in Fig. \ref{fig:hierarchy}.
+
+\begin{figure}
+	\centering
+	\include{graphics/hierarchy}
+	\caption{Domination hierarchy of width parameters. Edges should be read as ``dominates''.}
+	\label{fig:hierarchy}
+\end{figure}
+
+
+% NOTES ON COMPARISONS:
+\iffalse
+- Signed clique-width and consensus treewidth are incomparable \cite{DBLP:conf/sat/GanianS17}.
+
+- For any formula $F$ with clauses of width at most $d$ and without pure literals, it holds that \textbf{itw}$(F) \leq (d + 1) \cdot (\textbf{conflict-tw}(F) + 1)$ \cite{DBLP:conf/sat/GanianS17}.\\
+
+- Bounded twin-width. ... most notably, it is upper-bounded on graphs of bounded clique-width \cite{DBLP:conf/sat/GanianPSSS22}.
+
+- Let a graph $G$ have a clique-width of $d$. Then $G$ has a twin-width of at most $2d$. Moreover, if $G$ is a signed graph with a signed clique-width of $d$, the signed twin-width of $G$ is at most $2d$ \cite{DBLP:conf/sat/GanianPSSS22}.\\
+
+- Bounded treewidth implies bounded clique-width. Treewidth $k$ to clique-width at most $2^{k+1}+1$ \cite{DBLP:journals/dam/FischerMR08}.\\
+
+- if clique-width is bounded, then rank-width is bounded, and vice versa \cite{DBLP:journals/jct/OumS06}.\\
+
+- For any CNF formula $F$ over $m$ clauses, the ps-width of $F$ is no larger than $m^{\textbf{mimw}(I(F))}$ (incidence graph) \cite{DBLP:conf/sat/SaetherTV14}.
+
+- MIM-width of any graph $G$ is at most the clique-width of $G$ \cite{DBLP:conf/sat/SaetherTV14}.\\
+
+- rw(G) $\leq$ cw(G) $\leq$ $2^{rw(G)+1}-1$. \cite{DBLP:journals/fuin/GanianHO13}.
+
+- cw(G) $\leq$ $2^{rw(G)/2-1}$. \cite{DBLP:journals/fuin/GanianHO13}.
+
+- rw(G) $\leq$ bw(G) $\leq$ tw(G)+1. \cite{DBLP:journals/fuin/GanianHO13, DBLP:journals/jgt/Oum08}.
+\fi
 
 
 % ---------- Bibliography
