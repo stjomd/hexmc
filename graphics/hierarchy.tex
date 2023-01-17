@@ -1,11 +1,12 @@
 \begin{tikzpicture}[nodes=rectangle, nodes=draw, font=\footnotesize, minimum width=40pt, minimum height=20pt, rounded corners=6pt]
-	\node (cw) at (0, 0) {\textbf{cw}};
-	\node (tw) at (3, 0) {\textbf{tw}};
-	\node (tww) at (-3, 0) {\textbf{tww}};
-	\node (rw) at (0, -1.5) {\textbf{rw}};
-	\node (bw) at (3, -1.5) {\textbf{bw}};
+	\node (cw) at (0, 0) {\strut \textbf{cw}};
+	\node (tw) at (3, 0) {\strut \textbf{tw}};
+	\node (tww) at (-3, 0) {\strut \textbf{tww}};
+	\node (rw) at (0, -1.5) {\strut \textbf{rw}};
+	\node (bw) at (3, -1.5) {\strut \textbf{bw}};
 	\node (mimw) at (0, 1.5) {\strut \textbf{mimw}};
 	\node (psw) at (-3, 1.5) {\strut \textbf{psw}}; % strut aligns by baseline
+	\node (htw) at (-3, -1.5) {\strut \textbf{htw}};
 	
 	\draw[-stealth] (psw) to (mimw);
 	\draw[-stealth] (mimw) to (cw);
@@ -13,6 +14,7 @@
 	\draw[-stealth] (cw) to (tw);
 	\draw[-stealth] (rw) to (bw);
 	\draw[-stealth] (bw) to (tw);
+	\draw[-stealth] (htw) to (cw);
 	
 	\draw[-stealth, bend right] (cw) to (rw);
 	\draw[-stealth, bend right] (rw) to (cw);
