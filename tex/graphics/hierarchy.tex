@@ -13,9 +13,11 @@
 	\draw[-stealth] (tww) to (cw);
 	\draw[-stealth] (cw) to (tw);
 	\draw[-stealth] (rw) to (bw);
-	\draw[-stealth] (bw) to (tw);
 	\draw[-stealth] (htw) to (cw);
 	
 	\draw[-stealth, bend right] (cw) to (rw);
 	\draw[-stealth, bend right] (rw) to (cw);
+	
+	\draw[-stealth, bend right] (bw) to (tw);
+	\draw[-stealth, bend right] (tw) to (bw);
 \end{tikzpicture}

@@ -1,0 +1,119 @@
+We first introduce some notions from graph theory which will be useful in this thesis.
+We will use these notions to represent propositional formulas, and then perform transformations on them to obtain the desired width parameters.
+For examples, see Fig. \ref{fig:graphs}.\\
+
+\begin{figure}
+	\centering
+	\begin{subfigure}[b]{0.22\textwidth}
+		\include{tex/graphics/consensus-graph}
+		\caption{}
+		\label{fig:consensus}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.38\textwidth}
+		\include{tex/graphics/hypergraph}
+		\caption{}
+		\label{fig:hypergraph}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.3\textwidth}
+		\include{tex/graphics/trigraph}
+		\caption{}
+		\label{fig:trigraph}
+	\end{subfigure}
+	\caption{
+		Some graphical representations of the formula $C_1 \land C_2 \land C_3$ with $C_1 = \{x\}$, $C_2 = \{x,y\}$ and $C_3=\{\neg x, \neg z, w\}$.
+		Here, (a) is the consensus graph, (b) the primal hypergraph, and (c) the signed incidence graph (negative edges are dashed).
+		Notice how in (a), $C_3$ does not have any edges, as its literal $\neg x$ appears negated in all other clauses.
+	}
+	\label{fig:graphs}
+\end{figure}
+
+\noindent
+\textbf{Graphs}.
+A graph is a pair $G = (V,E)$ with a vertex set $V$ and an edge set $E$.
+An edge $e=uv$ connects the vertex $u$ to $v$.
+A graph is called {\em bipartite} if the vertices can be partitioned into two disjoint sets, and every edge has endpoints in both sets.
+There are several commonly known graphs one can define for CNF formulas, such as {\em primal, dual} and {\em incidence graphs}.
+In a primal graph, variables of the formula are the graph's vertices, and two vertices are connected by an edge iff both corresponding variables appear together in a clause.
+A dual graph's vertices are its clauses, and two vertices are adjacent iff their corresponding clauses share a variable.
+An incidence graph is a bipartite graph with variables and clauses both being vertices, and a variable is connected with a clause by an edge iff the variable appears in the clause.
+A more recently studied graph is the {\em consensus graph}, where the vertices are the clauses of the formula, and two vertices are connected by an edge iff the clauses do not clash, that is, there exists no literal in one of the clauses that appears negated in the other clause.\\
+
+\noindent
+\textbf{Hypergraphs}.
+A hypergraph $H=(V,E)$ with vertex set $V$ and (hyper)edge set $E$ is a generalized notion of graphs, where edges may connect not only two, but any amount of vertices.
+As such, an edge is a set of vertices it connects.
+A CNF formula can be represented by a primal hypergraph, whose vertices are the formula's variables, and hyperedges are the clauses, i.e. hyperedges connect the variables that appear in the clause.\\
+
+\noindent
+\textbf{Trigraphs.}
+A trigraph $G=(V,E,E')$ is a graph that distinguishes two classes of edges, $E$ and $E'$.
+Often such two classes are positive and negative edges, denoted $E^+$ and $E^-$, respectively, in which case the trigraph is called a {\em signed graph}.
+A {\em signed trigraph} distinguishes, apart from positive and negative edges, also one more class of edges.
+With a CNF formula we associate a signed bipartite incidence graph, where the two classes of vertices are the formula's clauses and variables, and an edge connects a variable with the clause where it appears, with the appropriate sign (according to whether the variable occurs positively or negatively in the clause).
+
+\subsection{Width Parameters}
+\input{tex/preliminaries-params}
+
+\begin{table}
+	\centering
+	\begin{tabular}{r | c | l}
+		\textbf{structural restriction} & \textbf{class} & \textbf{runtime} \\
+		\hline
+		primal treewidth \cite{DBLP:journals/jda/SamerS10} & FPT  & $\mathcal{O}(2^k(kd+\delta)N)$ \\
+		dual treewidth \cite{DBLP:journals/jda/SamerS10} & FPT & $\mathcal{O}(2^k(kl+\delta)N)$ \\
+		incidence treewidth \cite{DBLP:journals/jda/SamerS10} & FPT & $\mathcal{O}(2^k(kl+2^k(k+\delta))N)$ \\
+		consensus treewidth \cite{DBLP:conf/sat/GanianS17} & FPT  & $2^{\mathcal{O}(k)}\mathcal{O}(L(L+\delta))$ \\
+		\hline
+		$\alpha$-acyclic hypergraph \cite{DBLP:conf/sat/CapelliDM14} & \#P  & -- \\
+		disjoint branches \cite{DBLP:conf/sat/CapelliDM14} & FP & $\mathcal{O}(kr)$ \\
+		\hline
+		signed incidence clique-width \cite{DBLP:journals/dam/FischerMR08} & FPT & $2^{\mathcal{O}(\text{poly}(k))} \mathcal{O}(|T_{\text{parse}}|)$ \\
+		incidence clique-width \cite{DBLP:conf/isaac/SlivovskyS13} & XP & $\mathcal{O}(m^{6k} l)$ \\
+		\hline
+		signed incidence twin-width + $k$ \cite{DBLP:conf/sat/GanianPSSS22} & FPT & $d^{\mathcal{O}(kd^2)}\mathcal{O}(n^4)$ \\
+		signed incidence rank-width \cite{DBLP:journals/fuin/GanianHO13} & FPT & $\mathcal{O}(2^{3k(k+1)/2}\cdot k^3 n)$ \\
+		ps-width \cite{DBLP:conf/sat/SaetherTV14} & FP & $\mathcal{O}(k^3s(m+n))$
+	\end{tabular}
+	\caption{Complexity results for width parameters on \#SAT instances}
+	\label{table:complexity}
+\end{table}
+
+\noindent
+\textbf{Width parameters for propositional formulas}.
+It's possible to introduce structural restrictions on formulas by restricting their graphical representations using the width parameters.
+Usually, we are interested in such classes of formulas where the graphical representation is of some bounded width.
+
+For some propositional formula we say that it is of width $k$ if some its graphical representation has width $k$.
+We also usually mention which representation is used for determining the width parameter. As such, we refer to {\em primal treewidth}, {\em signed incidence clique-width}, and so on.
+
+Many efficient \#SAT algorithms have been developed for specific classes of formulas with bounded width parameters.
+For an overview, refer to Table \ref{table:complexity}.
+
+\subsection{Hierarchy}
+
+Before proceeding to algorithms for \#SAT, we provide a review of the relationships between the width parameters.
+Recall that $\mathbf{tw}$, $\mathbf{tww}$, $\mathbf{cw}$, $\mathbf{bw}$, $\mathbf{rw}$, $\mathbf{psw}$, $\mathbf{mimw}$, $\mathbf{htw}$ denote treewidth, twin-width, clique-width, branch-width, rank-width, ps-width, MIM-width, and hypertree-width, respectively.
+The following results have been established:
+\begin{itemize}[--]
+	\item $\mathbf{tww}(G) \leq 2\cdot \mathbf{cw}(G)$ \cite{DBLP:conf/sat/GanianPSSS22},
+	\item $\mathbf{cw}(G) \leq 2^{\mathbf{tw}(G)+1}+1$ \cite{DBLP:journals/dam/FischerMR08},
+	\item $\mathbf{rw}(G) \leq \mathbf{cw}(G) \leq 2^{\mathbf{rw}(G)+1}-1$ \cite{DBLP:journals/fuin/GanianHO13},
+	\item $\mathbf{bw}(G) \leq \mathbf{tw}(G) + 1 \leq \lfloor \frac{3}{2} \, \mathbf{bw}(G) \rfloor$ \cite{DBLP:journals/jct/RobertsonS91},
+	\item $\mathbf{rw}(G) \leq \mathbf{bw}(G)$ \cite{DBLP:journals/fuin/GanianHO13},
+	\item $\mathbf{mimw}(G) \leq \mathbf{cw}(G)$ \cite{DBLP:conf/sat/SaetherTV14},
+	\item $\mathbf{psw}(F) \leq m^{\textbf{mimw}(G_F)}$, for a CNF formula $F$ with $m$ clauses and with incidence graph $G_F$ \cite{DBLP:conf/sat/SaetherTV14},
+	\item $\mathbf{htw}(H) \leq \mathbf{cw}(G_H)$, for a hypergraph $H$ with incidence graph $G_H$ \cite{DBLP:journals/siamcomp/GottlobP04}.
+\end{itemize}
+
+\noindent
+Let \textbf{a} and \textbf{b} be two width parameters.
+If there exist computable functions $f,g$ such that $\mathbf{a}(G) \leq f(\mathbf{b}(g(G)))$ for all $G$, parameter \textbf{a} is said to {\em dominate} parameter \textbf{b}å.
+Otherwise the two parameters are said to be {\em incomparable}.
+With the results above, we establish the domination hierarchy in Fig. \ref{fig:hierarchy}.
+
+\begin{figure}
+	\centering
+	\include{tex/graphics/hierarchy}
+	\caption{Domination hierarchy of width parameters. Edges should be read as ``dominates''.}
+	\label{fig:hierarchy}
+\end{figure}

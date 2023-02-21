@@ -1,0 +1,139 @@
+In this section, we review classes of graphs of bounded width.
+In particular, we are interested in such cases where the width parameters are exponentially smaller than theoretically possible, as this would allow to solve \#SAT even more efficiently.
+
+% trees
+\textbf{Trees.}
+Recall that a tree is a connected graph without cycles.
+We begin with a fairly obvious observation:
+
+\begin{fact}
+	%\textbf{Fact 1.}
+	If $G$ is a tree, then \textbf{tw}$(G) = 1$. 
+	\label{gw:tree}
+\end{fact}
+
+\noindent
+This is due to the fact that any tree can be decomposed into bags of size 2.
+{\color{lightgray} As there are many ways to construct a graph representation of a CNF formula, we will quickly glance over what effects the restriction of being a tree would have for the corresponding formulas.
+
+Recall that in primal graphs, the vertices are the variables, and the edges connect variables that appear together in a clause.
+In a primal tree, each clause of the corresponding formula can be mapped to an edge in the tree.
+As such, each clause contains exactly two variables.
+Sibling variables (variables corresponding to sibling nodes) never appear together in a clause.
+
+Dual trees correspond to formulas whose clauses are of unbounded size, and two clauses can share any amount of variables. However, for any three clauses it holds $C_1 \cap C_2 \cap C_3 = \emptyset$, as otherwise there would be a cycle.
+
+An incidence graph that is also a tree has the following property: any two vertices at the same depth are either all variables or all clauses, where depth is the distance from some designated root node.
+Every clause has exactly $n+1$ variables, where $n$ is the amount of the corresponding node's children.}
+
+% series-parallel
+\textbf{Series-parallel graphs.}
+Another useful class of graphs of constant treewidth are {\em series-parallel graphs}. The following definitions are inspired by \cite{DBLP:journals/corr/abs-2004-00547}.
+
+A {\em 2-terminal graph} $(G, s, t)$ is a graph $G$ with two designated nodes $s, t$, often called {\em terminals}.
+Two 2-terminal graphs $(G_1, s_1, t_1)$, $(G_2, s_2, t_2)$ can be composed as follows:
+series-composition results in a 2-terminal graph $(G, s_1, t_2)$, by a disjoint union of the two graphs and then contracting $t_1, s_2$ into one vertex;
+and parallel-composition yields a 2-terminal graph $(G, s, t)$, by a disjoint union of the two graphs and then contracting $s_1, s_2$ and $t_1, t_2$ into one vertex each, named $s$ and $t$ respectively.
+
+A 2-terminal graph $(G, s, t)$ is {\em series-parallel} if it is either a two-vertex graph with a single edge,
+or it results from a sequence of series- or parallel-compositions of two 2-terminal graphs.
+A series-parallel graph is a graph $G$ such that there exist terminals $s, t$ where $(G, s, t)$ is a series-parallel 2-terminal graph.
+
+The following result applies:
+
+\begin{fact}[\cite{DBLP:journals/corr/abs-2004-00547}]
+	%\textbf{Fact 2}
+	If $G$ is a series-parallel graph, then \textbf{tw}$(G) = 2$. 
+\end{fact}
+
+\noindent
+We consider graphs of formulas that are isomorphic to series-parallel graphs, i.e. there exists a bijection $\iota : V(G_F) \rightarrow V(G_{\text{sp}})$, where $G_F$ is some graph representation of the formula, and $G_{\text{sp}}$ is a series-parallel graph.
+
+% cliques
+\textbf{Complete graphs.}
+A complete graph has the property that for any vertex $v$, there exists an edge to every other vertex $u$ in the graph.
+A complete graph with $n$ vertices is denoted $K_n$ and is also often called an $n$-clique.
+The following holds:
+\begin{fact}[\cite{DBLP:conf/focs/Bonnet0TW20, DBLP:journals/dam/FischerMR08}]
+	%\textbf{Fact 3} \cite{DBLP:conf/focs/Bonnet0TW20, DBLP:journals/dam/FischerMR08}.
+	If $G$ is an $n$-clique, then $\mathbf{tw}(G) = n - 1$, $\mathbf{tww}(G) = 0$, and $\mathbf{cw}(G) = 2$.
+\end{fact}
+
+\noindent
+The result for treewidth is obvious, since decomposition is only possible into one bag of size $n$.
+
+{\color{lightgray} Primal cliques represent formulas that consist of one clause, and the formula contains $n$ variables if its primal graph is an $n$-clique.
+If the dual graph is a clique, it represents the fact that there is a non-empty set of variables that appears in every clause.
+For incidence graphs this case is not of much interest, as any $n$-clique for $n > 2$ has a cycle of odd length, which rules out the clique being bipartite; a 2-clique represents a simple formula of one clause containing one variable.}
+
+% grids
+\textbf{Path and grid graphs.}
+A {\em $d$-dimensional $n$-grid} is a graph $G$ with $V(G) = \{1, 2, ..., n\}^d$, such that two vertices $(x_1, x_2, ..., x_d)$ and $(y_1, y_2, ..., y_d)$ are connected by an edge if and only if $\sum_{i=1}^d |x_i - y_i| = 1$ \cite{DBLP:conf/focs/Bonnet0TW20}.
+Common are 1-dimensional grids (known as path graphs or linear graphs) as well as 2-dimensional grids (usual planar grid graphs).
+
+The following holds for path graphs:
+\begin{fact}[\cite{DBLP:conf/focs/Bonnet0TW20}]
+	%\textbf{Fact 4} \cite{DBLP:conf/focs/Bonnet0TW20}.
+	If $G$ is a path with $n$ vertices, then $\mathbf{tw}(G)=1$, and $\mathbf{tww}(G) = 3$.
+\end{fact}
+
+\noindent
+{\color{lightgray} A primal path represents a formula where every clause has exactly two variables, and there are as many clauses as there are edges in the path.
+Any variable appears in the formula exactly two times in different clauses.
+A formula represented by a dual path contains clauses that share a set of variables with the adjacent clauses, and for any three clauses it holds that $C_1 \cap C_2 \cap C_3 = \emptyset$.
+An incidence path's vertices alternate between variables and clauses, and the represented class of formulas is the same as in primal paths case.
+It is easy to see that a primal path can be transformed into an incidence path by inserting clause vertices, and an incidence path into a primal path by removing said clause vertices.}
+
+Since a path graph is a tree, its treewidth is 1 due to Fact \ref{gw:tree}.
+The following result is for 2-dimensional grids:
+\begin{fact}[\cite{DBLP:conf/focs/Bonnet0TW20, PhD:Vatshelle}]
+	%\textbf{Fact 5} \cite{DBLP:conf/focs/Bonnet0TW20, PhD:Vatshelle}.
+	If $G$ is an $n \times n$ grid, then $\mathbf{tw}(G) = n$, $\mathbf{tww}(G) = 6$, $\mathbf{cw}(G) = n + 1$, $\mathbf{rw}(G) = n - 1$, and $ \frac{1}{3}n \leq \mathbf{mimw}(G) \leq \frac{1}{2} (n+1)$.
+\end{fact}
+
+\noindent
+{\color{lightgray} Primal and dual grids tend to represent formulas with many clauses due to their density.
+Incidence graphs can also happen to be grids, if the variables and clauses are arranged in a checkerboard pattern.}
+
+% interval graphs
+\textbf{Interval graphs.}
+An {\em interval graph} is a graph whose intersection model is that of intervals in $\mathbb{R}$ \cite{DBLP:conf/sat/SaetherTV14}.
+That is, for some set of intervals in reals, the graph's vertices represent these intervals, and two vertices are connected by an edge if the corresponding intervals intersect.
+
+\begin{fact}[\cite{PhD:Vatshelle}]
+	%\textbf{Fact 6} \cite{PhD:Vatshelle}.
+	If $G$ is an interval graph with $n$ vertices, then $\mathbf{tw}(G) = n - 1$, $\mathbf{mimw}(G) = 1$, and $\mathbf{cw}(G)$ and $\mathbf{rw}(G)$ are both in $\Theta(\sqrt{n})$.
+\end{fact}
+
+\noindent
+An {\em interval ordering} of a CNF formula is a linear ordering $\leq $ on variables and clauses of the formula, such that for any variable $x$ and clause $C$: if $x \in C$, then for all variables $y$ s.t. $x \leq y \leq C$ it follows that $y \in C$; and if $C \leq x$, then for all clauses $S$ s.t. $C \leq S \leq x$ it follows that $x \in S$ \cite{DBLP:conf/sat/SaetherTV14}.
+A CNF formula has an interval ordering iff its incidence graph is an interval graph \cite{DBLP:conf/sat/SaetherTV14}.
+
+\begin{fact}[\cite{DBLP:conf/sat/SaetherTV14}]
+	%\textbf{Fact 7} \cite{DBLP:conf/sat/SaetherTV14}.
+	Let $F$ be a CNF formula with $m$ clauses and incidence graph $G_F$.
+	If $G_F$ is an interval graph, then $\mathbf{psw}(F) \leq m$.
+	\label{fact:psw-interval}
+\end{fact}
+
+\noindent
+As an example, the formula $F=\{ \{x_1, x_2\}, \{\neg x_2, x_3\} \}$ has an interval ordering $x_1 \leq x_2 \leq C_1 \leq C_2 \leq x_3$, and its incidence graph is an interval graph.
+
+% d-degenerate
+\textbf{{\em d}-degenerate graphs.}
+A graph is said to be {\em $d$-degenerate} if there exists a linear ordering $\leq$ of vertices such that for any vertex $v$, the amount of neighbors $u$ s.t. $v \leq u$ is at most $d$ \cite{PhD:Vatshelle}.
+
+\begin{fact}[\cite{PhD:Vatshelle}]
+	%\textbf{Fact 8} \cite{PhD:Vatshelle}.
+	If $G$ is a $d$-degenerate graph with $n$ vertices, then $\mathbf{tw}(G) \leq n - \alpha$, $\mathbf{cw}(G) \leq \frac{2n}{3} - 2\beta - 1$, $\mathbf{rw}(G) \leq \frac{n}{3} - \beta$ and $\mathbf{mimw}(G) \leq \frac{n}{3} - \beta$, where $\alpha = \frac{n}{d + 3} - 2$ and $\beta = \frac{n}{9d+3} - 1$.
+\end{fact}
+
+\textbf{Lower bound on complete bipartite graphs.}
+A complete bipartite graph $K_{m,n}$ is a bipartite graph with two sets of vertices $U, V$ with $|U|=m, |V|=n$, such that every vertex from $U$ is connected by an edge to every vertex from $V$ (and vice versa).
+%$K_{m,n}$ is $\min \{m,n\}$-degenerate and has treewidth $\mathbf{tw}(G) \geq \min \{m,n\}$.
+
+\begin{fact}[folklore]
+		It holds that $\mathbf{tw}(K_{m,n}) \geq \min \{m,n\}$, $\mathbf{cw}(K_{m,n})=2$.
+\end{fact}
+
+

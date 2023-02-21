@@ -1,0 +1,166 @@
+We now proceed with an introduction of many parameters used to describe the structure of graphs, the so-called {\em width parameters}. \\
+
+\noindent
+\textbf{Treewidth} \cite{DBLP:conf/sat/GanianS17}.
+For a simple, undirected, finite graph $G = (V,E)$ we define a {\em tree decomposition} to be a pair $(T, B)$, where $T$ is a tree, $B$ a set of {\em bags}, and the vertices of $T$ are the bags.
+Each bag is a set of the graph's vertices.
+Moreover, a tree decomposition has to fulfil the following two conditions:
+\begin{enumerate}
+	\item for any edge $uv\in E$ there exists some bag $B' \in B$ such that $\{u,v\} \subseteq B'$, and
+	\item for any vertex $v\in V$, $T[\{ b \in B \; | \; v \in b \}]$ is a connected tree with at least one node.
+\end{enumerate}
+Informally speaking, tree decompositions are a structured way to ``break down'' a graph into its parts.
+We define the {\em width} of a tree decomposition to be its maximum bag size minus one, and the {\em treewidth} of $G$, $\textbf{tw}(G)$, to be the minimum width over all its tree decompositions.\\
+
+\noindent 
+\textbf{Disjoint branches} \cite{DBLP:conf/sat/CapelliDM14}.
+A join tree of a hypergraph $H=(V,E)$ is a pair $(\mathcal{T}, \lambda)$, where $\mathcal{T}=(N,T)$ is a tree with node set $N$ and edge set $T$, and $\lambda : N \rightarrow E$ is a bijection from tree's nodes to hypergraph's edges, which fulfils the following:
+\begin{enumerate}
+	\item for every $e\in E$, there exists a $t\in N$ such that $\lambda(t)=e$, and
+	\item for every $v\in V$, $\mathcal{T}[\{ n \in N \; | \; v \in \lambda(n) \}]$ is a connected subtree of $\mathcal{T}$.
+\end{enumerate}
+Notice how the definition is similar to that of tree decompositions.
+A join tree where for every two nodes $n, n'$ on different branches, $\lambda(n) \cap \lambda(n') = \emptyset$, is called a {\em disjoint branches decomposition}. 
+Such decompositions represent a way to ``break down'' a hypergraph into disjoint parts (recall that $\lambda(n)$ is a hypergraph's edge).
+
+We now consider acyclicity of hypergraphs.
+In contrast to graphs, there is not just one single but several notions of acyclicity for hypergraphs, such as $\alpha$- (most general), $\beta$- and $\gamma$-acyclicity (least general), all of which can be defined using join trees.
+
+A hypergraph is said to be $\alpha$-acyclic if it has a join tree.
+One shortcoming of this definition is that a subhypergraph of an $\alpha$-acyclic hypergraph is not necessarily $\alpha$-acyclic itself.
+Thus, a more restrictive notion of $\beta$-acyclicity was introduced, which requires that a hypergraph and all its subhypergraphs be $\alpha$-acyclic.
+Admitting a disjoint branches decomposition is itself another notion of hypergraph acyclicity, which lies strictly between $\beta$- and $\gamma$-acyclicity.
+As such, having a disjoint branches decomposition implies $\beta$- and $\alpha$-acyclicity.
+Finally, a hypergraph is $\gamma$-acyclic if it admits a disjoint branches decomposition for any choice of hyperedge as the root.
+
+Using the four introduced notions of acyclicity, we define the respective classes of hypergraphs, i.e. $\alpha$-, $\beta$-, $\gamma$-acyclic hypergraphs, as well as hypergraphs that admit a disjoint branches decomposition. \\
+
+\noindent
+\textbf{Twin-width} \cite{DBLP:conf/sat/GanianPSSS22}.
+Consider a trigraph $G=(V,E,R)$ that distinguishes between black ($E$) and red ($R$) edges.
+A trigraph whose subgraph induced by the red edges, that is $G[R]$, has maximum degree at most $d$, is called a {\em d-trigraph}.
+
+A {\em contraction} of a trigraph $G$ is a trigraph $G'=G/u,v$ that is a result of contracting two vertices $u,v \in V(G)$ into a single vertex $w$, where the edges of $w$ are determined according to the following:
+\begin{itemize}[--]
+	\item $wx \in E(G')$ iff $ux, vx \in E(G)$,
+	\item $wx \not\in E(G') \cup R(G')$ iff $ux, vx \not\in E(G)\cup R(G),$
+	\item $wx \in R(G')$ otherwise.
+\end{itemize}
+Intuitively, red edges represent ``errors'' that occur during a contraction.
+A contraction of a $d$-trigraph is called {\em d-contraction} if it is a $d$-trigraph itself.
+If there exists a sequence of $d$-contractions such that a graph is contracted into a single vertex, the graph is called {\em d-collapsible}.
+The {\em twin-width} $\textbf{tww}(G)$ of a trigraph $G$ is then the minimal $d$ for which it is $d$-collapsible. \\
+
+% NOTE! signed twin-width. Commented out, if necessary, repeat this in the main part of the thesis.
+%
+%
+%For bipartite trigraphs it is helpful to restrict contraction sequences to those where only vertices from the same partition are contracted.
+%That is, for a bipartite trigraph $G$ with $V(G) = A \cup B$, $A \cap B = \emptyset$, there is no contraction of the form $G/a,b$ in the sequence, where $a\in A, b\in B$.
+%Such sequences are called {\em bipartite contraction sequences}.
+%Notice that no bipartite contraction sequence can end in a single-vertex graph and therefore $d$-collapsibility does not apply.
+
+%We introduce another definition.
+%Say a bipartite trigraph $G$ is {\em bipartitely $d$-collapsible} if there exists a sequence of bipartite $d$-contractions such that $G$ is collapsed into a graph with two vertices.
+%Then, the {\em signed twin-width} $\textbf{stww}(G)$ of a bipartite trigraph $G$ is the minimal $d$ for which it is bipartitely $d$-collapsible.
+%In other words, it is the minimal red degree of all bipartite contraction sequences of $G$.\\
+
+\noindent
+\textbf{Clique-width} \cite{DBLP:journals/dam/FischerMR08}.
+Colored graphs are graphs with vertices annotated by an integer (color) in $\{1,...,k\}$.
+Consider the following set of operations on colored graphs:
+\begin{enumerate}
+	\item Disjoint union $\oplus$, where $V(A \oplus B)=\{ (v,\, \lambda(v)) \; | \; v \in V(A) \text{ or } v\in V(B) \}$, and $\lambda(v)=$ ``$A$'' if $v\in A$, and $\lambda(v)=$ ``$B$'' if $v\in B$,
+	\item Recoloring $\rho_{i,j}(I)$, resulting in a graph where vertices colored $i$ are re-colored $j$,
+	\item Edge creation:
+	\begin{enumerate}
+		\item for unsigned graphs, $\mu_{i,j}(I)$ results in a graph where all vertices colored $i$ are adjacent to all vertices colored $j$,
+		\item for signed graphs, $\mu_{i,j}^+(I)$ or $\mu_{i,j}^-(I)$ result in a graph where all vertices colored $i$ are connected to all vertices colored $j$ by a positive or negative edge, respectively. In case of bipartite graphs, vertices from different vertex partitions are not connected.
+	\end{enumerate}
+\end{enumerate}
+
+\noindent
+Notice that the disjoint union is used to introduce single-vertex graphs and avoid name conflicts between vertices.
+In particular, $G \oplus G \neq G$.
+As an example, consider how one can create cliques using two colors: beginning with two single-vertex graphs $A, B$ colored, say, red (1) and blue (2) respectively, a 2-clique can be obtained as $\mu_{1,2}(A \oplus B)$, a 3-clique as $\mu_{1,2}(\rho_{2,1}(\mu_{1,2}(A \oplus B)) \oplus B)$, and so on.
+
+{\em Clique-width} $\textbf{cw}(G)$ is defined as the minimal $k$ such that $G$ can be obtained from colored single-vertex graphs using the operations above.
+From the example above it is easy to see that cliques have clique-width at most 2.\\
+
+\noindent
+\textbf{Branch-width} \cite{DBLP:journals/tocl/LodhaOS19, DBLP:conf/sat/SaetherTV14}.
+A branch decomposition of a hypergraph $H$ is a pair $(T, \gamma)$ where $T$ is a binary tree and $\gamma$ is a bijection between the leaves of $T$ and hyperedges of $H$.
+For a subset $L$ of leaves, $\gamma(L)$ denotes the set $\{ \gamma(v) \; | \; v \in L \}$, and for a subtree $T'$ of $T$, $\gamma(T')$ is defined as $\{ \gamma(v) \; | \; v  \text{ is a leaf of } T' \}$.
+
+Any subset $E$ of hyperedges of $H$ defines a {\em separation} of $H$, that is the pair $(E,\, E(H) \setminus E)$.
+A {\em load vertex} is a vertex that is incident to both an edge in $E$ and an edge in $E(H) \setminus E$.
+For a hypergraph $H$ and subset $E$ of hyperedges, $\delta(E)$ is the set of such load vertices of $E$.
+In a branch decomposition $(T, \gamma)$ of $H$, any edge $e$ of $T$ similarly defines a separation of the tree. 
+We define $\delta(e)$ as the set of load vertices of $\gamma(T')$, that is $\delta(e) = \delta(\gamma(T'))$, where $T'$ is any of the two components in the forest $T \setminus \{e\}$.
+
+The width of an edge $e$ of $T$ is then $|\delta(e)|$, and the width of a branch decomposition is the maximum width over all its edges.
+The {\em branch-width} of hypergraph $H$ is the minimum width over all its branch decompositions. In case of $E(H) = \emptyset$, $H$ has no branch decompositions, and its branch-width is said to be 0. \\
+
+\noindent
+\textbf{Rank-width} \cite{DBLP:journals/fuin/GanianHO13}.
+A set function $f$ maps a subset to a number, i.e. $f : 2^V \rightarrow \mathbb{Z}$, where $V$ is a finite set.
+If for all $X,Y \subseteq V$ it holds that $f(X)+f(Y) \geq f(X\cap Y) + f(X\cup Y)$, $f$ is called {\em submodular}.
+Moreover, if for all $X\subseteq V$, $f(X) = f(V \setminus X)$, $f$ is said to be {\em symmetric}.
+
+A {\em branch decomposition} of a symmetric, submodular function $f$ is a pair $(T, \lambda)$, where $T$ is a subcubic tree (i.e., every vertex is incident with at most three edges), and $\lambda$ a bijective function from $V$ to the leaves of $T$.
+If $\lambda$ is surjective, the branch decomposition is said to be {\em partial}.
+
+For a (partial) branch decomposition $\mathcal{T} = (T,\lambda)$ of $f$ and some edge $e$, $T \setminus e$ is a forest that consists of two connected subtrees of $T$.
+Thus $e$ defines a partition $(X,Y)$ of the leaves of the branch decomposition.
+The width of the edge $e$ is defined as $f(\lambda^{-1}(X)) = f(\lambda^{-1}(Y))$, and the width of a branch decomposition as the maximum width of all edges of $T$.
+Then, the {\em branch-width} of a symmetric, submodular function $f$ is the minimum width over all its branch decompositions.
+
+Consider a simple graph $G$, subsets $X,Y \subseteq V(G)$ and let $\mathbf{A}_G[X,Y]$ be a binary matrix.
+The entry $a_{x,y}$ of $\mathbf{A}_G[X,Y]$ is 1 iff $xy \in E(G)$, where $x\in X$, and $y\in Y$.
+
+A {\em cut-rank function} is a symmetric, submodular function $\rho_G : 2^{V(G)} \rightarrow \mathbb{Z}$ such that $\rho_G(X)=\rho_G(V(G)\setminus X) = \text{rank}(\mathbf{A}_G[X, V(G)\setminus X])$.
+A {\em rank decomposition} is the branch decomposition of $\rho_G$.
+Then, {\em rank-width} $\textbf{rw}(G)$ is the branch-width of $\rho_G$. \\
+
+
+\noindent
+\textbf{ps-width} \cite{DBLP:conf/sat/SaetherTV14}.
+ps-width, in contrast to most width parameters introduced above, is defined specifically for propositional formulas.
+For a propositional formula $F$, let $\text{var}(F)$ denote the set of variables of $F$, and $\text{cla}(F)$ the set of its clauses.
+For a set $C \subseteq \text{cla}(F)$, we say $C$ is {\em precisely satisfiable} in $F$ if there exists some assignment $\tau$ such that $\tau(c)=1$ for all $c\in C$, and $\tau(c)=0$ for all $c \in \text{cla}(F)\setminus C$.
+By $\mathcal{PS}(F)$ we denote the set of all sets $C$ such that $C \subseteq \text{cla}(F)$ and $C$ is precisely satisfiable.
+
+
+A {\em branch decomposition} of a formula $F$ is a pair $(T, \delta)$, where $T$ is a rooted binary tree, and $\delta$ a bijection from the leaves of $T$ to $\text{var}(F) \, \cup \, \text{cla}(F)$.
+For an internal (non-leaf) node $v$ of $T$, let $\delta(v) = \{ \delta(l) \; | \; l \text{ is a leaf of subtree rooted in } v \}$.
+For any node $v$ of $T$, $\delta(v)$ describes certain cuts of the propositional formula.
+Let $F_v$ be then a formula induced by the clauses in cla$(F)\setminus \delta(v)$ and variables in $\delta(v)$, and $F_{\overline{v}}$ a formula induced by the clauses in $\delta(v)$ and the variables in var$(F)\setminus \delta(v)$.
+
+{\em ps-value} ps$(\delta(v))$ of a cut $\delta(v)$ is defined as max$\{|\mathcal{PS}(F_v)|, |\mathcal{PS}(F_{\overline{v}})|\}$, and the {\em ps-width} of a branch decomposition $(T,\delta)$ as max$\{ \text{ps}(\delta(v)) \; | \; v \in V(T) \}$. 
+Then, the {\em ps-width} $\mathbf{psw}(F)$ of a formula $F$ is the minimal ps-width over all its branch decompositions.\\
+
+\noindent
+\textbf{MIM-width} \cite{DBLP:conf/sat/SaetherTV14, PhD:Vatshelle}.
+We once again define {\em branch decompositions}, this time for graphs in general.
+A branch decomposition of a graph $G$ is a pair $(T, \delta)$ where $T$ is a rooted binary tree, and $\delta$ a bijection between the leaves of $T$ and $V(G).$
+For internal nodes of $T$, $\delta$ is defined in a similar fashion as in branch decompositions of formulas.
+A node $n$ analogously defines a cut of the graph, and partitions it, in accordance with $\delta(n)$, into two parts, denoted $(V_n, \overline{V_n})$.
+
+For a graph $G$ and a subset of vertices $V \subseteq V(G)$, a {\em bigraph bipartization} is a bipartite graph $G[V, \overline{V}]$ that is a subgraph of $G$ and that only contains edges with endpoints in both $V$ and $\overline{V} = V(G) \setminus V$.
+
+Consider $G[V_n, \overline{V_n}]$.
+An independent set that is also an induced subgraph is called an {\em induced matching}.
+We define {\em MIM-value} of a cut $(V_n, \overline{V_n})$ to be the size of the maximum induced matching of $G[V_n, \overline{V_n}]$.
+The {\em MIM-width} of a branch decomposition is the maximum MIM-value over all cuts defined by every node.
+Then, the {\em MIM-width} $\mathbf{mimw}(G)$ of a graph $G$ is the minimum MIM-width over all branch decompositions of $G$.\\
+
+\noindent
+\textbf{Hypertree-width} \cite{DBLP:journals/siamcomp/GottlobP04}.
+The {\em hypertree decomposition} of a hypergraph $H=(V,E)$ is defined as the triple $(T, \chi, \lambda)$ where $T$ is a tree, and $\chi, \lambda$ are labelling functions such that  $\chi : V(T) \rightarrow 2^V$ and $\lambda : V(T) \rightarrow 2^E$, where $V(T)$ is the set of vertices (nodes) of $T$.
+Apart from that, the following must be fulfilled:
+\begin{enumerate}
+	\item for every hyperedge $e \in E$, there exists a $v \in V(T)$ s.t. $\{e\} \subseteq \lambda(v)$,
+	\item for every vertex $v \in V$, $T[\{ n \in V(T) \; | \; v \in \chi(n) \}]$ is a connected subtree,
+	\item for every node $n \in V(T)$, $\chi(n)$ only contains vertices that are incident to at least one hyperedge in $\lambda(n)$, and
+	\item for every node $n \in V(T)$, if a vertex $v \in V$ is incident to a hyperedge $e \in \lambda(n)$, and if $v \in \chi(q)$ for some $q$ in a subtree below $n$, then $v\in \chi(n)$.
+\end{enumerate}
+Then, the {\em width} of a hypertree decomposition is $\max_{n \in V(T)} |\lambda(n)|$, and the {\em hypertree-width} $\mathbf{htw}(H)$ of a hypergraph $H$ is the minimum width over all its hypertree decompositions. \\
