@@ -4,6 +4,10 @@
   <groupId>at.ac.tuwien.student.e11843614</groupId>
   <artifactId>solver</artifactId>
   <packaging>jar</packaging>
+  <properties>
+    <maven.compiler.source>11</maven.compiler.source>
+    <maven.compiler.target>11</maven.compiler.target>
+  </properties>
   <version>1.0-SNAPSHOT</version>
   <name>solver</name>
   <url>http://maven.apache.org</url>
