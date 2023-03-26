@@ -2,6 +2,8 @@ package at.ac.tuwien.student.e11843614.cnf;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 /**
@@ -36,7 +38,11 @@ public class FormulaReader {
                 if (!items[1].equals("cnf")) {
                     throw new FormulaParseException("Expected 'cnf' in header, got " + items[1]);
                 }
-                clauseBound = Integer.parseInt(items[3]);
+                try {
+                    clauseBound = Integer.parseInt(items[3]);
+                } catch (NumberFormatException exception) {
+                    throw new FormulaParseException("Expected a number, " + exception.getMessage(), exception);
+                }
             } else {
                 // clause line
                 clauses++;
@@ -45,12 +51,16 @@ public class FormulaReader {
                         String.format("Size specification mismatch (header specifies %d clauses)", clauseBound)
                     );
                 }
-                Integer[] clause = new Integer[items.length - 1];
-                for (int i = 0; i < items.length; i++) {
-                    if (items[i].equals("0")) {
+                List<Integer> clause = new ArrayList<>();
+                for (String item : items) {
+                    if (item.equals("0")) {
                         break;
                     } else {
-                        clause[i] = Integer.parseInt(items[i]);
+                        try {
+                            clause.add(Integer.parseInt(item));
+                        } catch (NumberFormatException exception) {
+                            throw new FormulaParseException("Expected a number, " + exception.getMessage(), exception);
+                        }
                     }
                 }
                 formula.addClause(clause);
