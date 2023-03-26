@@ -82,6 +82,8 @@ Consider the following set of operations on colored graphs:
 Notice that the disjoint union is used to introduce single-vertex graphs and avoid name conflicts between vertices.
 In particular, $G \oplus G \neq G$.
 As an example, consider how one can create cliques using two colors: beginning with two single-vertex graphs $A, B$ colored, say, red (1) and blue (2) respectively, a 2-clique can be obtained as $\mu_{1,2}(A \oplus B)$, a 3-clique as $\mu_{1,2}(\rho_{2,1}(\mu_{1,2}(A \oplus B)) \oplus B)$, and so on.
+These expressions (sequence of operations) are called {\em k-expressions} when using at most $k$ colors.
+As an example, the 3-clique can be represented as a 2-expression.
 
 {\em Clique-width} $\textbf{cw}(G)$ is defined as the minimal $k$ such that $G$ can be obtained from colored single-vertex graphs using the operations above.
 From the example above it is easy to see that cliques have clique-width at most 2.\\

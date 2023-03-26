@@ -4,16 +4,15 @@ In particular, we are interested in such cases where the width parameters are ex
 % trees
 \textbf{Trees.}
 Recall that a tree is a connected graph without cycles.
-We begin with a fairly obvious observation:
+The following holds:
 
-\begin{fact}
-	%\textbf{Fact 1.}
-	If $G$ is a tree, then \textbf{tw}$(G) = 1$. 
+\begin{fact}[\cite{DBLP:journals/jct/OumS06}]
+	If $G$ is a tree, then $\mathbf{tw}(G) = 1$, and $\mathbf{cw}(G) \leq 3$. 
 	\label{gw:tree}
 \end{fact}
 
 \noindent
-This is due to the fact that any tree can be decomposed into bags of size 2.
+The result for treewidth is due to the fact that any tree can be decomposed into bags of size 2.
 {\color{lightgray} As there are many ways to construct a graph representation of a CNF formula, we will quickly glance over what effects the restriction of being a tree would have for the corresponding formulas.
 
 Recall that in primal graphs, the vertices are the variables, and the edges connect variables that appear together in a clause.
@@ -41,9 +40,9 @@ A series-parallel graph is a graph $G$ such that there exist terminals $s, t$ wh
 
 The following result applies:
 
-\begin{fact}[\cite{DBLP:journals/corr/abs-2004-00547}]
+\begin{fact}[\cite{DBLP:journals/corr/abs-2004-00547, misc:Hicks04}]
 	%\textbf{Fact 2}
-	If $G$ is a series-parallel graph, then \textbf{tw}$(G) = 2$. 
+	If $G$ is a series-parallel graph, then $\mathbf{tw}(G) = 2$, $\mathbf{bw}(G) \leq 2$. 
 \end{fact}
 
 \noindent
@@ -133,7 +132,7 @@ A complete bipartite graph $K_{m,n}$ is a bipartite graph with two sets of verti
 %$K_{m,n}$ is $\min \{m,n\}$-degenerate and has treewidth $\mathbf{tw}(G) \geq \min \{m,n\}$.
 
 \begin{fact}[folklore]
-		It holds that $\mathbf{tw}(K_{m,n}) \geq \min \{m,n\}$, $\mathbf{cw}(K_{m,n})=2$.
+		It holds that $\mathbf{tw}(K_{m,n}) \geq \min \{m,n\}$, and $\mathbf{cw}(K_{m,n})=2$.
 \end{fact}
 
 

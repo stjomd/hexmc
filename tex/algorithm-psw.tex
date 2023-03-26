@@ -1,3 +1,9 @@
+Recall that ps-width of a formula is defined using cuts of the formula on its branch decomposition.
+Solving \#SAT involves two steps.
+First, we obtain a branch decomposition of a formula, combining the use of a heuristic and a local improvement algorithm.
+Then, we utilize a dynamic algorithm to calculate the number of satisfying assignments.
+
+
 \subsection{Computing a branch decomposition}
 
 The algorithm for \#SAT that follows in the next subsection requires a formula and its branch decomposition on input, preferably of as small ps-width as possible.
@@ -120,8 +126,6 @@ This goes on until $P_d$ is reached, where we add a root node whose children are
 
 Although this method allows to compute the exact branch-width, the large amount of variables and clauses in the resulting formula results in large solving times, which would not be practical.
 Therefore it is possible to employ a local search algorithm to optimize a branch decomposition obtained by heuristic means.
-
---------
 
 We propose the diameter method \cite{misc:Hicks04} as a heuristic to obtain a sub-optimal branch decomposition.
 A branch decomposition of a graph $G$ is called {\em partial} if its tree contains an internal node with degree larger than three. 
