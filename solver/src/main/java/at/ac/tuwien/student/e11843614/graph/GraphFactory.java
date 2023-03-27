@@ -1,6 +1,6 @@
 package at.ac.tuwien.student.e11843614.graph;
 
-import at.ac.tuwien.student.e11843614.cnf.Formula;
+import at.ac.tuwien.student.e11843614.formula.Formula;
 
 public abstract class GraphFactory {
 
