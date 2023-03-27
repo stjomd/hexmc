@@ -10,8 +10,26 @@ import java.util.Set;
  */
 public class Graph {
 
+    /**
+     * An object that represents an undirected edge.
+     */
+    public static class Edge {
+        private final int[] endpoints;
+        public Edge (int v, int u) {
+            this.endpoints = new int[]{v, u};
+        }
+        public int[] getVertices() {
+            return endpoints;
+        }
+        @Override
+        public String toString() {
+            return String.format("<%d, %d>", endpoints[0], endpoints[1]);
+        }
+    }
+
     // table.get(v) -> returns a set of vertices adjacent to v
     private final Map<Integer, Set<Integer>> table = new HashMap<>();
+    private final Set<Edge> edges = new HashSet<>();
 
     /**
      * Adds an edge between two vertices.
@@ -27,6 +45,7 @@ public class Graph {
         }
         table.get(v).add(u);
         table.get(u).add(v);
+        edges.add(new Edge(v, u));
     }
 
     /**
@@ -42,8 +61,17 @@ public class Graph {
         return table.get(v).contains(u);
     }
 
+    /**
+     * Returns the set of edges of this graph.
+     * @return the set of Edge instances.
+     */
+    public Set<Edge> getEdges() {
+        return edges;
+    }
+
     @Override
     public String toString() {
         return table.toString();
     }
+
 }
