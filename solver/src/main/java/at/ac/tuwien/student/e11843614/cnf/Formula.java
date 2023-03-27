@@ -2,7 +2,6 @@ package at.ac.tuwien.student.e11843614.cnf;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -29,7 +28,10 @@ public class Formula {
      * @param literals an array of literals, represented by integers, representing a clause.
      */
     public void addClause(Integer[] literals) {
-        Clause clause = new Clause(Arrays.asList(literals));
+        Clause clause = new Clause();
+        for (Integer literal : literals) {
+            clause.addLiteral(literal);
+        }
         addClause(clause);
     }
 
