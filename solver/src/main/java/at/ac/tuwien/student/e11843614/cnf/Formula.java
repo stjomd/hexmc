@@ -10,7 +10,7 @@ import java.util.List;
  */
 public class Formula {
 
-    private final List<List<Integer>> clauses = new ArrayList<>();
+    private final List<Clause> clauses = new ArrayList<>();
 
     /**
      * Constructs a formula from a DIMACS CNF file at the given path.
@@ -26,26 +26,26 @@ public class Formula {
 
     /**
      * Adds a clause to the formula.
-     * @param variables an array of variables, represented by integers, representing a clause.
+     * @param literals an array of literals, represented by integers, representing a clause.
      */
-    public void addClause(Integer[] variables) {
-        List<Integer> list = Arrays.asList(variables);
-        addClause(list);
+    public void addClause(Integer[] literals) {
+        Clause clause = new Clause(Arrays.asList(literals));
+        addClause(clause);
     }
 
     /**
      * Adds a clause to the formula.
-     * @param variables a list of variables, represented by integers, representing a clause.
+     * @param clause a clause to be added.
      */
-    public void addClause(List<Integer> variables) {
-        clauses.add(variables);
+    public void addClause(Clause clause) {
+        clauses.add(clause);
     }
 
     /**
      * Retrieves the list of clauses.
      * @return the list of clauses.
      */
-    public List<List<Integer>> getClauses() {
+    public List<Clause> getClauses() {
         return clauses;
     }
 

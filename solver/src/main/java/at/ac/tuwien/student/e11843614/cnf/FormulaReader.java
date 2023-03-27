@@ -2,8 +2,6 @@ package at.ac.tuwien.student.e11843614.cnf;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Scanner;
 
 /**
@@ -51,13 +49,13 @@ public class FormulaReader {
                         String.format("Size specification mismatch (header specifies %d clauses)", clauseBound)
                     );
                 }
-                List<Integer> clause = new ArrayList<>();
+                Clause clause = new Clause();
                 for (String item : items) {
                     if (item.equals("0")) {
                         break;
                     } else {
                         try {
-                            clause.add(Integer.parseInt(item));
+                            clause.addLiteral(Integer.parseInt(item));
                         } catch (NumberFormatException exception) {
                             throw new FormulaParseException("Expected a number, " + exception.getMessage(), exception);
                         }
