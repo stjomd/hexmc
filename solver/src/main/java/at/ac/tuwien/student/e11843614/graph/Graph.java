@@ -18,7 +18,7 @@ public class Graph {
         public Edge (int v, int u) {
             this.endpoints = new int[]{v, u};
         }
-        public int[] getVertices() {
+        public int[] getEndpoints() {
             return endpoints;
         }
         @Override
@@ -46,19 +46,6 @@ public class Graph {
         table.get(v).add(u);
         table.get(u).add(v);
         edges.add(new Edge(v, u));
-    }
-
-    /**
-     * Returns a boolean value indicating if an edge between two vertices is present.
-     * @param v a vertex, represented by an integer.
-     * @param u a vertex, represented by an integer.
-     * @return true, if there exists an edge between v and u, and false otherwise.
-     */
-    public boolean hasEdge(Integer v, Integer u) {
-        if (!table.containsKey(v)) {
-            return false;
-        }
-        return table.get(v).contains(u);
     }
 
     /**
