@@ -1,5 +1,6 @@
 package at.ac.tuwien.student.e11843614.decomposition;
 
+import at.ac.tuwien.student.e11843614.graph.Edge;
 import at.ac.tuwien.student.e11843614.graph.Graph;
 
 import java.util.Comparator;
@@ -16,7 +17,7 @@ public abstract class BranchDecompositionFactory {
      * @param graph the graph to construct a branch decomposition of.
      * @return the root node of the branch decomposition.
      */
-    public static BranchDecompositionNode heuristic(Graph graph) {
+    public static BranchDecompositionNode heuristic(Graph<Integer> graph) {
         BranchDecompositionNode bd = heuristicInitialSeparation(graph);
         BranchDecompositionNode a = getNodeWithDegreeLargerThan(3, bd);
         assert (a != null && a.getEdge() == null);
@@ -37,16 +38,16 @@ public abstract class BranchDecompositionFactory {
         Set<Integer> partA = new HashSet<>(), partB = new HashSet<>();
         for (BranchDecompositionNode child : a.getChildren()) {
             if (child.getDegree() == 1) {
-                int[] endpoints = child.getEdge().getEndpoints();
-                partA.add(endpoints[0]);
-                partA.add(endpoints[1]);
+                List<Integer> endpoints = child.getEdge().getEndpoints();
+                partA.add(endpoints.get(0));
+                partA.add(endpoints.get(1));
             }
         }
         for (BranchDecompositionNode child : b.getChildren()) {
             if (child.getDegree() == 1) {
-                int[] endpoints = child.getEdge().getEndpoints();
-                partB.add(endpoints[0]);
-                partB.add(endpoints[1]);
+                List<Integer> endpoints = child.getEdge().getEndpoints();
+                partB.add(endpoints.get(0));
+                partB.add(endpoints.get(1));
             }
         }
         // The set of linking nodes mid(e) is the intersection of partA and partB.
@@ -54,11 +55,11 @@ public abstract class BranchDecompositionFactory {
         mid.retainAll(partB);
         // associatedGraph is G_a in the paper. We obtain it by selecting the children of a that are leaves, and adding
         // their edges to the associatedGraph.
-        Graph associatedGraph = new Graph();
+        Graph<Integer> associatedGraph = new Graph<>();
         for (BranchDecompositionNode child : a.getChildren()) {
             if (child.getDegree() == 1) {
-                int[] endpoints = child.getEdge().getEndpoints();
-                associatedGraph.addEdge(endpoints[0], endpoints[1]);
+                List<Integer> endpoints = child.getEdge().getEndpoints();
+                associatedGraph.addEdge(endpoints.get(0), endpoints.get(1));
             }
         }
         System.out.println(associatedGraph);
@@ -67,7 +68,7 @@ public abstract class BranchDecompositionFactory {
         return bd;
     }
 
-    private static List<Set<Integer>> separation(Graph graph, Graph associatedGraph, Set<Integer> mid) {
+    private static List<Set<Integer>> separation(Graph<Integer> graph, Graph<Integer> associatedGraph, Set<Integer> mid) {
         // Linking nodes are vertices of associatedGraph that are also in mid.
         Set<Integer> linkingNodes = new HashSet<>(associatedGraph.getVertices());
         linkingNodes.retainAll(mid);
@@ -114,10 +115,10 @@ public abstract class BranchDecompositionFactory {
         return List.of();
     }
 
-    private static BranchDecompositionNode heuristicInitialSeparation(Graph graph) {
+    private static BranchDecompositionNode heuristicInitialSeparation(Graph<Integer> graph) {
         // Create a star
         BranchDecompositionNode root = new BranchDecompositionNode();
-        for (Graph.Edge edge : graph.getEdges()) {
+        for (Edge<Integer> edge : graph.getEdges()) {
             root.addChild(new BranchDecompositionNode(edge));
         }
         // Initial separation

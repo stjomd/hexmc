@@ -1,6 +1,6 @@
 package at.ac.tuwien.student.e11843614.decomposition;
 
-import at.ac.tuwien.student.e11843614.graph.Graph;
+import at.ac.tuwien.student.e11843614.graph.Edge;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -10,14 +10,14 @@ import java.util.Set;
  */
 public class BranchDecompositionNode {
 
-    private final Graph.Edge edge;
+    private final Edge<Integer> edge;
     private BranchDecompositionNode parent = null;
     private final Set<BranchDecompositionNode> children = new HashSet<>();
 
     public BranchDecompositionNode() {
         this.edge = null;
     }
-    public BranchDecompositionNode(Graph.Edge edge) {
+    public BranchDecompositionNode(Edge<Integer> edge) {
         this.edge = edge;
     }
 
@@ -25,7 +25,7 @@ public class BranchDecompositionNode {
      * Returns the edge associated with this node.
      * @return the edge.
      */
-    public Graph.Edge getEdge() {
+    public Edge<Integer> getEdge() {
         return edge;
     }
 
