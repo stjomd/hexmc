@@ -3,14 +3,16 @@ package at.ac.tuwien.student.e11843614.decomposition;
 import at.ac.tuwien.student.e11843614.graph.Edge;
 import at.ac.tuwien.student.e11843614.graph.Graph;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 public abstract class BranchDecompositionFactory {
+
+    private final static int ALPHA_STEPS = 10;
 
     /**
      * Constructs an approximation of a branch decomposition according to a heuristic.
@@ -72,7 +74,6 @@ public abstract class BranchDecompositionFactory {
         // Linking nodes are vertices of associatedGraph that are also in mid.
         Set<Integer> linkingNodes = new HashSet<>(associatedGraph.getVertices());
         linkingNodes.retainAll(mid);
-        System.out.println("linking: " + linkingNodes);
         // Source nodes are vertices that are in associatedGraph with eccentricity = diameter, as well as linking nodes.
         Set<Integer> sourceNodes = new HashSet<>(linkingNodes);
         int diameter = associatedGraph.diameter();
@@ -81,49 +82,87 @@ public abstract class BranchDecompositionFactory {
                 sourceNodes.add(vertex);
             }
         }
-        System.out.println("source: " + sourceNodes);
-        // TODO: Iterate over all source nodes, and alpha, beginning here:
-        // Choose a source node. Sort vertices of associatedGraph in non-decreasing order acc. to their distance to it.
-        Integer chosenSourceNode = null;
-        Iterator<Integer> iterator = associatedGraph.getVertices().iterator();
-        int index = (int) (Math.random() * associatedGraph.getVertices().size());
-        for (int i = 0; i <= index; i++) {
-            if (iterator.hasNext()) {
-                chosenSourceNode = iterator.next();
+        // Iterate over all source nodes and alphas, determine work/play pairs.
+        // TODO: determine owork, oplay.
+        for (Integer chosenSourceNode : sourceNodes) {
+            for (double alpha = 0.01; alpha < 1; alpha += 1.0/ALPHA_STEPS) {
+                // Choose a source node. Sort vertices of associatedGraph in non-decreasing order acc. to their distance to it.
+                List<Integer> sortedVertices = associatedGraph.getVertices().stream()
+                    .sorted(Comparator.comparing(v -> associatedGraph.distance(v, chosenSourceNode)))
+                    .collect(Collectors.toList());
+                // Partition the sorted vertices of associatedGraph into partA, partB using the cutoff index.
+                int cutoff = (int) (alpha * (sortedVertices.size() - 1)) + 1;
+                Set<Integer> partA = new HashSet<>(), partB = new HashSet<>();
+                int i = 0;
+                for (Integer vertex : sortedVertices) {
+                    if (i < cutoff) {
+                        partA.add(vertex);
+                    } else {
+                        partB.add(vertex);
+                    }
+                    i++;
+                }
+                // Compute the minor of G with partA identified to v_A, partB identified to v_B
+                Graph<Integer> minor = minor(graph, partA, partB);
+                // v_A,v_B are named in 'minor' after some vertex from partA or partB respectively.
+                Integer vA = null, vB = null;
+                for (Integer v : minor.getVertices()) {
+                    if (partA.contains(v)) {
+                        vA = v;
+                    } else if (partB.contains(v)) {
+                        vB = v;
+                    }
+                    if (vA != null && vB != null) {
+                        break;
+                    }
+                }
+                assert (vA != null && vB != null);
+                // Now find the minimum vertex cut intersecting all v_A,v_B-paths. We call the vertices in the min
+                // vertex cut 'separation nodes'.
+                Set<Integer> separationNodes = minimumVertexCut(minor, vA, vB);
+                // Nodes that are both linking and separation nodes are labeled 'share nodes'.
+                Set<Integer> shareNodes = new HashSet<>(separationNodes);
+                shareNodes.retainAll(linkingNodes);
+                // Linking nodes on one side of the cut (in one component) but not separation nodes are labeled 'side nodes'.
+                // TODO: not sure of the formulation?
+                Graph<Integer> separatedGraph = minor.duplicate();
+                for (Integer node : separationNodes) {
+                    separatedGraph.removeVertex(node);
+                }
+                Set<Integer> sideNodes = new HashSet<>(separatedGraph.getVertices());
+                sideNodes.retainAll(linkingNodes);
+                // Define work and play values
+                int work = Math.max(
+                    sideNodes.size() + separationNodes.size(),
+                    linkingNodes.size() - sideNodes.size() - shareNodes.size() + separationNodes.size()
+                );
+                int play = Math.min(
+                    sideNodes.size() + separationNodes.size(),
+                    linkingNodes.size() - sideNodes.size() - shareNodes.size() + separationNodes.size()
+                );
+                System.out.println("work: " + work);
+                System.out.println("play: " + play);
             }
         }
-        assert (chosenSourceNode != null);
-        Integer finalChosenSourceNode = chosenSourceNode; // required for the closure in .sorted()
-        List<Integer> sortedVertices = associatedGraph.getVertices().stream()
-            .sorted(Comparator.comparing(v -> associatedGraph.distance(v, finalChosenSourceNode)))
-            .collect(Collectors.toList());
-        // Choose a random value to cut the sortedVertices list.
-        int cutoff = (int) (Math.random() * sortedVertices.size());
-        Set<Integer> partA = new HashSet<>(), partB = new HashSet<>();
-        int i = 0;
-        for (Integer vertex : sortedVertices) {
-            if (i < cutoff) {
-                partA.add(vertex);
-            } else {
-                partB.add(vertex);
-            }
-            i++;
-        }
-        // Compute the minor of G with partA identified to v_A, partB identified to v_B
+        return List.of();
+    }
+
+    // minor H of G with A,B identified to vA,vB
+    private static Graph<Integer> minor(Graph<Integer> graph, Set<Integer> partitionA, Set<Integer> partitionB) {
         Graph<Integer> minor = graph.duplicate();
-        System.out.println("partA: " + partA);
-        System.out.println("partB: " + partB);
-        // With partA, partB (partition of associatedGraph), compute a minor of G, and identify partA, partB to some
-        // vertices.
         boolean minorable = true;
         while (minorable) {
             minorable = false;
-            // Among edges of G, look for possibilities to contract edges/merge vertices from one partition together.
+            // Among edges, look for possibilities to contract edges/merge vertices from one partition together.
             Set<Edge<Integer>> edges = minor.getEdges();
             for (Edge<Integer> edge : edges) {
                 List<Integer> endpoints = edge.getEndpoints();
-                boolean hasCandidates = (partA.contains(endpoints.get(0)) && partA.contains(endpoints.get(1)))
-                    || (partB.contains(endpoints.get(0)) && partB.contains(endpoints.get(1)));
+                // Avoid loops
+                if (endpoints.get(0).equals(endpoints.get(1))) {
+                    continue;
+                }
+                boolean hasCandidates = (partitionA.contains(endpoints.get(0)) && partitionA.contains(endpoints.get(1)))
+                    || (partitionB.contains(endpoints.get(0)) && partitionB.contains(endpoints.get(1)));
                 if (hasCandidates) {
                     minor.contractEdge(edge);
                     minorable = true;
@@ -131,9 +170,60 @@ public abstract class BranchDecompositionFactory {
                 }
             }
         }
-        // At this point, 'minor' is a minor of G with identified vertices. Now we find a min vertex cut.
-        // TODO: find smallest vertex cut in H intersecting all v_A,v_B-paths.
-        return List.of();
+        return minor;
+    }
+
+    // finds s-t cut
+    private static Set<Integer> minimumVertexCut(Graph<Integer> graph, Integer s, Integer t) {
+        // FIXME: doesn't seem to make sense if minor only has 2 vertices. Since any cut results in 1 comp?
+        // FIXME: brute force at this point.
+        List<Integer> vertices = new ArrayList<>(graph.getVertices());
+        List<Boolean> inclusion = new ArrayList<>();
+        for (int j = 0; j < vertices.size(); j++) {
+            inclusion.add(true);
+        }
+        // inclusion defines the subset of vertices. If no path between vA,vB exists, we found a vertex cut.
+        // Keep looking for the one of the smallest size.
+        Set<Integer> vertexCut = new HashSet<>();
+        int minVertexCutSize = Integer.MAX_VALUE;
+        int inclusionSum = Integer.MAX_VALUE;
+        while (inclusionSum > 0) {
+            // Update the inclusion list
+            int j = inclusion.size() - 1;
+            while (j >= 0 && inclusion.get(j).equals(false)) {
+                inclusion.set(j, true);
+                j--;
+            }
+            if (j >= 0) {
+                inclusion.set(j, false);
+            }
+            // Perform
+            Graph<Integer> copy = graph.duplicate();
+            Set<Integer> includedVertices = new HashSet<>();
+            for (int k = 0; k < vertices.size(); k++) {
+                if (inclusion.get(k).equals(true)) {
+                    includedVertices.add(vertices.get(k));
+                }
+            }
+            for (Integer vertex : includedVertices) {
+                copy.removeVertex(vertex);
+            }
+            if (copy.path(s, t) == null) {
+                // Found a vertex cut
+                if (minVertexCutSize > includedVertices.size()) {
+                    minVertexCutSize = includedVertices.size();
+                    vertexCut = includedVertices;
+                }
+            }
+            // Count the amount of falses
+            inclusionSum = 0;
+            for (Boolean bool : inclusion) {
+                if (bool.equals(false)) {
+                    inclusionSum++;
+                }
+            }
+        }
+        return vertexCut;
     }
 
     private static BranchDecompositionNode heuristicInitialSeparation(Graph<Integer> graph) {
