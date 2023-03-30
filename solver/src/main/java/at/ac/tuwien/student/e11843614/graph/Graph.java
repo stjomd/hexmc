@@ -13,48 +13,48 @@ import java.util.Set;
 /**
  * An object that represents an undirected graph, where vertices are represented using integers.
  */
-public class Graph {
+public class Graph<T> {
 
     /**
      * An object that represents an undirected edge.
      */
-    public static class Edge {
-        private final int[] endpoints;
-        public Edge (int v, int u) {
-            this.endpoints = new int[]{v, u};
-        }
-        public int[] getEndpoints() {
-            return endpoints;
-        }
-        @Override
-        public String toString() {
-            return String.format("<%d, %d>", endpoints[0], endpoints[1]);
-        }
-    }
+//    public static class Edge<T> {
+//        private final List<T> endpoints;
+//        public Edge (T v, T u) {
+//            this.endpoints = List.of(v, u);
+//        }
+//        public List<T> getEndpoints() {
+//            return endpoints;
+//        }
+//        @Override
+//        public String toString() {
+//            return String.format("<%d, %d>", endpoints.get(0), endpoints.get(1));
+//        }
+//    }
 
-    private final Set<Edge> edges = new HashSet<>();
-    private final Set<Integer> vertices = new HashSet<>();
+    private final Set<Edge<T>> edges = new HashSet<>();
+    private final Set<T> vertices = new HashSet<>();
 
     /**
      * Adds an edge between two vertices.
      * @param v a vertex, represented by an integer.
      * @param u a vertex, represented by an integer.
      */
-    public void addEdge(Integer u, Integer v) {
-        addEdge(new Edge(u, v));
+    public void addEdge(T u, T v) {
+        addEdge(new Edge<>(u, v));
     }
 
     /**
      * Adds an edge between two vertices.
      * @param edge the edge to be added.
      */
-    public void addEdge(Edge edge) {
+    public void addEdge(Edge<T> edge) {
         edges.add(edge);
-        vertices.add(edge.getEndpoints()[0]);
-        vertices.add(edge.getEndpoints()[1]);
+        vertices.add(edge.getEndpoints().get(0));
+        vertices.add(edge.getEndpoints().get(1));
     }
 
-    public Set<Integer> getVertices() {
+    public Set<T> getVertices() {
         return vertices;
     }
 
@@ -62,7 +62,7 @@ public class Graph {
      * Returns the set of edges of this graph.
      * @return the set of Edge instances.
      */
-    public Set<Edge> getEdges() {
+    public Set<Edge<T>> getEdges() {
         return edges;
     }
 
@@ -70,9 +70,9 @@ public class Graph {
      * Creates a deep copy of the graph.
      * @return the duplicate of this graph.
      */
-    public Graph duplicate() {
-        Graph graph = new Graph();
-        for (Edge edge : edges) {
+    public Graph<T> duplicate() {
+        Graph<T> graph = new Graph<>();
+        for (Edge<T> edge : edges) {
             graph.addEdge(edge);
         }
         return graph;
@@ -83,13 +83,13 @@ public class Graph {
      * @param vertex the vertex to find neighbors of.
      * @return the set of neighbors/adjacent vertices.
      */
-    private Set<Integer> neighborsOf(Integer vertex) {
-        Set<Integer> neighbors = new HashSet<>();
-        for (Edge edge : edges) {
-            if (edge.endpoints[0] == vertex) {
-                neighbors.add(edge.endpoints[1]);
-            } else if (edge.endpoints[1] == vertex) {
-                neighbors.add(edge.endpoints[0]);
+    private Set<T> neighborsOf(T vertex) {
+        Set<T> neighbors = new HashSet<>();
+        for (Edge<T> edge : edges) {
+            if (edge.getEndpoints().get(0) == vertex) {
+                neighbors.add(edge.getEndpoints().get(1));
+            } else if (edge.getEndpoints().get(1) == vertex) {
+                neighbors.add(edge.getEndpoints().get(0));
             }
         }
         return neighbors;
@@ -101,19 +101,19 @@ public class Graph {
      * @param target the target vertex.
      * @return a list of vertices, representing the shortest path in the graph between source and target.
      */
-    public List<Integer> path(Integer source, Integer target) {
-        Map<Integer, Integer> parents = new HashMap<>();
-        Queue<Integer> queue = new LinkedList<>();
-        Set<Integer> visited = new HashSet<>();
+    public List<T> path(T source, T target) {
+        Map<T, T> parents = new HashMap<>();
+        Queue<T> queue = new LinkedList<>();
+        Set<T> visited = new HashSet<>();
         // Breadth-first search; keep track of parent nodes to retrieve path later
         queue.add(source);
         while (!queue.isEmpty()) {
-            Integer vertex = queue.remove();
+            T vertex = queue.remove();
             if (vertex.equals(target)) {
                 break;
             }
             visited.add(vertex);
-            for (Integer neighbor : neighborsOf(vertex)) {
+            for (T neighbor : neighborsOf(vertex)) {
                 if (!visited.contains(neighbor)) {
                     queue.add(neighbor);
                     parents.put(neighbor, vertex);
@@ -121,8 +121,8 @@ public class Graph {
             }
         }
         // Backtrack to retrieve the path
-        List<Integer> path = new ArrayList<>();
-        Integer vertex = target;
+        List<T> path = new ArrayList<>();
+        T vertex = target;
         path.add(vertex);
         while (!vertex.equals(source)) {
             vertex = parents.get(vertex);
@@ -135,8 +135,8 @@ public class Graph {
         return path;
     }
 
-    public int distance(Integer u, Integer v) {
-        List<Integer> path = path(u, v);
+    public int distance(T u, T v) {
+        List<T> path = path(u, v);
         if (path == null) {
             return Integer.MAX_VALUE;
         } else {
@@ -150,10 +150,10 @@ public class Graph {
      * @param vertex the vertex to calculate the eccentricity of.
      * @return the eccentricity of the vertex.
      */
-    public int eccentricity(Integer vertex) {
+    public int eccentricity(T vertex) {
         int e = 0;
-        for (Integer v : vertices) {
-            List<Integer> path = path(vertex, v);
+        for (T v : vertices) {
+            List<T> path = path(vertex, v);
             if (path == null) {
                 e = Integer.MAX_VALUE; // eccentricity is defined to be infinite if no path exists
             } else {
@@ -170,7 +170,7 @@ public class Graph {
      */
     public int diameter() {
         int d = 0;
-        for (Integer v : vertices) {
+        for (T v : vertices) {
             d = Math.max(d, eccentricity(v));
         }
         return d;
