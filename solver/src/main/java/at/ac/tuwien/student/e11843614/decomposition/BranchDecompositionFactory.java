@@ -2,9 +2,12 @@ package at.ac.tuwien.student.e11843614.decomposition;
 
 import at.ac.tuwien.student.e11843614.graph.Graph;
 
+import java.util.Comparator;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public abstract class BranchDecompositionFactory {
 
@@ -60,11 +63,54 @@ public abstract class BranchDecompositionFactory {
         }
         System.out.println(associatedGraph);
         // Now we need to find a separation (X,Y) of associatedGraph.
+        List<Set<Integer>> sep = separation(graph, associatedGraph, mid);
         return bd;
     }
 
-    private static List<Set<Integer>> separation(Graph graph, Graph associatedGraph) {
-        // TODO
+    private static List<Set<Integer>> separation(Graph graph, Graph associatedGraph, Set<Integer> mid) {
+        // Linking nodes are vertices of associatedGraph that are also in mid.
+        Set<Integer> linkingNodes = new HashSet<>(associatedGraph.getVertices());
+        linkingNodes.retainAll(mid);
+        System.out.println("linking: " + linkingNodes);
+        // Source nodes are vertices that are in associatedGraph with eccentricity = diameter, as well as linking nodes.
+        Set<Integer> sourceNodes = new HashSet<>(linkingNodes);
+        int diameter = associatedGraph.diameter();
+        for (Integer vertex : associatedGraph.getVertices()) {
+            if (associatedGraph.eccentricity(vertex) == diameter) {
+                sourceNodes.add(vertex);
+            }
+        }
+        System.out.println("source: " + sourceNodes);
+        // TODO: Iterate over all source nodes, and alpha, beginning here:
+        // Choose a source node. Sort vertices of associatedGraph in non-decreasing order acc. to their distance to it.
+        Integer chosenSourceNode = null;
+        Iterator<Integer> iterator = associatedGraph.getVertices().iterator();
+        int index = (int) (Math.random() * associatedGraph.getVertices().size());
+        for (int i = 0; i <= index; i++) {
+            if (iterator.hasNext()) {
+                chosenSourceNode = iterator.next();
+            }
+        }
+        assert (chosenSourceNode != null);
+        Integer finalChosenSourceNode = chosenSourceNode; // required for the closure in .sorted()
+        List<Integer> sortedVertices = associatedGraph.getVertices().stream()
+            .sorted(Comparator.comparing(v -> associatedGraph.distance(v, finalChosenSourceNode)))
+            .collect(Collectors.toList());
+        // Choose a random value to cut the sortedVertices list.
+        int cutoff = (int) (Math.random() * sortedVertices.size());
+        Set<Integer> partA = new HashSet<>(), partB = new HashSet<>();
+        int i = 0;
+        for (Integer vertex : sortedVertices) {
+            if (i < cutoff) {
+                partA.add(vertex);
+            } else {
+                partB.add(vertex);
+            }
+            i++;
+        }
+        // TODO: H minor of G with partA identified to v_A, partB identified to v_B -??
+        // TODO: find smallest vertex cut in H intersecting all v_A,v_B-paths.
+        // means v_A,v_B in diff partitions
         return List.of();
     }
 
