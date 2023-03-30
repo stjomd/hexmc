@@ -55,7 +55,7 @@ public class Graph<T> {
     }
 
     /**
-     * Creates a deep copy of the graph.
+     * Creates a duplicate of the graph. This method creates new Edge instances, but keeps the instances of the vertices.
      * @return the duplicate of this graph.
      */
     public Graph<T> duplicate() {
@@ -168,6 +168,43 @@ public class Graph<T> {
             d = Math.max(d, eccentricity(v));
         }
         return d;
+    }
+
+    /**
+     * Performs edge contraction in this graph. Contraction of an edge e=uv results in a graph without the edge e,
+     * with u and v merged into a single vertex, and with edges to u/v being redirected to the new merged vertex.
+     * @param edge the edge to be contracted.
+     * @return a list of two vertices, where the first is the source vertex, and the second the target vertex.
+     * The source vertex is always merged into target.
+     */
+    public List<T> contractEdge(Edge<T> edge) {
+        T u = edge.getEndpoints().get(0), v = edge.getEndpoints().get(1);
+        // Choose a source and target vertex.
+        Set<T> neighborsU = neighborsOf(u);
+        Set<T> neighborsV = neighborsOf(v);
+        boolean sourceIsU = neighborsU.size() < neighborsV.size();
+        T source = sourceIsU ? u : v;
+        T target = sourceIsU ? v : u;
+        // Remove the edge, remove the source vertex. (it 'merges' into target)
+        this.edges.remove(edge);
+        this.vertices.remove(source);
+        // Set of edges still contains edges to just removed source vertex. Find such, and 'redirect' them to target.
+        Set<Edge<T>> edgesToRedirect = new HashSet<>();
+        for (Edge<T> e : this.edges) {
+            List<T> eEndpoints = e.getEndpoints();
+            if (eEndpoints.contains(source)) {
+                edgesToRedirect.add(e);
+            }
+        }
+        for (Edge<T> e : edgesToRedirect) {
+            List<T> eEndpoints = e.getEndpoints();
+            if (eEndpoints.get(0).equals(source)) {
+                eEndpoints.set(0, target);
+            } else if (eEndpoints.get(1).equals(source)) {
+                eEndpoints.set(1, target);
+            }
+        }
+        return List.of(source, target);
     }
 
     @Override

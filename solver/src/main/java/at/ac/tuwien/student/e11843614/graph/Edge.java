@@ -1,5 +1,6 @@
 package at.ac.tuwien.student.e11843614.graph;
 
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -10,8 +11,10 @@ public class Edge<T> {
 
     private final List<T> endpoints;
 
-    public Edge (T v, T u) {
-        this.endpoints = List.of(v, u);
+    public Edge (T u, T v) {
+        this.endpoints = new LinkedList<>();
+        this.endpoints.add(u);
+        this.endpoints.add(v);
     }
 
     public List<T> getEndpoints() {
