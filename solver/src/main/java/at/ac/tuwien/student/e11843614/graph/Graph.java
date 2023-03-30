@@ -54,6 +54,10 @@ public class Graph {
         vertices.add(edge.getEndpoints()[1]);
     }
 
+    public Set<Integer> getVertices() {
+        return vertices;
+    }
+
     /**
      * Returns the set of edges of this graph.
      * @return the set of Edge instances.
@@ -97,7 +101,7 @@ public class Graph {
      * @param target the target vertex.
      * @return a list of vertices, representing the shortest path in the graph between source and target.
      */
-    private List<Integer> path(Integer source, Integer target) {
+    public List<Integer> path(Integer source, Integer target) {
         Map<Integer, Integer> parents = new HashMap<>();
         Queue<Integer> queue = new LinkedList<>();
         Set<Integer> visited = new HashSet<>();
@@ -131,13 +135,22 @@ public class Graph {
         return path;
     }
 
+    public int distance(Integer u, Integer v) {
+        List<Integer> path = path(u, v);
+        if (path == null) {
+            return Integer.MAX_VALUE;
+        } else {
+            return path.size() - 1;
+        }
+    }
+
     /**
      * Calculates the eccentricity of a vertex, i.e. the greatest distance between the given vertex and any other
      * vertex.
      * @param vertex the vertex to calculate the eccentricity of.
      * @return the eccentricity of the vertex.
      */
-    private int eccentricity(Integer vertex) {
+    public int eccentricity(Integer vertex) {
         int e = 0;
         for (Integer v : vertices) {
             List<Integer> path = path(vertex, v);
@@ -155,7 +168,7 @@ public class Graph {
      * the largest distance between any two vertices.
      * @return the diameter of the graph.
      */
-    private int diameter() {
+    public int diameter() {
         int d = 0;
         for (Integer v : vertices) {
             d = Math.max(d, eccentricity(v));
