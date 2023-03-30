@@ -109,9 +109,30 @@ public abstract class BranchDecompositionFactory {
             }
             i++;
         }
-        // TODO: H minor of G with partA identified to v_A, partB identified to v_B -??
+        // Compute the minor of G with partA identified to v_A, partB identified to v_B
+        Graph<Integer> minor = graph.duplicate();
+        System.out.println("partA: " + partA);
+        System.out.println("partB: " + partB);
+        // With partA, partB (partition of associatedGraph), compute a minor of G, and identify partA, partB to some
+        // vertices.
+        boolean minorable = true;
+        while (minorable) {
+            minorable = false;
+            // Among edges of G, look for possibilities to contract edges/merge vertices from one partition together.
+            Set<Edge<Integer>> edges = minor.getEdges();
+            for (Edge<Integer> edge : edges) {
+                List<Integer> endpoints = edge.getEndpoints();
+                boolean hasCandidates = (partA.contains(endpoints.get(0)) && partA.contains(endpoints.get(1)))
+                    || (partB.contains(endpoints.get(0)) && partB.contains(endpoints.get(1)));
+                if (hasCandidates) {
+                    minor.contractEdge(edge);
+                    minorable = true;
+                    break;
+                }
+            }
+        }
+        // At this point, 'minor' is a minor of G with identified vertices. Now we find a min vertex cut.
         // TODO: find smallest vertex cut in H intersecting all v_A,v_B-paths.
-        // means v_A,v_B in diff partitions
         return List.of();
     }
 
