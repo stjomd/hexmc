@@ -11,26 +11,10 @@ import java.util.Queue;
 import java.util.Set;
 
 /**
- * An object that represents an undirected graph, where vertices are represented using integers.
+ * A class that represents an undirected graph.
+ * @param <T> the class of this graph's vertices.
  */
 public class Graph<T> {
-
-    /**
-     * An object that represents an undirected edge.
-     */
-//    public static class Edge<T> {
-//        private final List<T> endpoints;
-//        public Edge (T v, T u) {
-//            this.endpoints = List.of(v, u);
-//        }
-//        public List<T> getEndpoints() {
-//            return endpoints;
-//        }
-//        @Override
-//        public String toString() {
-//            return String.format("<%d, %d>", endpoints.get(0), endpoints.get(1));
-//        }
-//    }
 
     private final Set<Edge<T>> edges = new HashSet<>();
     private final Set<T> vertices = new HashSet<>();
@@ -54,6 +38,10 @@ public class Graph<T> {
         vertices.add(edge.getEndpoints().get(1));
     }
 
+    /**
+     * Returns the set of vertices in this graph.
+     * @return the set of vertices.
+     */
     public Set<T> getVertices() {
         return vertices;
     }
@@ -135,6 +123,12 @@ public class Graph<T> {
         return path;
     }
 
+    /**
+     * Calculates the shortest distance between two vertices.
+     * @param u the source vertex.
+     * @param v the target vertex.
+     * @return the distance between u and v.
+     */
     public int distance(T u, T v) {
         List<T> path = path(u, v);
         if (path == null) {
