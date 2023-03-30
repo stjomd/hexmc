@@ -20,6 +20,14 @@ public class Graph<T> {
     private final Set<T> vertices = new HashSet<>();
 
     /**
+     * Adds a vertex to this graph.
+     * @param v the new vertex.
+     */
+    public void addVertex(T v) {
+        vertices.add(v);
+    }
+
+    /**
      * Adds an edge between two vertices.
      * @param v a vertex, represented by an integer.
      * @param u a vertex, represented by an integer.
@@ -36,6 +44,22 @@ public class Graph<T> {
         edges.add(edge);
         vertices.add(edge.getEndpoints().get(0));
         vertices.add(edge.getEndpoints().get(1));
+    }
+
+    /**
+     * Removes a vertex and the incident edges from this graph.
+     * @param v the vertex to be removed.
+     */
+    public void removeVertex(T v) {
+        vertices.remove(v);
+        Set<Edge<T>> removing = new HashSet<>();
+        for (Edge<T> edge : edges) {
+            List<T> endpoints = edge.getEndpoints();
+            if (endpoints.contains(v)) {
+                removing.add(edge);
+            }
+        }
+        edges.removeAll(removing);
     }
 
     /**
