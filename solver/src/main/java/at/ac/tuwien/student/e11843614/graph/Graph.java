@@ -11,13 +11,50 @@ import java.util.Queue;
 import java.util.Set;
 
 /**
- * A class that represents an undirected graph.
+ * A class that represents a graph.
  * @param <T> the class of this graph's vertices.
  */
 public class Graph<T> {
 
     private final Set<Edge<T>> edges = new HashSet<>();
     private final Set<T> vertices = new HashSet<>();
+
+    // ----- Properties ------------------------------------------------------------------------------------------------
+
+    /**
+     * Returns the set of vertices in this graph.
+     * @return the set of vertices.
+     */
+    public Set<T> getVertices() {
+        return vertices;
+    }
+
+    /**
+     * Returns the set of edges of this graph.
+     * @return the set of Edge instances.
+     */
+    public Set<Edge<T>> getEdges() {
+        return edges;
+    }
+
+    /**
+     * Returns a set of vertices adjacent to the given vertex.
+     * @param vertex the vertex to find neighbors of.
+     * @return the set of neighbors/adjacent vertices.
+     */
+    private Set<T> neighborsOf(T vertex) {
+        Set<T> neighbors = new HashSet<>();
+        for (Edge<T> edge : edges) {
+            if (edge.getEndpoints().get(0) == vertex) {
+                neighbors.add(edge.getEndpoints().get(1));
+            } else if (edge.getEndpoints().get(1) == vertex) {
+                neighbors.add(edge.getEndpoints().get(0));
+            }
+        }
+        return neighbors;
+    }
+
+    // ----- Mutators --------------------------------------------------------------------------------------------------
 
     /**
      * Adds a vertex to this graph.
@@ -29,21 +66,21 @@ public class Graph<T> {
 
     /**
      * Adds an edge between two vertices.
-     * @param v a vertex, represented by an integer.
-     * @param u a vertex, represented by an integer.
-     */
-    public void addEdge(T u, T v) {
-        addEdge(new Edge<>(u, v));
-    }
-
-    /**
-     * Adds an edge between two vertices.
      * @param edge the edge to be added.
      */
     public void addEdge(Edge<T> edge) {
         edges.add(edge);
         vertices.add(edge.getEndpoints().get(0));
         vertices.add(edge.getEndpoints().get(1));
+    }
+
+    /**
+     * Adds an edge between two vertices.
+     * @param v a vertex, represented by an integer.
+     * @param u a vertex, represented by an integer.
+     */
+    public void addEdge(T u, T v) {
+        addEdge(new Edge<>(u, v));
     }
 
     /**
@@ -63,49 +100,43 @@ public class Graph<T> {
     }
 
     /**
-     * Returns the set of vertices in this graph.
-     * @return the set of vertices.
+     * Performs edge contraction in this graph. Contraction of an edge e=uv results in a graph without the edge e,
+     * with u and v merged into a single vertex, and with edges to u/v being redirected to the new merged vertex.
+     * @param edge the edge to be contracted.
+     * @return a list of two vertices, where the first is the source vertex, and the second the target vertex.
+     * The source vertex is always merged into target.
      */
-    public Set<T> getVertices() {
-        return vertices;
-    }
-
-    /**
-     * Returns the set of edges of this graph.
-     * @return the set of Edge instances.
-     */
-    public Set<Edge<T>> getEdges() {
-        return edges;
-    }
-
-    /**
-     * Creates a duplicate of the graph. This method creates new Edge instances, but keeps the instances of the vertices.
-     * @return the duplicate of this graph.
-     */
-    public Graph<T> duplicate() {
-        Graph<T> graph = new Graph<>();
-        for (Edge<T> edge : edges) {
-            graph.addEdge(edge);
-        }
-        return graph;
-    }
-
-    /**
-     * Returns a set of vertices adjacent to the given vertex.
-     * @param vertex the vertex to find neighbors of.
-     * @return the set of neighbors/adjacent vertices.
-     */
-    private Set<T> neighborsOf(T vertex) {
-        Set<T> neighbors = new HashSet<>();
-        for (Edge<T> edge : edges) {
-            if (edge.getEndpoints().get(0) == vertex) {
-                neighbors.add(edge.getEndpoints().get(1));
-            } else if (edge.getEndpoints().get(1) == vertex) {
-                neighbors.add(edge.getEndpoints().get(0));
+    public List<T> contractEdge(Edge<T> edge) {
+        T u = edge.getEndpoints().get(0), v = edge.getEndpoints().get(1);
+        // Choose a source and target vertex.
+        Set<T> neighborsU = neighborsOf(u);
+        Set<T> neighborsV = neighborsOf(v);
+        boolean sourceIsU = neighborsU.size() < neighborsV.size();
+        T source = sourceIsU ? u : v;
+        T target = sourceIsU ? v : u;
+        // Remove the edge, remove the source vertex. (it 'merges' into target)
+        this.edges.remove(edge);
+        this.vertices.remove(source);
+        // Set of edges still contains edges to just removed source vertex. Find such, and 'redirect' them to target.
+        Set<Edge<T>> edgesToRedirect = new HashSet<>();
+        for (Edge<T> e : this.edges) {
+            List<T> eEndpoints = e.getEndpoints();
+            if (eEndpoints.contains(source)) {
+                edgesToRedirect.add(e);
             }
         }
-        return neighbors;
+        for (Edge<T> e : edgesToRedirect) {
+            List<T> eEndpoints = e.getEndpoints();
+            if (eEndpoints.get(0).equals(source)) {
+                eEndpoints.set(0, target);
+            } else if (eEndpoints.get(1).equals(source)) {
+                eEndpoints.set(1, target);
+            }
+        }
+        return List.of(source, target);
     }
+
+    // ----- Paths -----------------------------------------------------------------------------------------------------
 
     /**
      * Retrieves the shortest path between two vertices.
@@ -169,16 +200,16 @@ public class Graph<T> {
      * @return the eccentricity of the vertex.
      */
     public int eccentricity(T vertex) {
-        int e = 0;
+        int eccentricity = 0;
         for (T v : vertices) {
             List<T> path = path(vertex, v);
             if (path == null) {
-                e = Integer.MAX_VALUE; // eccentricity is defined to be infinite if no path exists
+                eccentricity = Integer.MAX_VALUE; // eccentricity is defined to be infinite if no path exists
             } else {
-                e = Math.max(e, path.size() - 1);
+                eccentricity = Math.max(eccentricity, path.size() - 1);
             }
         }
-        return e;
+        return eccentricity;
     }
 
     /**
@@ -187,48 +218,28 @@ public class Graph<T> {
      * @return the diameter of the graph.
      */
     public int diameter() {
-        int d = 0;
+        int diameter = 0;
         for (T v : vertices) {
-            d = Math.max(d, eccentricity(v));
+            diameter = Math.max(diameter, eccentricity(v));
         }
-        return d;
+        return diameter;
     }
 
+    // ----- Miscellaneous ---------------------------------------------------------------------------------------------
+
     /**
-     * Performs edge contraction in this graph. Contraction of an edge e=uv results in a graph without the edge e,
-     * with u and v merged into a single vertex, and with edges to u/v being redirected to the new merged vertex.
-     * @param edge the edge to be contracted.
-     * @return a list of two vertices, where the first is the source vertex, and the second the target vertex.
-     * The source vertex is always merged into target.
+     * Creates a duplicate of the graph. This method creates new Edge instances, but keeps the instances of the vertices.
+     * @return the duplicate of this graph.
      */
-    public List<T> contractEdge(Edge<T> edge) {
-        T u = edge.getEndpoints().get(0), v = edge.getEndpoints().get(1);
-        // Choose a source and target vertex.
-        Set<T> neighborsU = neighborsOf(u);
-        Set<T> neighborsV = neighborsOf(v);
-        boolean sourceIsU = neighborsU.size() < neighborsV.size();
-        T source = sourceIsU ? u : v;
-        T target = sourceIsU ? v : u;
-        // Remove the edge, remove the source vertex. (it 'merges' into target)
-        this.edges.remove(edge);
-        this.vertices.remove(source);
-        // Set of edges still contains edges to just removed source vertex. Find such, and 'redirect' them to target.
-        Set<Edge<T>> edgesToRedirect = new HashSet<>();
-        for (Edge<T> e : this.edges) {
-            List<T> eEndpoints = e.getEndpoints();
-            if (eEndpoints.contains(source)) {
-                edgesToRedirect.add(e);
-            }
+    public Graph<T> duplicate() {
+        Graph<T> graph = new Graph<>();
+        for (T vertex : vertices) {
+            graph.addVertex(vertex);
         }
-        for (Edge<T> e : edgesToRedirect) {
-            List<T> eEndpoints = e.getEndpoints();
-            if (eEndpoints.get(0).equals(source)) {
-                eEndpoints.set(0, target);
-            } else if (eEndpoints.get(1).equals(source)) {
-                eEndpoints.set(1, target);
-            }
+        for (Edge<T> edge : edges) {
+            graph.addEdge(edge);
         }
-        return List.of(source, target);
+        return graph;
     }
 
     @Override
