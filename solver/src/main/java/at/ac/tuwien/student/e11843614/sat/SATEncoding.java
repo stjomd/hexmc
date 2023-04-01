@@ -5,34 +5,93 @@ import at.ac.tuwien.student.e11843614.formula.Formula;
 import at.ac.tuwien.student.e11843614.graph.Edge;
 import at.ac.tuwien.student.e11843614.graph.Graph;
 
+/**
+ * A class that represents a SAT encoding for graph parameters, i.e. a formula and a mapping of its variables to
+ * integers (for DIMACS CNF format).
+ */
 public class SATEncoding {
 
+    private int variableCounter = 1;
+
     private final Formula formula = new Formula();
+    private final Bijection<Variable, Integer> variables = new Bijection<>();
 
-    private int counter = 1;
-
-    private final Bijection<Integer, Integer>       vertices  = new Bijection<>();
-    private final Bijection<Edge<Integer>, Integer> edges     = new Bijection<>();
-    private final Bijection<Variable, Integer>      variables = new Bijection<>();
+    private final Bijection<Integer, Integer> vertices = new Bijection<>();
+    private final Bijection<Edge<Integer>, Integer> edges = new Bijection<>();
 
     private SATEncoding() {}
 
+    /**
+     * Returns a SAT Encoding with a formula that is satisfiable iff the graph has branch-width at most w.
+     * @param graph the graph to construct a SAT Encoding for.
+     * @param w the target branch-width.
+     * @return a SAT Encoding with a formula that is satisfiable iff bw(graph) <= w.
+     */
     public static SATEncoding forBranchDecompositionOf(Graph<Integer> graph, int w) {
         SATEncoding encoding = new SATEncoding();
         encoding.encodeGraph(graph);
-        encoding.buildClauses(graph, w, w);
+        int d = (int) (Math.floor(encoding.edges.size() / 2.0)
+            - Math.ceil(w / 2.0)
+            + Math.ceil(Math.log(Math.floor(w / 2.0)) / Math.log(2))
+        ); // TODO: weird values?
+        encoding.buildFormulaForBranchDecomposition(w, d);
         return encoding;
     }
 
+    // ----- Properties ------------------------------------------------------------------------------------------------
+
+    /**
+     * Returns the formula in this encoding.
+     * @return a Formula.
+     */
+    public Formula getFormula() {
+        return formula;
+    }
+
+    /**
+     * Returns the bijection between the variables and their integer representations in the formula of this encoding.
+     * @return a bijection between variables and integers.
+     */
+    public Bijection<Variable, Integer> getVariables() {
+        return variables;
+    }
+
+    /**
+     * Returns the bijection between the vertices and their integer representations.
+     * @return a bijection between vertices and integers.
+     */
+    public Bijection<Integer, Integer> getVertices() {
+        return vertices;
+    }
+
+    /**
+     * Returns the bijection between the edges and their integer representations.
+     * @return a bijection between edges and integers.
+     */
+    public Bijection<Edge<Integer>, Integer> getEdges() {
+        return edges;
+    }
+
+    // ----- Encoding --------------------------------------------------------------------------------------------------
+
+    /**
+     * Maps an integer (>= 1) to a variable. If the variable has been mapped already, returns its existing mapping.
+     * @param variable the variable to be encoded.
+     * @return the integer (>= 1) this variable is mapped to.
+     */
     private int encodeVariable(Variable variable) {
         Integer value = variables.getFromDestination(variable);
         if (value != null) {
             return value;
         }
-        variables.put(variable, counter);
-        return counter++;
+        variables.put(variable, variableCounter);
+        return variableCounter++;
     }
 
+    /**
+     * Maps the graph's vertices and edges to integers, beginning with 1 in each case.
+     * @param graph the graph to encode vertices and edges of.
+     */
     private void encodeGraph(Graph<Integer> graph) {
         int i = 1;
         for (Integer vertex : graph.getVertices()) {
@@ -46,7 +105,15 @@ public class SATEncoding {
         }
     }
 
-    private void buildClauses(Graph<Integer> graph, int w, int d) {
+    // ----- Formulas --------------------------------------------------------------------------------------------------
+
+    /**
+     * Constructs the formula that is satisfiable iff the graph has a branch decomposition of width at most w, and a
+     * derivation of length at most d.
+     * @param w the target branch-width.
+     * @param d the target derivation length.
+     */
+    private void buildFormulaForBranchDecomposition(int w, int d) {
         // 1
         for (Integer e : edges.getDestination()) {
             for (Integer f : edges.getDestination()) {
@@ -232,10 +299,6 @@ public class SATEncoding {
                 }
             }
         }
-    }
-
-    public Formula getFormula() {
-        return formula;
     }
 
 }

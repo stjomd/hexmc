@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * A class that represents a propositional variable.
+ * A class that represents a propositional variable for SAT encodings.
  */
 public class Variable {
 
