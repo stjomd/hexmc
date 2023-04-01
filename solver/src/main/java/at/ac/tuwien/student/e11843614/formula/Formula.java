@@ -25,9 +25,9 @@ public class Formula {
 
     /**
      * Adds a clause to the formula.
-     * @param literals an array of literals, represented by integers, representing a clause.
+     * @param literals literals, represented by integers, representing a clause.
      */
-    public void addClause(Integer[] literals) {
+    public void addClause(Integer... literals) {
         Clause clause = new Clause();
         for (Integer literal : literals) {
             clause.addLiteral(literal);
@@ -49,6 +49,11 @@ public class Formula {
      */
     public List<Clause> getClauses() {
         return clauses;
+    }
+
+    @Override
+    public String toString() {
+        return clauses.toString();
     }
 
 }
