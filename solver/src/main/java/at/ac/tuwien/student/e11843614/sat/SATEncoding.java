@@ -279,8 +279,8 @@ public class SATEncoding {
                         int var2 = encodeVariable(Variable.counter(e, u, i, j));
                         int var3 = encodeVariable(Variable.load(e, u, i));
                         int var4 = encodeVariable(Variable.counter(e, u - 1, i, j - 1));
-                        int var5 = encodeVariable(Variable.counter(e, u, i, j));
-                        int var6 = encodeVariable(Variable.load(e, u, i));
+                        int var5 = var2;
+                        int var6 = var3;
                         int var7 = encodeVariable(Variable.counter(e, u - 1, i, w));
                         formula.addClause(-var1, var2);
                         formula.addClause(-var3, var4, var5);
