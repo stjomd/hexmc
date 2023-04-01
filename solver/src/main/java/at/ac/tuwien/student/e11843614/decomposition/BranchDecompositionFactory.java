@@ -6,6 +6,7 @@ import at.ac.tuwien.student.e11843614.graph.Graph;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -13,6 +14,40 @@ import java.util.stream.Collectors;
 public abstract class BranchDecompositionFactory {
 
     private final static int ALPHA_STEPS = 10;
+
+    // TODO: temporary, remove this & use heuristic() below
+    // creates a branch decomposition randomly
+    public static BranchDecompositionNode placeholder(Graph<Integer> graph) {
+        BranchDecompositionNode root = new BranchDecompositionNode();
+        Iterator<Edge<Integer>> it = graph.getEdges().iterator();
+        // Add first two edges
+        Edge<Integer> firstEdge = it.next();
+        Edge<Integer> secondEdge = it.next();
+        root.addChild(new BranchDecompositionNode(firstEdge));
+        root.addChild(new BranchDecompositionNode(secondEdge));
+        // Continue with the rest of the edges
+        while (it.hasNext()) {
+            BranchDecompositionNode node = root;
+            while (node.getEdge() == null) { // until leaf is reached
+                int i = 0;
+                int index = (int) (Math.random() * node.getChildren().size());
+                for (BranchDecompositionNode child : node.getChildren()) {
+                    node = child;
+                    if (i == index) {
+                        break;
+                    }
+                    i++;
+                }
+            }
+            // node is a leaf node now -> transform to internal
+            Edge<Integer> currentEdge = node.getEdge();
+            Edge<Integer> newEdge = it.next();
+            node.addChild(new BranchDecompositionNode(currentEdge));
+            node.addChild(new BranchDecompositionNode(newEdge));
+            node.setEdge(null); // makes node internal
+        }
+        return root;
+    }
 
     /**
      * Constructs an approximation of a branch decomposition according to a heuristic.
