@@ -1,6 +1,7 @@
 package at.ac.tuwien.student.e11843614.sat;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * A class that represents a propositional variable.
@@ -94,6 +95,23 @@ public class Variable {
     @Override
     public String toString() {
         return type.toString() + "(" + args + ")";
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this)
+            return true;
+        if (obj == null)
+            return false;
+        if (!(obj instanceof Variable))
+            return false;
+        Variable other = (Variable) obj;
+        return this.type == other.type && this.args.equals(other.args);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(type, args);
     }
 
 }
