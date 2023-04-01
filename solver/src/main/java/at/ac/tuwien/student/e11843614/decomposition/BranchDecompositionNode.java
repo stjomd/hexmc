@@ -10,7 +10,7 @@ import java.util.Set;
  */
 public class BranchDecompositionNode {
 
-    private final Edge<Integer> edge;
+    private Edge<Integer> edge;
     private BranchDecompositionNode parent = null;
     private final Set<BranchDecompositionNode> children = new HashSet<>();
 
@@ -18,6 +18,14 @@ public class BranchDecompositionNode {
         this.edge = null;
     }
     public BranchDecompositionNode(Edge<Integer> edge) {
+        this.edge = edge;
+    }
+
+    /**
+     * Sets the edge of this node.
+     * @param edge the edge to be stored.
+     */
+    public void setEdge(Edge<Integer> edge) {
         this.edge = edge;
     }
 
