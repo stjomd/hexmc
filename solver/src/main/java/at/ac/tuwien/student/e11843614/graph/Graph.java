@@ -108,6 +108,11 @@ public class Graph<T> {
      */
     public List<T> contractEdge(Edge<T> edge) {
         T u = edge.getEndpoints().get(0), v = edge.getEndpoints().get(1);
+        if (u.equals(v)) {
+            // An edge that is a loop. In this case just remove the edge.
+            this.edges.remove(edge);
+            return List.of(u, v);
+        }
         // Choose a source and target vertex.
         Set<T> neighborsU = neighborsOf(u);
         Set<T> neighborsV = neighborsOf(v);
