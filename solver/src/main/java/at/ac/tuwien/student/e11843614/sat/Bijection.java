@@ -1,5 +1,6 @@
 package at.ac.tuwien.student.e11843614.sat;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -26,5 +27,13 @@ public class Bijection<S, T> {
     public T get2(S a) {
         return forward.get(a);
     }
-    
+
+    public Collection<S> getDomain() {
+        return forward.keySet();
+    }
+
+    public Collection<T> getDestination() {
+        return forward.values();
+    }
+
 }
