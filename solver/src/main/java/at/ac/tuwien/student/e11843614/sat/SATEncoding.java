@@ -34,7 +34,7 @@ public class SATEncoding {
             - Math.ceil(w / 2.0)
             + Math.ceil(Math.log(Math.floor(w / 2.0)) / Math.log(2))
         ); // TODO: weird values?
-        encoding.buildFormulaForBranchDecomposition(w, d);
+        encoding.buildFormulaForBranchDecomposition(w, d+1);
         return encoding;
     }
 
@@ -118,9 +118,9 @@ public class SATEncoding {
         for (Integer e : edges.getDestination()) {
             for (Integer f : edges.getDestination()) {
                 if (e < f) {
-                    int var1 = encodeVariable(Variable.set(e, f, 0));
-                    int var2 = encodeVariable(Variable.set(e, f, d));
                     for (int i = 1; i <= d; i++) {
+                        int var1 = encodeVariable(Variable.set(e, f, 0));
+                        int var2 = encodeVariable(Variable.set(e, f, d));
                         int var3 = encodeVariable(Variable.set(e, f, i));
                         int var4 = encodeVariable(Variable.set(e, f, i + 1));
                         formula.addClause(-var1);
