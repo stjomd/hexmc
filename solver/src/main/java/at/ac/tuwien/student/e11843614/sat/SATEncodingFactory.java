@@ -26,13 +26,15 @@ public abstract class SATEncodingFactory {
             for (Integer f : sat.getEdgeMap().getDestination()) {
                 if (e < f) {
                     for (int i = 1; i <= d; i++) {
-                        int var1 = sat.encodeVariable(Variable.set(e, f, 0));
-                        int var2 = sat.encodeVariable(Variable.set(e, f, d));
-                        int var3 = sat.encodeVariable(Variable.set(e, f, i));
-                        int var4 = sat.encodeVariable(Variable.set(e, f, i + 1));
-                        sat.getFormula().addClause(-var1);
-                        sat.getFormula().addClause(var2);
-                        sat.getFormula().addClause(-var3, var4);
+                        int[] var = new int[]{
+                            sat.encodeVariable(Variable.set(e, f, 0)),
+                            sat.encodeVariable(Variable.set(e, f, d)),
+                            sat.encodeVariable(Variable.set(e, f, i)),
+                            sat.encodeVariable(Variable.set(e, f, i + 1))
+                        };
+                        sat.getFormula().addClause(-var[0]);
+                        sat.getFormula().addClause(var[1]);
+                        sat.getFormula().addClause(-var[2], var[3]);
                     }
                 }
             }
@@ -43,12 +45,14 @@ public abstract class SATEncodingFactory {
                 for (Integer g : sat.getEdgeMap().getDestination()) {
                     if (e < f && f < g) {
                         for (int i = 1; i <= d; i++) {
-                            int var1 = sat.encodeVariable(Variable.set(e, f, i));
-                            int var2 = sat.encodeVariable(Variable.set(e, g, i));
-                            int var3 = sat.encodeVariable(Variable.set(f, g, i));
-                            sat.getFormula().addClause(-var1, -var2, var3);
-                            sat.getFormula().addClause(-var1, -var3, var2);
-                            sat.getFormula().addClause(-var2, -var3, var1);
+                            int[] var = new int[]{
+                                sat.encodeVariable(Variable.set(e, f, i)),
+                                sat.encodeVariable(Variable.set(e, g, i)),
+                                sat.encodeVariable(Variable.set(f, g, i))
+                            };
+                            sat.getFormula().addClause(-var[0], -var[1], var[2]);
+                            sat.getFormula().addClause(-var[0], -var[2], var[1]);
+                            sat.getFormula().addClause(-var[1], -var[2], var[0]);
                         }
                     }
                 }
@@ -82,12 +86,14 @@ public abstract class SATEncodingFactory {
             for (Integer f : sat.getEdgeMap().getDestination()) {
                 if (e < f) {
                     for (int i = 1; i < d - 1; i++) {
-                        int var1 = sat.encodeVariable(Variable.leader(e, i));
-                        int var2 = sat.encodeVariable(Variable.leader(f, i));
-                        int var3 = sat.encodeVariable(Variable.set(e, f, i + 1));
-                        int var4 = sat.encodeVariable(Variable.leader(e, i + 1));
-                        int var5 = sat.encodeVariable(Variable.leader(f, i + 1));
-                        sat.getFormula().addClause(-var1, -var2, -var3, var4, var5);
+                        int[] var = new int[]{
+                            sat.encodeVariable(Variable.leader(e, i)),
+                            sat.encodeVariable(Variable.leader(f, i)),
+                            sat.encodeVariable(Variable.set(e, f, i + 1)),
+                            sat.encodeVariable(Variable.leader(e, i + 1)),
+                            sat.encodeVariable(Variable.leader(f, i + 1))
+                        };
+                        sat.getFormula().addClause(-var[0], -var[1], -var[2], var[3], var[4]);
                     }
                 }
             }
@@ -97,15 +103,17 @@ public abstract class SATEncodingFactory {
             for (Integer f : sat.getEdgeMap().getDestination()) {
                 for (Integer g : sat.getEdgeMap().getDestination()) {
                     if (e < f && f < g) {
-                        int var1 = sat.encodeVariable(Variable.leader(e, d - 1));
-                        int var2 = sat.encodeVariable(Variable.leader(f, d - 1));
-                        int var3 = sat.encodeVariable(Variable.leader(g, d - 1));
-                        int var4 = sat.encodeVariable(Variable.set(e, f, d));
-                        int var5 = sat.encodeVariable(Variable.set(e, g, d));
-                        int var6 = sat.encodeVariable(Variable.leader(e, d));
-                        int var7 = sat.encodeVariable(Variable.leader(f, d));
-                        int var8 = sat.encodeVariable(Variable.leader(g, d));
-                        sat.getFormula().addClause(-var1, -var2, -var3, -var4, -var5, var6, var7, var8);
+                        int[] var = new int[]{
+                            sat.encodeVariable(Variable.leader(e, d - 1)),
+                            sat.encodeVariable(Variable.leader(f, d - 1)),
+                            sat.encodeVariable(Variable.leader(g, d - 1)),
+                            sat.encodeVariable(Variable.set(e, f, d)),
+                            sat.encodeVariable(Variable.set(e, g, d)),
+                            sat.encodeVariable(Variable.leader(e, d)),
+                            sat.encodeVariable(Variable.leader(f, d)),
+                            sat.encodeVariable(Variable.leader(g, d))
+                        };
+                        sat.getFormula().addClause(-var[0], -var[1], -var[2], -var[3], -var[4], var[5], var[6], var[7]);
                     }
                 }
             }
@@ -113,9 +121,11 @@ public abstract class SATEncodingFactory {
         // 6
         for (Integer e : sat.getEdgeMap().getDestination()) {
             for (int i = 1; i < d; i++) {
-                int var1 = sat.encodeVariable(Variable.leader(e, i));
-                int var2 = sat.encodeVariable(Variable.leader(e, i + 1));
-                sat.getFormula().addClause(var1, -var2);
+                int[] var = new int[]{
+                    sat.encodeVariable(Variable.leader(e, i)),
+                    sat.encodeVariable(Variable.leader(e, i + 1))
+                };
+                sat.getFormula().addClause(var[0], -var[1]);
             }
         }
         // 7
@@ -130,11 +140,13 @@ public abstract class SATEncodingFactory {
                             Integer ud = sat.getVertexMap().getFromDomain(u);
                             if (fEdge.getEndpoints().contains(ud) && gEdge.getEndpoints().contains(ud)) {
                                 for (int i = 1; i <= d; i++) {
-                                    int var1 = sat.encodeVariable(Variable.leader(e, i));
-                                    int var2 = sat.encodeVariable(Variable.load(e, u, i));
-                                    int var3 = sat.encodeVariable(Variable.set(Math.min(e, f), Math.max(e, f), i));
-                                    int var4 = sat.encodeVariable(Variable.set(Math.min(e, g), Math.max(e, g), i));
-                                    sat.getFormula().addClause(-var1, var2, var3, -var4);
+                                    int[] var = new int[]{
+                                        sat.encodeVariable(Variable.leader(e, i)),
+                                        sat.encodeVariable(Variable.load(e, u, i)),
+                                        sat.encodeVariable(Variable.set(Math.min(e, f), Math.max(e, f), i)),
+                                        sat.encodeVariable(Variable.set(Math.min(e, g), Math.max(e, g), i))
+                                    };
+                                    sat.getFormula().addClause(-var[0], var[1], var[2], -var[3]);
                                 }
                             }
                         }
@@ -153,10 +165,12 @@ public abstract class SATEncodingFactory {
                         Integer ud = sat.getVertexMap().getFromDomain(u);
                         if (eEdge.getEndpoints().contains(ud) && fEdge.getEndpoints().contains(ud)) {
                             for (int i = 1; i <= d; i++) {
-                                int var1 = sat.encodeVariable(Variable.leader(e, i));
-                                int var2 = sat.encodeVariable(Variable.set(Math.min(e, f), Math.max(e, f), i));
-                                int var3 = sat.encodeVariable(Variable.load(e, u, i));
-                                sat.getFormula().addClause(-var1, var2, var3);
+                                int[] var = new int[]{
+                                    sat.encodeVariable(Variable.leader(e, i)),
+                                    sat.encodeVariable(Variable.set(Math.min(e, f), Math.max(e, f), i)),
+                                    sat.encodeVariable(Variable.load(e, u, i))
+                                };
+                                sat.getFormula().addClause(-var[0], var[1], var[2]);
                             }
                         }
                     }
@@ -167,13 +181,15 @@ public abstract class SATEncodingFactory {
         for (Integer e : sat.getEdgeMap().getDestination()) {
             for (Integer u : sat.getVertexMap().getDestination()) {
                 for (int i = 1; i <= d - 2; i++) {
-                    int var1 = sat.encodeVariable(Variable.leader(e, i));
-                    int var2 = sat.encodeVariable(Variable.leader(e, i + 1));
-                    int var3 = sat.encodeVariable(Variable.leader(e, i + 2));
-                    int var4 = sat.encodeVariable(Variable.load(e, u, i));
-                    int var5 = sat.encodeVariable(Variable.load(e, u, i + 2));
-                    int var6 = sat.encodeVariable(Variable.load(e, u, i + 1));
-                    sat.getFormula().addClause(-var1, -var2, -var3, -var4, -var5, var6);
+                    int[] var = new int[]{
+                        sat.encodeVariable(Variable.leader(e, i)),
+                        sat.encodeVariable(Variable.leader(e, i + 1)),
+                        sat.encodeVariable(Variable.leader(e, i + 2)),
+                        sat.encodeVariable(Variable.load(e, u, i)),
+                        sat.encodeVariable(Variable.load(e, u, i + 2)),
+                        sat.encodeVariable(Variable.load(e, u, i + 1))
+                    };
+                    sat.getFormula().addClause(-var[0], -var[1], -var[2], -var[3], -var[4], var[5]);
                 }
             }
         }
@@ -182,16 +198,18 @@ public abstract class SATEncodingFactory {
             for (int u = 2; u <= sat.getVertexMap().size(); u++) {
                 for (int i = 1; i <= d; i++) {
                     for (int j = 1; j <= w; j++) {
-                        int var1 = sat.encodeVariable(Variable.counter(e, u - 1, i, j));
-                        int var2 = sat.encodeVariable(Variable.counter(e, u, i, j));
-                        int var3 = sat.encodeVariable(Variable.load(e, u, i));
-                        int var4 = sat.encodeVariable(Variable.counter(e, u - 1, i, j - 1));
-                        int var5 = var2;
-                        int var6 = var3;
-                        int var7 = sat.encodeVariable(Variable.counter(e, u - 1, i, w));
-                        sat.getFormula().addClause(-var1, var2);
-                        sat.getFormula().addClause(-var3, var4, var5);
-                        sat.getFormula().addClause(-var6, -var7);
+                        int[] var = new int[]{
+                            sat.encodeVariable(Variable.counter(e, u - 1, i, j)),
+                            sat.encodeVariable(Variable.counter(e, u, i, j)),
+                            sat.encodeVariable(Variable.load(e, u, i)),
+                            sat.encodeVariable(Variable.counter(e, u - 1, i, j - 1)),
+                            sat.encodeVariable(Variable.counter(e, u, i, j)),
+                            sat.encodeVariable(Variable.load(e, u, i)),
+                            sat.encodeVariable(Variable.counter(e, u - 1, i, w))
+                        };
+                        sat.getFormula().addClause(-var[0], var[1]);
+                        sat.getFormula().addClause(-var[2], var[3], var[4]);
+                        sat.getFormula().addClause(-var[5], -var[6]);
                     }
                 }
             }
@@ -200,9 +218,11 @@ public abstract class SATEncodingFactory {
         for (Integer e : sat.getEdgeMap().getDestination()) {
             for (int u = 1; u <= sat.getVertexMap().size(); u++) {
                 for (int i = 1; i <= d; i++) {
-                    int var1 = sat.encodeVariable(Variable.load(e, u, i));
-                    int var2 = sat.encodeVariable(Variable.counter(e, u, i, 1));
-                    sat.getFormula().addClause(-var1, var2);
+                    int[] var = new int[]{
+                        sat.encodeVariable(Variable.load(e, u, i)),
+                        sat.encodeVariable(Variable.counter(e, u, i, 1))
+                    };
+                    sat.getFormula().addClause(-var[0], var[1]);
                 }
             }
         }
