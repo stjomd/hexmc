@@ -12,13 +12,16 @@ public class Variable {
      * An enum that represents the type of the variable.
      */
     public enum Type {
-        SET, LEADER, LOAD, COUNTER
+        SET, LEADER, LOAD, COUNTER,
+        COMPONENT, GROUP, REPRESENTATIVE, ORDER
     }
 
     private Type type;
     private List<Integer> args;
 
     private Variable() {}
+
+    // ----- Variables for branch-width --------------------------------------------------------------------------------
 
     /**
      * A set variable. Should be true if edges e, f are in the same set at level i.
@@ -75,6 +78,65 @@ public class Variable {
         var.args = List.of(e, u, i, j);
         return var;
     }
+
+    // ----- Variables for clique-width --------------------------------------------------------------------------------
+
+    /**
+     * A component variable. Should be true if vertices u, v are in the same component in i-th template.
+     * @param u a vertex.
+     * @param v a vertex.
+     * @param i the template number.
+     * @return the component variable.
+     */
+    public static Variable component(int u, int v, int i) {
+        Variable var = new Variable();
+        var.type = Type.COMPONENT;
+        var.args = List.of(u, v, i);
+        return var;
+    }
+
+    /**
+     * A group variable. Should be true if vertices u, v are in the same group in i-th template.
+     * @param u a vertex.
+     * @param v a vertex.
+     * @param i the template number.
+     * @return the component variable.
+     */
+    public static Variable group(int u, int v, int i) {
+        Variable var = new Variable();
+        var.type = Type.GROUP;
+        var.args = List.of(u, v, i);
+        return var;
+    }
+
+    /**
+     * A representative variable. Should be true if v is the smallest vertex in some group in i-th template.
+     * @param v a vertex.
+     * @param i the template number.
+     * @return the representative variable.
+     */
+    public static Variable representative(int v, int i) {
+        Variable var = new Variable();
+        var.type = Type.REPRESENTATIVE;
+        var.args = List.of(v, i);
+        return var;
+    }
+
+    /**
+     * An order variable. Used to restrict the number of representative vertices.
+     * @param v a vertex.
+     * @param a element of domain.
+     * @param i the template number.
+     * @return the order variable.
+     */
+    public static Variable order(int v, int a, int i) {
+        Variable var = new Variable();
+        var.type = Type.ORDER;
+        var.args = List.of(v, a, i);
+        return var;
+    }
+
+    // ----- Miscellaneous ---------------------------------------------------------------------------------------------
 
     /**
      * Returns the type of this variable.

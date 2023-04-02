@@ -4,13 +4,15 @@ import at.ac.tuwien.student.e11843614.formula.Clause;
 import at.ac.tuwien.student.e11843614.graph.Edge;
 import at.ac.tuwien.student.e11843614.graph.Graph;
 
+import java.util.List;
+
 /**
  * A class that is responsible for constructing a SAT encoding of a graph.
  */
 public abstract class SATEncodingFactory {
 
     /**
-     * Construct a SAT encoding of a graph with a formula that is satisfiable iff branch-width of the graph is <= w.
+     * Constructs a SAT encoding of a graph with a formula that is satisfiable iff branch-width of the graph is <= w.
      * @param graph the graph.
      * @param w the target branch-width.
      * @return a SAT encoding for this graph that contains a formula which is satisfiable if bw(graph) <= w.
@@ -19,7 +21,8 @@ public abstract class SATEncodingFactory {
         int d = (int) (Math.floor(graph.getEdges().size() / 2.0)
             - Math.ceil(w / 2.0)
             + Math.ceil(Math.log(Math.floor(w / 2.0)) / Math.log(2))
-        ) + 1; // TODO: weird values of d
+        ); // TODO: weird values of d
+        d = Math.max(5, d);
         SATEncoding sat = new SATEncoding(graph);
         // 1
         for (Integer e : sat.getEdgeMap().getDestination()) {
@@ -227,6 +230,194 @@ public abstract class SATEncodingFactory {
             }
         }
         return sat;
+    }
+
+    /**
+     * Constructs a SAT encoding of a graph with a formula that is satisfiable iff clique-width of the graph is <= k.
+     * @param graph the graph.
+     * @param k the target clique-width.
+     * @return a SAT encoding for this graph that contains a formula which is satisfiable if cw(graph) <= k.
+     */
+    public static SATEncoding forCliqueWidth(Graph<Integer> graph, int k) {
+        int t = graph.getVertices().size() - k + 1;
+        SATEncoding sat = new SATEncoding(graph);
+        // 1
+        for (Integer u : sat.getVertexMap().getDestination()) {
+            for (Integer v : sat.getVertexMap().getDestination()) {
+                if (u < v) {
+                    for (int i = 0; i <= t; i++) {
+                        int[] var = new int[]{
+                            sat.encodeVariable(Variable.component(u, v, 0)),
+                            sat.encodeVariable(Variable.component(u, v, t)),
+                            sat.encodeVariable(Variable.component(u, v, i)),
+                            sat.encodeVariable(Variable.group(u, v, i)),
+                            sat.encodeVariable(Variable.component(u, v, i - 1)),
+                            sat.encodeVariable(Variable.component(u, v, i)),
+                            sat.encodeVariable(Variable.group(u, v, i - 1)),
+                            sat.encodeVariable(Variable.group(u, v, i))
+                        };
+                        sat.getFormula().addClause(-var[0]);
+                        sat.getFormula().addClause(-var[1]);
+                        sat.getFormula().addClause(var[2], -var[3]);
+                        sat.getFormula().addClause(-var[4], var[5]);
+                        sat.getFormula().addClause(-var[6], var[7]);
+                    }
+                }
+            }
+        }
+        // 2
+        for (Integer u : sat.getVertexMap().getDestination()) {
+            for (Integer v : sat.getVertexMap().getDestination()) {
+                for (Integer w : sat.getVertexMap().getDestination()) {
+                    if (u < v && v < w) {
+                        for (int i = 0; i <= t; i++) {
+                            int[] var = new int[]{
+                                sat.encodeVariable(Variable.component(u, v, i)),
+                                sat.encodeVariable(Variable.component(v, w, i)),
+                                sat.encodeVariable(Variable.component(u, w, i)),
+                                sat.encodeVariable(Variable.group(u, v, i)),
+                                sat.encodeVariable(Variable.group(v, w, i)),
+                                sat.encodeVariable(Variable.group(u, w, i))
+                            };
+                            sat.getFormula().addClause(-var[0], -var[1], var[2]);
+                            sat.getFormula().addClause(-var[0], -var[2], var[1]);
+                            sat.getFormula().addClause(-var[2], -var[1], var[0]);
+                            sat.getFormula().addClause(-var[3], -var[4], var[5]);
+                            sat.getFormula().addClause(-var[3], -var[5], var[4]);
+                            sat.getFormula().addClause(-var[5], -var[4], var[3]);
+                        }
+                    }
+                }
+            }
+        }
+        // 3
+        for (Integer u : sat.getVertexMap().getDestination()) {
+            for (Integer v : sat.getVertexMap().getDestination()) {
+                if (u < v) {
+                    // Unmap u, v to check edges
+                    Integer ud = sat.getVertexMap().getFromDomain(u);
+                    Integer vd = sat.getVertexMap().getFromDomain(v);
+                    if (graphHasEdgeWithEndpoints(graph, ud, vd)) {
+                        for (int i = 1; i <= t; i++) {
+                            int[] var = new int[]{
+                                sat.encodeVariable(Variable.component(u, v, i - 1)),
+                                sat.encodeVariable(Variable.group(u, v, i))
+                            };
+                            sat.getFormula().addClause(var[0], -var[1]);
+                        }
+                    }
+                }
+            }
+        }
+        // 4
+        for (Integer u : sat.getVertexMap().getDestination()) {
+            for (Integer v : sat.getVertexMap().getDestination()) {
+                for (Integer w : sat.getVertexMap().getDestination()) {
+                    // Unmap u, v, w to check edges
+                    Integer ud = sat.getVertexMap().getFromDomain(u);
+                    Integer vd = sat.getVertexMap().getFromDomain(v);
+                    Integer wd = sat.getVertexMap().getFromDomain(w);
+                    if (graphHasEdgeWithEndpoints(graph, ud, vd) && !graphHasEdgeWithEndpoints(graph, ud, wd)) {
+                        for (int i = 1; i <= t; i++) {
+                            int[] var = new int[]{
+                                sat.encodeVariable(Variable.component(Math.min(u, v), Math.max(u, v), i - 1)),
+                                sat.encodeVariable(Variable.group(Math.min(v, w), Math.max(v, w), i))
+                            };
+                            sat.getFormula().addClause(var[0], -var[1]);
+                        }
+                    }
+                }
+            }
+        }
+        // 5
+        for (Integer u : sat.getVertexMap().getDestination()) {
+            for (Integer v : sat.getVertexMap().getDestination()) {
+                for (Integer w : sat.getVertexMap().getDestination()) {
+                    for (Integer x : sat.getVertexMap().getDestination()) {
+                        // Unmap u, v, w to check edges
+                        Integer ud = sat.getVertexMap().getFromDomain(u);
+                        Integer vd = sat.getVertexMap().getFromDomain(v);
+                        Integer wd = sat.getVertexMap().getFromDomain(w);
+                        Integer xd = sat.getVertexMap().getFromDomain(x);
+                        if (graphHasEdgeWithEndpoints(graph, ud, vd) && graphHasEdgeWithEndpoints(graph, ud, wd)
+                            && graphHasEdgeWithEndpoints(graph, vd, xd) && !graphHasEdgeWithEndpoints(graph, wd, xd)) {
+                            for (int i = 1; i <= t; i++) {
+                                int[] var = new int[]{
+                                    sat.encodeVariable(Variable.component(u, v, i - 1)),
+                                    sat.encodeVariable(Variable.group(Math.min(u, x), Math.max(u, x), i)),
+                                    sat.encodeVariable(Variable.group(Math.min(v, w), Math.max(v, w), i))
+                                };
+                                sat.getFormula().addClause(var[0], -var[1], -var[2]);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        // 6
+        for (Integer v : sat.getVertexMap().getDestination()) {
+            for (int i = 0; i <= t; i++) {
+                // Left part
+                Clause clause = new Clause();
+                int var1 = sat.encodeVariable(Variable.representative(v, i));
+                clause.addLiteral(var1);
+                for (Integer u : sat.getVertexMap().getDestination()) {
+                    if (u < v) {
+                        int var2 = sat.encodeVariable(Variable.group(u, v, i));
+                        clause.addLiteral(var2);
+                    }
+                }
+                sat.getFormula().addClause(clause);
+                // Right part
+                for (Integer u : sat.getVariableMap().getDestination()) {
+                    if (u < v) {
+                        int var4 = sat.encodeVariable(Variable.group(u, v, i));
+                        sat.getFormula().addClause(-var1, -var4);
+                    }
+                }
+            }
+        }
+        // 7
+        for (Integer u : sat.getVertexMap().getDestination()) {
+            for (Integer v : sat.getVertexMap().getDestination()) {
+                if (u < v) {
+                    for (int i = 0; i <= t; i++) {
+                        int[] var = new int[]{
+                            sat.encodeVariable(Variable.component(u, v, i)),
+                            sat.encodeVariable(Variable.representative(u, i)),
+                            sat.encodeVariable(Variable.representative(v, i)),
+                            sat.encodeVariable(Variable.order(u, k - 1, i)),
+                            sat.encodeVariable(Variable.order(v, 1, i))
+                        };
+                        sat.getFormula().addClause(-var[0], -var[1], -var[2], -var[3]);
+                        sat.getFormula().addClause(-var[0], -var[1], -var[2], -var[4]);
+                        for (int a = 1; a < k - 1; a++) {
+                            int o1 = sat.encodeVariable(Variable.order(u, a, i));
+                            int o2 = sat.encodeVariable(Variable.order(v, a + 1, i));
+                            sat.getFormula().addClause(-var[0], -var[1], -var[2], -o1, o2);
+                        }
+                    }
+                }
+            }
+        }
+        return sat;
+    }
+
+    /**
+     * Checks if there is an edge in the graph with the specified endpoints.
+     * @param graph the graph.
+     * @param u a vertex.
+     * @param v a vertex.
+     * @return true, if there is an edge uv or vu in the graph, or false otherwise.
+     */
+    private static boolean graphHasEdgeWithEndpoints(Graph<Integer> graph, Integer u, Integer v) {
+        for (Edge<Integer> edge : graph.getEdges()) {
+            List<Integer> endpoints = edge.getEndpoints();
+            if (endpoints.contains(u) && endpoints.contains(v)) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }
