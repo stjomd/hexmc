@@ -257,7 +257,7 @@ public abstract class SATEncodingFactory {
                             sat.encodeVariable(Variable.group(u, v, i))
                         };
                         sat.getFormula().addClause(-var[0]);
-                        sat.getFormula().addClause(-var[1]);
+                        sat.getFormula().addClause(var[1]);
                         sat.getFormula().addClause(var[2], -var[3]);
                         sat.getFormula().addClause(-var[4], var[5]);
                         sat.getFormula().addClause(-var[6], var[7]);
@@ -390,7 +390,7 @@ public abstract class SATEncodingFactory {
                             sat.encodeVariable(Variable.order(v, 1, i))
                         };
                         sat.getFormula().addClause(-var[0], -var[1], -var[2], -var[3]);
-                        sat.getFormula().addClause(-var[0], -var[1], -var[2], -var[4]);
+                        sat.getFormula().addClause(-var[0], -var[1], -var[2], var[4]);
                         for (int a = 1; a < k - 1; a++) {
                             int o1 = sat.encodeVariable(Variable.order(u, a, i));
                             int o2 = sat.encodeVariable(Variable.order(v, a + 1, i));
