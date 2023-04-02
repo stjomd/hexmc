@@ -25,7 +25,7 @@ public abstract class SATEncodingFactory {
         for (Integer e : sat.getEdgeMap().getDestination()) {
             for (Integer f : sat.getEdgeMap().getDestination()) {
                 if (e < f) {
-                    for (int i = 1; i <= d; i++) {
+                    for (int i = 1; i < d; i++) {
                         int[] var = new int[]{
                             sat.encodeVariable(Variable.set(e, f, 0)),
                             sat.encodeVariable(Variable.set(e, f, d)),
@@ -61,7 +61,7 @@ public abstract class SATEncodingFactory {
         // 3
         for (Integer e : sat.getEdgeMap().getDestination()) {
             for (int i = 1; i <= d; i++) {
-                // Left side
+                // Part A
                 Clause clause = new Clause();
                 int var1 = sat.encodeVariable(Variable.leader(e, i));
                 clause.addLiteral(var1);
@@ -72,7 +72,7 @@ public abstract class SATEncodingFactory {
                     }
                 }
                 sat.getFormula().addClause(clause);
-                // Right side
+                // Part B
                 for (Integer f : sat.getEdgeMap().getDestination()) {
                     if (f < e) {
                         int var2 = sat.encodeVariable(Variable.set(f, e, i));
@@ -157,9 +157,9 @@ public abstract class SATEncodingFactory {
         // 8
         for (Integer e : sat.getEdgeMap().getDestination()) {
             for (Integer f : sat.getEdgeMap().getDestination()) {
-                Edge<Integer> eEdge = sat.getEdgeMap().getFromDomain(e);
-                Edge<Integer> fEdge = sat.getEdgeMap().getFromDomain(f);
                 if (!e.equals(f)) {
+                    Edge<Integer> eEdge = sat.getEdgeMap().getFromDomain(e);
+                    Edge<Integer> fEdge = sat.getEdgeMap().getFromDomain(f);
                     for (Integer u : sat.getVertexMap().getDestination()) {
                         // Unmap u to check edge endpoints
                         Integer ud = sat.getVertexMap().getFromDomain(u);
