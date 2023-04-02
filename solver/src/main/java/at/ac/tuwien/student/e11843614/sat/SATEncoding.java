@@ -3,10 +3,6 @@ package at.ac.tuwien.student.e11843614.sat;
 import at.ac.tuwien.student.e11843614.formula.Formula;
 import at.ac.tuwien.student.e11843614.graph.Edge;
 import at.ac.tuwien.student.e11843614.graph.Graph;
-import org.sat4j.specs.TimeoutException;
-
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * A class that represents a SAT encoding for graph parameters, i.e. a formula and a mapping of its variables to
@@ -58,24 +54,6 @@ public class SATEncoding {
      */
     public Bijection<Edge<Integer>, Integer> getEdgeMap() {
         return edgeMap;
-    }
-
-    // ----- Solving ---------------------------------------------------------------------------------------------------
-
-    /**
-     * Runs a SAT solver on this SAT encoding and returns the set of variables assigned to true.
-     * @return a set of true variables.
-     * @throws TimeoutException if the SAT solver takes too long.
-     */
-    public Set<Variable> getModel() throws TimeoutException {
-        int[] assignments = SATSolver.getModels(formula);
-        Set<Variable> set = new HashSet<>();
-        for (int assignment : assignments) {
-            if (assignment > 0) {
-                set.add(variableMap.getFromDomain(assignment));
-            }
-        }
-        return set;
     }
 
     // ----- Encoding --------------------------------------------------------------------------------------------------

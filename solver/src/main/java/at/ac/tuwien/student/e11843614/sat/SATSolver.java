@@ -8,10 +8,29 @@ import org.sat4j.specs.ContradictionException;
 import org.sat4j.specs.ISolver;
 import org.sat4j.specs.TimeoutException;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * A class that is responsible for communication with the SAT solver.
  */
 public abstract class SATSolver {
+
+    /**
+     * Runs a SAT solver on a SAT encoding and returns the set of variables assigned to true.
+     * @return a set of true variables.
+     * @throws TimeoutException if the SAT solver takes too long.
+     */
+    public static Set<Variable> getModel(SATEncoding satEncoding) throws TimeoutException {
+        int[] assignments = SATSolver.getModel(satEncoding.getFormula());
+        Set<Variable> truth = new HashSet<>();
+        for (int assignment : assignments) {
+            if (assignment > 0) {
+                truth.add(satEncoding.getVariableMap().getFromDomain(assignment));
+            }
+        }
+        return truth;
+    }
 
     /**
      * Returns a model of the formula.
@@ -20,7 +39,7 @@ public abstract class SATSolver {
      *         integers specify variables set to false. If the formula is unsatisfiable, returns an empty array.
      * @throws TimeoutException if the SAT solver takes too long.
      */
-    public static int[] getModels(Formula formula) throws TimeoutException {
+    public static int[] getModel(Formula formula) throws TimeoutException {
         ISolver solver = SolverFactory.newDefault();
         solver.setExpectedNumberOfClauses(formula.getClauses().size());
         try {
