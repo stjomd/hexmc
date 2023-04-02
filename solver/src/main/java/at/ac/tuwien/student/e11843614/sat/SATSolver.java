@@ -1,6 +1,7 @@
 package at.ac.tuwien.student.e11843614.sat;
 
 import at.ac.tuwien.student.e11843614.formula.Clause;
+import at.ac.tuwien.student.e11843614.formula.Formula;
 import org.sat4j.core.VecInt;
 import org.sat4j.minisat.SolverFactory;
 import org.sat4j.specs.ContradictionException;
@@ -13,17 +14,17 @@ import org.sat4j.specs.TimeoutException;
 public abstract class SATSolver {
 
     /**
-     * Returns a model of the formula in the specified SAT encoding.
-     * @param encoding a SAT encoding.
+     * Returns a model of the formula.
+     * @param formula a CNF formula.
      * @return an array of integers, representing a model. Positive integers specify variables set to true, negative
-     *         integers specify variables set to false.
+     *         integers specify variables set to false. If the formula is unsatisfiable, returns an empty array.
      * @throws TimeoutException if the SAT solver takes too long.
      */
-    public static int[] getModels(SATEncoding encoding) throws TimeoutException {
+    public static int[] getModels(Formula formula) throws TimeoutException {
         ISolver solver = SolverFactory.newDefault();
-        solver.setExpectedNumberOfClauses(encoding.getFormula().getClauses().size());
+        solver.setExpectedNumberOfClauses(formula.getClauses().size());
         try {
-            for (Clause clause : encoding.getFormula().getClauses()) {
+            for (Clause clause : formula.getClauses()) {
                 solver.addClause(asVecInt(clause));
             }
             return solver.findModel();
