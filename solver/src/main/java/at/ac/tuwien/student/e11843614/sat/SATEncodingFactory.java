@@ -17,7 +17,7 @@ public abstract class SATEncodingFactory {
      * @param w the target branch-width.
      * @return a SAT encoding for this graph that contains a formula which is satisfiable if bw(graph) <= w.
      */
-    public static SATEncoding forBranchDecompositionOf(Graph<Integer> graph, int w) {
+    public static SATEncoding forBranchWidth(Graph<Integer> graph, int w) {
         int d = (int) (Math.floor(graph.getEdges().size() / 2.0)
             - Math.ceil(w / 2.0)
             + Math.ceil(Math.log(Math.floor(w / 2.0)) / Math.log(2))
