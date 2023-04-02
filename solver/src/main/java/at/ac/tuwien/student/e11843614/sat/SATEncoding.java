@@ -4,6 +4,10 @@ import at.ac.tuwien.student.e11843614.formula.Clause;
 import at.ac.tuwien.student.e11843614.formula.Formula;
 import at.ac.tuwien.student.e11843614.graph.Edge;
 import at.ac.tuwien.student.e11843614.graph.Graph;
+import org.sat4j.specs.TimeoutException;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * A class that represents a SAT encoding for graph parameters, i.e. a formula and a mapping of its variables to
@@ -14,10 +18,10 @@ public class SATEncoding {
     private int variableCounter = 1;
 
     private final Formula formula = new Formula();
-    private final Bijection<Variable, Integer> variables = new Bijection<>();
+    private final Bijection<Variable, Integer> variableMap = new Bijection<>();
 
-    private final Bijection<Integer, Integer> vertices = new Bijection<>();
-    private final Bijection<Edge<Integer>, Integer> edges = new Bijection<>();
+    private final Bijection<Integer, Integer> vertexMap = new Bijection<>();
+    private final Bijection<Edge<Integer>, Integer> edgeMap = new Bijection<>();
 
     private SATEncoding() {}
 
@@ -30,7 +34,7 @@ public class SATEncoding {
     public static SATEncoding forBranchDecompositionOf(Graph<Integer> graph, int w) {
         SATEncoding encoding = new SATEncoding();
         encoding.encodeGraph(graph);
-        int d = (int) (Math.floor(encoding.edges.size() / 2.0)
+        int d = (int) (Math.floor(encoding.edgeMap.size() / 2.0)
             - Math.ceil(w / 2.0)
             + Math.ceil(Math.log(Math.floor(w / 2.0)) / Math.log(2))
         ); // TODO: weird values?
@@ -52,24 +56,42 @@ public class SATEncoding {
      * Returns the bijection between the variables and their integer representations in the formula of this encoding.
      * @return a bijection between variables and integers.
      */
-    public Bijection<Variable, Integer> getVariables() {
-        return variables;
+    public Bijection<Variable, Integer> getVariableMap() {
+        return variableMap;
     }
 
     /**
      * Returns the bijection between the vertices and their integer representations.
      * @return a bijection between vertices and integers.
      */
-    public Bijection<Integer, Integer> getVertices() {
-        return vertices;
+    public Bijection<Integer, Integer> getVertexMap() {
+        return vertexMap;
     }
 
     /**
      * Returns the bijection between the edges and their integer representations.
      * @return a bijection between edges and integers.
      */
-    public Bijection<Edge<Integer>, Integer> getEdges() {
-        return edges;
+    public Bijection<Edge<Integer>, Integer> getEdgeMap() {
+        return edgeMap;
+    }
+
+    // ----- Solving ---------------------------------------------------------------------------------------------------
+
+    /**
+     * Runs a SAT solver on this SAT encoding and returns the set of variables assigned to true.
+     * @return a set of true variables.
+     * @throws TimeoutException if the SAT solver takes too long.
+     */
+    public Set<Variable> getModel() throws TimeoutException {
+        int[] assignments = SATSolver.getModels(formula);
+        Set<Variable> set = new HashSet<>();
+        for (int assignment : assignments) {
+            if (assignment > 0) {
+                set.add(variableMap.getFromDomain(assignment));
+            }
+        }
+        return set;
     }
 
     // ----- Encoding --------------------------------------------------------------------------------------------------
@@ -80,11 +102,11 @@ public class SATEncoding {
      * @return the integer (>= 1) this variable is mapped to.
      */
     private int encodeVariable(Variable variable) {
-        Integer value = variables.getFromDestination(variable);
+        Integer value = variableMap.getFromDestination(variable);
         if (value != null) {
             return value;
         }
-        variables.put(variable, variableCounter);
+        variableMap.put(variable, variableCounter);
         return variableCounter++;
     }
 
@@ -95,12 +117,12 @@ public class SATEncoding {
     private void encodeGraph(Graph<Integer> graph) {
         int i = 1;
         for (Integer vertex : graph.getVertices()) {
-            vertices.put(vertex, i);
+            vertexMap.put(vertex, i);
             i++;
         }
         i = 1;
         for (Edge<Integer> edge : graph.getEdges()) {
-            edges.put(edge, i);
+            edgeMap.put(edge, i);
             i++;
         }
     }
@@ -115,8 +137,8 @@ public class SATEncoding {
      */
     private void buildFormulaForBranchDecomposition(int w, int d) {
         // 1
-        for (Integer e : edges.getDestination()) {
-            for (Integer f : edges.getDestination()) {
+        for (Integer e : edgeMap.getDestination()) {
+            for (Integer f : edgeMap.getDestination()) {
                 if (e < f) {
                     for (int i = 1; i <= d; i++) {
                         int var1 = encodeVariable(Variable.set(e, f, 0));
@@ -131,9 +153,9 @@ public class SATEncoding {
             }
         }
         // 2
-        for (Integer e : edges.getDestination()) {
-            for (Integer f : edges.getDestination()) {
-                for (Integer g : edges.getDestination()) {
+        for (Integer e : edgeMap.getDestination()) {
+            for (Integer f : edgeMap.getDestination()) {
+                for (Integer g : edgeMap.getDestination()) {
                     if (e < f && f < g) {
                         for (int i = 1; i <= d; i++) {
                             int var1 = encodeVariable(Variable.set(e, f, i));
@@ -148,13 +170,13 @@ public class SATEncoding {
             }
         }
         // 3
-        for (Integer e : edges.getDestination()) {
+        for (Integer e : edgeMap.getDestination()) {
             for (int i = 1; i <= d; i++) {
                 // Left side
                 Clause clause = new Clause();
                 int var1 = encodeVariable(Variable.leader(e, i));
                 clause.addLiteral(var1);
-                for (Integer f : edges.getDestination()) {
+                for (Integer f : edgeMap.getDestination()) {
                     if (f < e) {
                         int var2 = encodeVariable(Variable.set(f, e, i));
                         clause.addLiteral(var2);
@@ -162,7 +184,7 @@ public class SATEncoding {
                 }
                 formula.addClause(clause);
                 // Right side
-                for (Integer f : edges.getDestination()) {
+                for (Integer f : edgeMap.getDestination()) {
                     if (f < e) {
                         int var2 = encodeVariable(Variable.set(f, e, i));
                         formula.addClause(-var1, -var2);
@@ -171,8 +193,8 @@ public class SATEncoding {
             }
         }
         // 4
-        for (Integer e : edges.getDestination()) {
-            for (Integer f : edges.getDestination()) {
+        for (Integer e : edgeMap.getDestination()) {
+            for (Integer f : edgeMap.getDestination()) {
                 if (e < f) {
                     for (int i = 1; i < d - 1; i++) {
                         int var1 = encodeVariable(Variable.leader(e, i));
@@ -186,9 +208,9 @@ public class SATEncoding {
             }
         }
         // 5
-        for (Integer e : edges.getDestination()) {
-            for (Integer f : edges.getDestination()) {
-                for (Integer g : edges.getDestination()) {
+        for (Integer e : edgeMap.getDestination()) {
+            for (Integer f : edgeMap.getDestination()) {
+                for (Integer g : edgeMap.getDestination()) {
                     if (e < f && f < g) {
                         int var1 = encodeVariable(Variable.leader(e, d - 1));
                         int var2 = encodeVariable(Variable.leader(f, d - 1));
@@ -204,7 +226,7 @@ public class SATEncoding {
             }
         }
         // 6
-        for (Integer e : edges.getDestination()) {
+        for (Integer e : edgeMap.getDestination()) {
             for (int i = 1; i < d; i++) {
                 int var1 = encodeVariable(Variable.leader(e, i));
                 int var2 = encodeVariable(Variable.leader(e, i + 1));
@@ -212,15 +234,15 @@ public class SATEncoding {
             }
         }
         // 7
-        for (Integer e : edges.getDestination()) {
-            for (Integer f : edges.getDestination()) {
-                for (Integer g : edges.getDestination()) {
+        for (Integer e : edgeMap.getDestination()) {
+            for (Integer f : edgeMap.getDestination()) {
+                for (Integer g : edgeMap.getDestination()) {
                     if (!e.equals(f) && !e.equals(g)) {
-                        Edge<Integer> fEdge = edges.getFromDomain(f);
-                        Edge<Integer> gEdge = edges.getFromDomain(g);
-                        for (Integer u : vertices.getDestination()) {
+                        Edge<Integer> fEdge = edgeMap.getFromDomain(f);
+                        Edge<Integer> gEdge = edgeMap.getFromDomain(g);
+                        for (Integer u : vertexMap.getDestination()) {
                             // Unmap u to check edge endpoints
-                            Integer ud = vertices.getFromDomain(u);
+                            Integer ud = vertexMap.getFromDomain(u);
                             if (fEdge.getEndpoints().contains(ud) && gEdge.getEndpoints().contains(ud)) {
                                 for (int i = 1; i <= d; i++) {
                                     int var1 = encodeVariable(Variable.leader(e, i));
@@ -236,14 +258,14 @@ public class SATEncoding {
             }
         }
         // 8
-        for (Integer e : edges.getDestination()) {
-            for (Integer f : edges.getDestination()) {
-                Edge<Integer> eEdge = edges.getFromDomain(e);
-                Edge<Integer> fEdge = edges.getFromDomain(f);
+        for (Integer e : edgeMap.getDestination()) {
+            for (Integer f : edgeMap.getDestination()) {
+                Edge<Integer> eEdge = edgeMap.getFromDomain(e);
+                Edge<Integer> fEdge = edgeMap.getFromDomain(f);
                 if (!e.equals(f)) {
-                    for (Integer u : vertices.getDestination()) {
+                    for (Integer u : vertexMap.getDestination()) {
                         // Unmap u to check edge endpoints
-                        Integer ud = vertices.getFromDomain(u);
+                        Integer ud = vertexMap.getFromDomain(u);
                         if (eEdge.getEndpoints().contains(ud) && fEdge.getEndpoints().contains(ud)) {
                             for (int i = 1; i <= d; i++) {
                                 int var1 = encodeVariable(Variable.leader(e, i));
@@ -257,8 +279,8 @@ public class SATEncoding {
             }
         }
         // 9
-        for (Integer e : edges.getDestination()) {
-            for (Integer u : vertices.getDestination()) {
+        for (Integer e : edgeMap.getDestination()) {
+            for (Integer u : vertexMap.getDestination()) {
                 for (int i = 1; i <= d - 2; i++) {
                     int var1 = encodeVariable(Variable.leader(e, i));
                     int var2 = encodeVariable(Variable.leader(e, i + 1));
@@ -271,8 +293,8 @@ public class SATEncoding {
             }
         }
         // 10
-        for (Integer e : edges.getDestination()) {
-            for (int u = 2; u <= vertices.size(); u++) {
+        for (Integer e : edgeMap.getDestination()) {
+            for (int u = 2; u <= vertexMap.size(); u++) {
                 for (int i = 1; i <= d; i++) {
                     for (int j = 1; j <= w; j++) {
                         int var1 = encodeVariable(Variable.counter(e, u - 1, i, j));
@@ -290,8 +312,8 @@ public class SATEncoding {
             }
         }
         // 11
-        for (Integer e : edges.getDestination()) {
-            for (int u = 1; u <= vertices.size(); u++) {
+        for (Integer e : edgeMap.getDestination()) {
+            for (int u = 1; u <= vertexMap.size(); u++) {
                 for (int i = 1; i <= d; i++) {
                     int var1 = encodeVariable(Variable.load(e, u, i));
                     int var2 = encodeVariable(Variable.counter(e, u, i, 1));
