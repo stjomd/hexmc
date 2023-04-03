@@ -35,7 +35,7 @@ public class CliqueDerivationTest {
         SATEncoding encoding = SATEncodingFactory.forCliqueWidth(graph, 2);
         Set<Variable> model = SATSolver.getModel(encoding);
         derivation = new CliqueDerivation(model, encoding);
-        derivation = exampleDerivation();
+        //derivation = exampleDerivation();
     }
 
     @AfterEach
