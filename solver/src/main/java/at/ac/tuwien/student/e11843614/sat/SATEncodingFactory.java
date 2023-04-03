@@ -21,8 +21,7 @@ public abstract class SATEncodingFactory {
         int d = (int) (Math.floor(graph.getEdges().size() / 2.0)
             - Math.ceil(w / 2.0)
             + Math.ceil(Math.log(Math.floor(w / 2.0)) / Math.log(2))
-        ); // TODO: weird values of d
-        d = Math.max(5, d);
+        ) + 1; // TODO: weird values of d
         SATEncoding sat = new SATEncoding(graph);
         // 1
         for (Integer e : sat.getEdgeMap().getDestination()) {
