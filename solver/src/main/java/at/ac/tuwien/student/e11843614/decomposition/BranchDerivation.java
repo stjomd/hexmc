@@ -12,7 +12,7 @@ import java.util.Set;
 /**
  * An object that represents a derivation for branch decompositions.
  */
-public class Derivation {
+public class BranchDerivation {
 
     // A derivation is a sequence of Set<Set<Edge>>
     //   - each Set<Set<Edge>> is a partition at some level
@@ -23,7 +23,7 @@ public class Derivation {
      * Constructs a derivation from the set and leader variables of the model.
      * @param model a set of variables set to true by the SAT solver.
      */
-    public Derivation(Set<Variable> model, SATEncoding sat) {
+    public BranchDerivation(Set<Variable> model, SATEncoding sat) {
         construct(model, sat);
     }
 

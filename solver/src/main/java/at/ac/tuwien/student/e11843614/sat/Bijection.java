@@ -59,6 +59,15 @@ public class Bijection<S, T> {
         return forward.values();
     }
 
+    // TODO: needed for debugging, TBR
+    /**
+     * Returns a map between the two sets of this bijection.
+     * @return the map.
+     */
+    public Map<S, T> getMap() {
+        return forward;
+    }
+
     /**
      * Returns the amount of maps in this bijection, irrespective of direction. That is, a mapping 1 <-> 2 amounts to
      * one map.
