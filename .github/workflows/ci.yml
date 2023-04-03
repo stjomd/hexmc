@@ -23,4 +23,4 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: Report
-          path: target/surefire-reports/*.txt
+          path: solver/target/surefire-reports/*.txt
