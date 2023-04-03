@@ -4,8 +4,6 @@ import at.ac.tuwien.student.e11843614.formula.Clause;
 import at.ac.tuwien.student.e11843614.graph.Edge;
 import at.ac.tuwien.student.e11843614.graph.Graph;
 
-import java.util.List;
-
 /**
  * A class that is responsible for constructing a SAT encoding of a graph.
  */
@@ -296,7 +294,7 @@ public abstract class SATEncodingFactory {
                     // Unmap u, v to check edges
                     Integer ud = sat.getVertexMap().getFromDomain(u);
                     Integer vd = sat.getVertexMap().getFromDomain(v);
-                    if (graphHasEdgeWithEndpoints(graph, ud, vd)) {
+                    if (graph.hasEdgeWithEndpoints(ud, vd)) {
                         for (int i = 1; i <= t; i++) {
                             int[] var = new int[]{
                                 sat.encodeVariable(Variable.component(u, v, i - 1)),
@@ -316,7 +314,7 @@ public abstract class SATEncodingFactory {
                     Integer ud = sat.getVertexMap().getFromDomain(u);
                     Integer vd = sat.getVertexMap().getFromDomain(v);
                     Integer wd = sat.getVertexMap().getFromDomain(w);
-                    if (graphHasEdgeWithEndpoints(graph, ud, vd) && !graphHasEdgeWithEndpoints(graph, ud, wd)) {
+                    if (graph.hasEdgeWithEndpoints(ud, vd) && !graph.hasEdgeWithEndpoints(ud, wd)) {
                         for (int i = 1; i <= t; i++) {
                             int[] var = new int[]{
                                 sat.encodeVariable(Variable.component(Math.min(u, v), Math.max(u, v), i - 1)),
@@ -338,8 +336,8 @@ public abstract class SATEncodingFactory {
                         Integer vd = sat.getVertexMap().getFromDomain(v);
                         Integer wd = sat.getVertexMap().getFromDomain(w);
                         Integer xd = sat.getVertexMap().getFromDomain(x);
-                        if (graphHasEdgeWithEndpoints(graph, ud, vd) && graphHasEdgeWithEndpoints(graph, ud, wd)
-                            && graphHasEdgeWithEndpoints(graph, vd, xd) && !graphHasEdgeWithEndpoints(graph, wd, xd)) {
+                        if (graph.hasEdgeWithEndpoints(ud, vd) && graph.hasEdgeWithEndpoints(ud, wd)
+                            && graph.hasEdgeWithEndpoints(vd, xd) && !graph.hasEdgeWithEndpoints(wd, xd)) {
                             for (int i = 1; i <= t; i++) {
                                 int[] var = new int[]{
                                     sat.encodeVariable(Variable.component(u, v, i - 1)),
@@ -400,23 +398,6 @@ public abstract class SATEncodingFactory {
             }
         }
         return sat;
-    }
-
-    /**
-     * Checks if there is an edge in the graph with the specified endpoints.
-     * @param graph the graph.
-     * @param u a vertex.
-     * @param v a vertex.
-     * @return true, if there is an edge uv or vu in the graph, or false otherwise.
-     */
-    private static boolean graphHasEdgeWithEndpoints(Graph<Integer> graph, Integer u, Integer v) {
-        for (Edge<Integer> edge : graph.getEdges()) {
-            List<Integer> endpoints = edge.getEndpoints();
-            if (endpoints.contains(u) && endpoints.contains(v)) {
-                return true;
-            }
-        }
-        return false;
     }
 
 }
