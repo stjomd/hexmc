@@ -2,6 +2,7 @@ package at.ac.tuwien.student.e11843614.decomposition.derivation;
 
 import at.ac.tuwien.student.e11843614.sat.SATEncoding;
 import at.ac.tuwien.student.e11843614.sat.Variable;
+import at.ac.tuwien.student.e11843614.struct.Partition;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +13,7 @@ import java.util.Set;
  */
 public class CliqueDerivation {
 
-    List<Template> derivation = new ArrayList<>();
+    List<Template> templates = new ArrayList<>();
 
     /**
      * Constructs a derivation from the component and group variables of the model.
@@ -21,6 +22,47 @@ public class CliqueDerivation {
      */
     public CliqueDerivation(Set<Variable> model, SATEncoding sat) {
         construct(model, sat);
+    }
+
+    // TODO: for tests, TBR
+    public CliqueDerivation(int t) {
+        for (int i = 0; i <= t; i++)
+            templates.add(new Template());
+    }
+
+    /**
+     * Returns the template at the specified level.
+     * @param level the level.
+     * @return a Template.
+     */
+    public Template getTemplate(int level) {
+        return templates.get(level);
+    }
+
+    /**
+     * Returns the components of the template at the specified level.
+     * @param level the level.
+     * @return the components (a Partition).
+     */
+    public Partition<Integer> getComponents(int level) {
+        return getTemplate(level).getComponents();
+    }
+
+    /**
+     * Returns the groups of the template at the specified level.
+     * @param level the level.
+     * @return the groups (a Partition).
+     */
+    public Partition<Integer> getGroups(int level) {
+        return getTemplate(level).getGroups();
+    }
+
+    /**
+     * Returns the size of this derivation, i.e. the amount of templates (length plus one).
+     * @return the size.
+     */
+    public int size() {
+        return templates.size();
     }
 
     /**
@@ -39,7 +81,7 @@ public class CliqueDerivation {
         }
         for (int i = 0; i <= levels; i++) {
             Template template = new Template();
-            derivation.add(template);
+            templates.add(template);
         }
         // Look at component and group variables and fill the derivation.
         for (Variable variable : model) {
@@ -47,17 +89,19 @@ public class CliqueDerivation {
                 int u = sat.getVertexMap().getFromDomain(variable.getArgs().get(0));
                 int v = sat.getVertexMap().getFromDomain(variable.getArgs().get(1));
                 int level = variable.getArgs().get(2);
-                Template template = derivation.get(level);
+                //Template template = templates.get(level);
                 if (variable.getType() == Variable.Type.COMPONENT) {
-                    template.getComponents().add(u, v);
+                    getComponents(level).add(u, v);
+                    //template.getComponents().add(u, v);
                 } else if (variable.getType() == Variable.Type.GROUP) {
-                    template.getGroups().add(u, v);
+                    getGroups(level).add(u, v);
+                    //template.getGroups().add(u, v);
                 }
             } else if (variable.getType() == Variable.Type.REPRESENTATIVE) {
                 int u = sat.getVertexMap().getFromDomain(variable.getArgs().get(0));
                 int level = variable.getArgs().get(1);
-                Template template = derivation.get(level);
-                template.getGroups().add(u);
+                //Template template = templates.get(level);
+                getGroups(level).add(u);
             }
         }
         // TODO: does not meet the conditions
@@ -66,8 +110,8 @@ public class CliqueDerivation {
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < derivation.size(); i++) {
-            Template template = derivation.get(i);
+        for (int i = 0; i < templates.size(); i++) {
+            Template template = templates.get(i);
             builder.append(i).append(": cmp=").append(template.getComponents())
                 .append(", grp=").append(template.getGroups()).append("\n");
         }
