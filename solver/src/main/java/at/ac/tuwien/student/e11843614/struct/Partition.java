@@ -69,6 +69,35 @@ public class Partition<T> {
         return equivalenceClasses;
     }
 
+    /**
+     * Returns the amount of equivalence classes in this partition.
+     * @return the size of this partition.
+     */
+    public int size() {
+        return equivalenceClasses.size();
+    }
+
+    /**
+     * Checks if this partition is a refinement of another partition.
+     * @param p a partition.
+     * @return true, if this partition is a refinement of p, and false otherwise.
+     */
+    public boolean isRefinementOf(Partition<T> p) {
+        for (Set<T> ecThis : equivalenceClasses) {
+            boolean found = false;
+            for (Set<T> ecP : p.equivalenceClasses) {
+                if (ecP.containsAll(ecThis)) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     // ----- Helpers ---------------------------------------------------------------------------------------------------
 
     /**
