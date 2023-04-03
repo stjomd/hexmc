@@ -24,6 +24,11 @@ public class BranchDerivation {
         construct(model, sat);
     }
 
+    /**
+     * Fills the derivation's partitions.
+     * @param model the model set.
+     * @param sat the SAT encoding.
+     */
     private void construct(Set<Variable> model, SATEncoding sat) {
         int levels = 0;
         for (Variable variable : model) {
@@ -50,6 +55,7 @@ public class BranchDerivation {
                 partition.add(edge1, edge2);
             }
         }
+        // TODO: does not meet conditions
     }
 
     @Override
