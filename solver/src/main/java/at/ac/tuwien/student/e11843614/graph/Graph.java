@@ -247,6 +247,22 @@ public class Graph<T> {
         return graph;
     }
 
+    /**
+     * Checks if this graph has an edge with specified endpoints.
+     * @param u a vertex.
+     * @param v a vertex.
+     * @return true, if this graph has an edge uv or vu, and false otherwise.
+     */
+    public boolean hasEdgeWithEndpoints(T u, T v) {
+        for (Edge<T> edge : edges) {
+            List<T> endpoints = edge.getEndpoints();
+            if (endpoints.contains(u) && endpoints.contains(v)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Override
     public String toString() {
         return edges.toString();
