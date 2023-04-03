@@ -2,6 +2,7 @@ package at.ac.tuwien.student.e11843614.decomposition.derivation;
 
 import at.ac.tuwien.student.e11843614.sat.SATEncoding;
 import at.ac.tuwien.student.e11843614.sat.Variable;
+import at.ac.tuwien.student.e11843614.struct.Partition;
 
 import java.util.ArrayList;
 import java.util.List;

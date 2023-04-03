@@ -1,4 +1,4 @@
-package at.ac.tuwien.student.e11843614.sat;
+package at.ac.tuwien.student.e11843614.struct;
 
 import java.util.Collection;
 import java.util.HashMap;

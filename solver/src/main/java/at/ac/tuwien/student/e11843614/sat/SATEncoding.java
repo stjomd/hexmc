@@ -3,6 +3,7 @@ package at.ac.tuwien.student.e11843614.sat;
 import at.ac.tuwien.student.e11843614.formula.Formula;
 import at.ac.tuwien.student.e11843614.graph.Edge;
 import at.ac.tuwien.student.e11843614.graph.Graph;
+import at.ac.tuwien.student.e11843614.struct.Bijection;
 
 /**
  * A class that represents a SAT encoding for graph parameters, i.e. a formula and a mapping of its variables to
