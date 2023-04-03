@@ -1,6 +1,6 @@
 package at.ac.tuwien.student.e11843614;
 
-import at.ac.tuwien.student.e11843614.decomposition.derivation.Partition;
+import at.ac.tuwien.student.e11843614.struct.Partition;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 

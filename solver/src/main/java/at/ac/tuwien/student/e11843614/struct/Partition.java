@@ -1,4 +1,4 @@
-package at.ac.tuwien.student.e11843614.decomposition.derivation;
+package at.ac.tuwien.student.e11843614.struct;
 
 import java.util.HashSet;
 import java.util.Set;
