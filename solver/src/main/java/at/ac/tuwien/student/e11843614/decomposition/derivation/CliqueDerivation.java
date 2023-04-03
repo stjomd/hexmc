@@ -54,7 +54,6 @@ public class CliqueDerivation {
                     template.getGroups().add(u, v);
                 }
             } else if (variable.getType() == Variable.Type.REPRESENTATIVE) {
-                // TODO: not sure if this has to be done: Look at representative variables, add the groups
                 int u = sat.getVertexMap().getFromDomain(variable.getArgs().get(0));
                 int level = variable.getArgs().get(1);
                 Template template = derivation.get(level);
