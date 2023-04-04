@@ -117,8 +117,11 @@ public abstract class BranchDecompositionFactory {
                 sourceNodes.add(vertex);
             }
         }
-        // Iterate over all source nodes and alphas, determine work/play pairs.
-        // TODO: determine owork, oplay.
+        // Iterate over source nodes and alphas, determine work/play pairs.
+        int owork = Integer.MAX_VALUE;
+        int oplay = Integer.MIN_VALUE;
+        Set<Integer> oSepX = new HashSet<>();
+        Set<Integer> oSepY = new HashSet<>();
         for (Integer chosenSourceNode : sourceNodes) {
             for (double alpha = 0.01; alpha < 1; alpha += 1.0/ALPHA_STEPS) {
                 // Choose a source node. Sort vertices of associatedGraph in non-decreasing order acc. to their distance to it.
@@ -137,9 +140,9 @@ public abstract class BranchDecompositionFactory {
                     }
                     i++;
                 }
-                // Compute the minor of G with partA identified to v_A, partB identified to v_B
+                // Compute the minor of G with partA identified to v_A, partB identified to v_B.
                 Graph<Integer> minor = minor(graph, partA, partB);
-                // v_A,v_B are named in 'minor' after some vertex from partA or partB respectively.
+                // v_A, v_B are named in 'minor' after some vertex from partA or partB respectively.
                 Integer vA = null, vB = null;
                 for (Integer v : minor.getVertices()) {
                     if (partA.contains(v)) {
@@ -166,6 +169,34 @@ public abstract class BranchDecompositionFactory {
                 }
                 Set<Integer> sideNodes = new HashSet<>(separatedGraph.getVertices());
                 sideNodes.retainAll(linkingNodes);
+                // Compute separation (X,Y). partA is a subset of X, partB is a subset of Y. Intersection of X and Y is
+                // the set of separation nodes. Vertices in vA,vB-paths before separation nodes are in X, after in Y.
+                Set<Integer> sepX = new HashSet<>(partA);
+                Set<Integer> sepY = new HashSet<>(partB);
+                sepX.addAll(separationNodes);
+                sepY.addAll(separationNodes);
+                for (List<Integer> path : minor.allPaths(vA, vB)) {
+                    // If the path starts in partA, we add all vertices in the path until the separation node to sepX...
+                    boolean startsInPartA = partA.contains(path.get(0));
+                    int j = 0;
+                    while (!separationNodes.contains(path.get(j))) {
+                        if (startsInPartA) {
+                            sepX.add(path.get(j));
+                        } else {
+                            sepY.add(path.get(j));
+                        }
+                        j++;
+                    }
+                    // And all vertices after to sepY.
+                    while (j < path.size()) {
+                        if (startsInPartA) {
+                            sepY.add(path.get(j));
+                        } else {
+                            sepX.add(path.get(j));
+                        }
+                        j++;
+                    }
+                }
                 // Define work and play values
                 int work = Math.max(
                     sideNodes.size() + separationNodes.size(),
@@ -175,11 +206,20 @@ public abstract class BranchDecompositionFactory {
                     sideNodes.size() + separationNodes.size(),
                     linkingNodes.size() - sideNodes.size() - shareNodes.size() + separationNodes.size()
                 );
-                System.out.println("work: " + work);
-                System.out.println("play: " + play);
+                // Store optimal pair
+                if (work < owork) {
+                    owork = work;
+                    oplay = play;
+                    oSepX = sepX;
+                    oSepY = sepY;
+                } else if (work == owork && play > oplay) {
+                    oplay = play;
+                    oSepX = sepX;
+                    oSepY = sepY;
+                }
             }
         }
-        return List.of();
+        return List.of(oSepX, oSepY);
     }
 
     // minor H of G with A,B identified to vA,vB
