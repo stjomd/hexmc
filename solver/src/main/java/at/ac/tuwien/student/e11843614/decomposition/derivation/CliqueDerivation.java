@@ -89,18 +89,14 @@ public class CliqueDerivation {
                 int u = sat.getVertexMap().getFromDomain(variable.getArgs().get(0));
                 int v = sat.getVertexMap().getFromDomain(variable.getArgs().get(1));
                 int level = variable.getArgs().get(2);
-                //Template template = templates.get(level);
                 if (variable.getType() == Variable.Type.COMPONENT) {
                     getComponents(level).add(u, v);
-                    //template.getComponents().add(u, v);
                 } else if (variable.getType() == Variable.Type.GROUP) {
                     getGroups(level).add(u, v);
-                    //template.getGroups().add(u, v);
                 }
             } else if (variable.getType() == Variable.Type.REPRESENTATIVE) {
                 int u = sat.getVertexMap().getFromDomain(variable.getArgs().get(0));
                 int level = variable.getArgs().get(1);
-                //Template template = templates.get(level);
                 getGroups(level).add(u);
             }
         }
