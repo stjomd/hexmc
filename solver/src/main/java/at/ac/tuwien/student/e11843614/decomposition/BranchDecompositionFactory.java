@@ -6,7 +6,6 @@ import at.ac.tuwien.student.e11843614.graph.Graph;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -15,40 +14,6 @@ public abstract class BranchDecompositionFactory {
 
     private final static int ALPHA_STEPS = 10;
 
-    // TODO: temporary, remove this & use heuristic() below
-    // creates a branch decomposition randomly
-    public static BranchDecompositionNode placeholder(Graph<Integer> graph) {
-        BranchDecompositionNode root = new BranchDecompositionNode();
-        Iterator<Edge<Integer>> it = graph.getEdges().iterator();
-        // Add first two edges
-        Edge<Integer> firstEdge = it.next();
-        Edge<Integer> secondEdge = it.next();
-        root.addChild(new BranchDecompositionNode(firstEdge));
-        root.addChild(new BranchDecompositionNode(secondEdge));
-        // Continue with the rest of the edges
-        while (it.hasNext()) {
-            BranchDecompositionNode node = root;
-            while (node.getEdge() == null) { // until leaf is reached
-                int i = 0;
-                int index = (int) (Math.random() * node.getChildren().size());
-                for (BranchDecompositionNode child : node.getChildren()) {
-                    node = child;
-                    if (i == index) {
-                        break;
-                    }
-                    i++;
-                }
-            }
-            // node is a leaf node now -> transform to internal
-            Edge<Integer> currentEdge = node.getEdge();
-            Edge<Integer> newEdge = it.next();
-            node.addChild(new BranchDecompositionNode(currentEdge));
-            node.addChild(new BranchDecompositionNode(newEdge));
-            node.setEdge(null); // makes node internal
-        }
-        return root;
-    }
-
     /**
      * Constructs an approximation of a branch decomposition according to a heuristic.
      * @param graph the graph to construct a branch decomposition of.
@@ -56,8 +21,16 @@ public abstract class BranchDecompositionFactory {
      */
     public static BranchDecompositionNode heuristic(Graph<Integer> graph) {
         BranchDecompositionNode bd = heuristicInitialSeparation(graph);
-        BranchDecompositionNode a = getNodeWithDegreeLargerThan(3, bd);
-        assert (a != null && a.getEdge() == null);
+        BranchDecompositionNode internalNode = getNodeWithDegreeLargerThan(3, bd);
+        while (internalNode != null) {
+            split(internalNode, graph);
+            internalNode = getNodeWithDegreeLargerThan(3, bd);
+        }
+        return bd;
+    }
+
+    // Constructs T_{i+1} from T_i wer
+    private static void split(BranchDecompositionNode a, Graph<Integer> graph) {
         // By construction, a has exactly one neighbor that is not a leaf (deg > 1). We call the neighbor 'b'.
         BranchDecompositionNode b = null;
         for (BranchDecompositionNode child : a.getChildren()) {
@@ -99,10 +72,87 @@ public abstract class BranchDecompositionFactory {
                 associatedGraph.addEdge(endpoints.get(0), endpoints.get(1));
             }
         }
-        System.out.println(associatedGraph);
         // Now we need to find a separation (X,Y) of associatedGraph.
         List<Set<Integer>> sep = separation(graph, associatedGraph, mid);
-        return bd;
+        // Get the corresponding edges, E(X) and E(Y).
+        Set<Edge<Integer>> eX = new HashSet<>();
+        Set<Edge<Integer>> eY = new HashSet<>();
+        for (Integer x : sep.get(0)) {
+            for (Edge<Integer> edge : graph.getEdges()) {
+                if (edge.getEndpoints().contains(x)) {
+                    eX.add(edge);
+                }
+            }
+        }
+        for (Integer y : sep.get(1)) {
+            for (Edge<Integer> edge : graph.getEdges()) {
+                if (edge.getEndpoints().contains(y)) {
+                    eY.add(edge);
+                }
+            }
+        }
+        // Split
+        if (sep.get(0).size() > 1) { // if |X| > 1
+            // Create new internal nodes x, y.
+            // x has leaves corresponding to eX, y has leaves corresponding to eY.
+            BranchDecompositionNode x = new BranchDecompositionNode();
+            BranchDecompositionNode y = new BranchDecompositionNode();
+            // Store leaves of a, remove a's children except b (other internal node), add the leaves to x/y.
+            Set<BranchDecompositionNode> leaves = new HashSet<>();
+            for (BranchDecompositionNode node : a.getChildren()) {
+                if (node.getDegree() == 1) {
+                    BranchDecompositionNode decoupledLeaf = new BranchDecompositionNode(node.getEdge());
+                    leaves.add(decoupledLeaf);
+                }
+            }
+            // Remove children except b
+            Set<BranchDecompositionNode> setOfB = new HashSet<>();
+            setOfB.add(b);
+            a.getChildren().retainAll(setOfB);
+            // Add leaves to x/y
+            for (BranchDecompositionNode leaf : leaves) {
+                if (eX.contains(leaf.getEdge())) {
+                    x.addChild(leaf);
+                } else if (eY.contains(leaf.getEdge())) {
+                    y.addChild(leaf);
+                }
+            }
+            // Make x,y children of a
+            a.addChild(x);
+            a.addChild(y);
+        } else { // |X| = 1
+            assert (eX.size() == 1);
+            // Create new internal node y that has leaves corresponding to eY. a only keeps one leaf corr. to eX.
+            BranchDecompositionNode y = new BranchDecompositionNode();
+            // Store leaves of a
+            Set<BranchDecompositionNode> leaves = new HashSet<>();
+            for (BranchDecompositionNode node : a.getChildren()) {
+                if (node.getDegree() == 1) {
+                    BranchDecompositionNode decoupledLeaf = new BranchDecompositionNode(node.getEdge());
+                    leaves.add(decoupledLeaf);
+                }
+            }
+            // Remove children except b
+            Set<BranchDecompositionNode> setOfB = new HashSet<>();
+            setOfB.add(b);
+            a.getChildren().retainAll(setOfB);
+            // Re-add the leaf corresponding to eX
+            BranchDecompositionNode xLeaf = null;
+            for (BranchDecompositionNode leaf : leaves) {
+                if (eX.contains(leaf.getEdge())) {
+                    xLeaf = leaf;
+                }
+            }
+            assert (xLeaf != null);
+            a.addChild(xLeaf);
+            leaves.remove(xLeaf);
+            // Add the rest of the leaves to y
+            for (BranchDecompositionNode leaf : leaves) {
+                y.addChild(leaf);
+            }
+            // Add y to the children of a
+            a.addChild(y);
+        }
     }
 
     private static List<Set<Integer>> separation(Graph<Integer> graph, Graph<Integer> associatedGraph, Set<Integer> mid) {
@@ -219,7 +269,12 @@ public abstract class BranchDecompositionFactory {
                 }
             }
         }
-        return List.of(oSepX, oSepY);
+        // Return a list where |oSepX| <= |oSepY|.
+        if (oSepX.size() <= oSepY.size()) {
+            return List.of(oSepX, oSepY);
+        } else {
+            return List.of(oSepY, oSepX);
+        }
     }
 
     // minor H of G with A,B identified to vA,vB
