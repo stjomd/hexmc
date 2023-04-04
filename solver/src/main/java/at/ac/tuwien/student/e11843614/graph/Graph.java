@@ -277,6 +277,38 @@ public class Graph<T> {
         return false;
     }
 
+    /**
+     * Computes a list of this graph's components.
+     * @return a list of graphs, each a component, and a different object from this graph.
+     */
+    public List<Graph<T>> components() {
+        List<Graph<T>> components = new ArrayList<>();
+        Queue<T> queue = new LinkedList<>();
+        Set<T> visited = new HashSet<>();
+        for (T vertex : vertices) {
+            if (visited.contains(vertex)) {
+                continue;
+            }
+            queue.add(vertex);
+            Graph<T> component = new Graph<>();
+            component.addVertex(vertex);
+            while (!queue.isEmpty()) {
+                T visiting = queue.remove();
+                visited.add(visiting);
+                for (T neighbor : neighborsOf(visiting)) {
+                    if (!component.hasEdgeWithEndpoints(visiting, neighbor)) {
+                        component.addEdge(visiting, neighbor);
+                    }
+                    if (!visited.contains(neighbor)) {
+                        queue.add(neighbor);
+                    }
+                }
+            }
+            components.add(component);
+        }
+        return components;
+    }
+
     // ----- Helpers ---------------------------------------------------------------------------------------------------
 
     /**
@@ -306,7 +338,7 @@ public class Graph<T> {
 
     @Override
     public String toString() {
-        return edges.toString();
+        return "(V=" + vertices + ", E=" + edges + ")";
     }
 
 }
