@@ -20,13 +20,48 @@ public abstract class BranchDecompositionHeuristic {
      * @return the root node of the branch decomposition.
      */
     public static BranchDecompositionNode heuristic(Graph<Integer> graph) {
-        BranchDecompositionNode bd = heuristicInitialSeparation(graph);
+        BranchDecompositionNode bd = initialPartialDecomposition(graph);
         BranchDecompositionNode internalNode = getNodeWithDegreeLargerThan(3, bd);
         while (internalNode != null) {
             split(internalNode, graph);
             internalNode = getNodeWithDegreeLargerThan(3, bd);
         }
         return bd;
+    }
+
+    /**
+     * Constructs an initial partial branch decomposition.
+     * @param graph the graph.
+     * @return a partial branch decomposition.
+     */
+    private static BranchDecompositionNode initialPartialDecomposition(Graph<Integer> graph) {
+        // Create a star
+        BranchDecompositionNode root = new BranchDecompositionNode();
+        for (Edge<Integer> edge : graph.getEdges()) {
+            root.addChild(new BranchDecompositionNode(edge));
+        }
+        // Initial separation
+        // Separate nodes and store one part. Remove those nodes from the star.
+        // Create another star with those nodes, and join the two stars.
+        assert (root.getChildren().size() >= 4);
+        Set<BranchDecompositionNode> initialSeparation = new HashSet<>();
+        int i = 0;
+        for (BranchDecompositionNode child : root.getChildren()) {
+            if (i >= root.getChildren().size() / 2) {
+                break;
+            }
+            initialSeparation.add(child);
+            i++;
+        }
+        for (BranchDecompositionNode node : initialSeparation) {
+            root.removeChild(node);
+        }
+        BranchDecompositionNode initialNewStar = new BranchDecompositionNode();
+        for (BranchDecompositionNode node : initialSeparation) {
+            initialNewStar.addChild(node);
+        }
+        root.addChild(initialNewStar);
+        return root;
     }
 
     /**
@@ -379,41 +414,6 @@ public abstract class BranchDecompositionHeuristic {
             }
         }
         return vertexCut;
-    }
-
-    /**
-     * Constructs an initial partial branch decomposition.
-     * @param graph the graph.
-     * @return a partial branch decomposition.
-     */
-    private static BranchDecompositionNode heuristicInitialSeparation(Graph<Integer> graph) {
-        // Create a star
-        BranchDecompositionNode root = new BranchDecompositionNode();
-        for (Edge<Integer> edge : graph.getEdges()) {
-            root.addChild(new BranchDecompositionNode(edge));
-        }
-        // Initial separation
-        // Separate nodes and store one part. Remove those nodes from the star.
-        // Create another star with those nodes, and join the two stars.
-        assert (root.getChildren().size() >= 4);
-        Set<BranchDecompositionNode> initialSeparation = new HashSet<>();
-        int i = 0;
-        for (BranchDecompositionNode child : root.getChildren()) {
-            if (i >= root.getChildren().size() / 2) {
-                break;
-            }
-            initialSeparation.add(child);
-            i++;
-        }
-        for (BranchDecompositionNode node : initialSeparation) {
-            root.removeChild(node);
-        }
-        BranchDecompositionNode initialNewStar = new BranchDecompositionNode();
-        for (BranchDecompositionNode node : initialSeparation) {
-            initialNewStar.addChild(node);
-        }
-        root.addChild(initialNewStar);
-        return root;
     }
 
     /**
