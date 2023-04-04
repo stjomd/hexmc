@@ -385,19 +385,25 @@ public abstract class BranchDecompositionHeuristic {
      */
     private static Set<Integer> minimumVertexCut(Graph<Integer> graph, Integer s, Integer t) {
         // FIXME: doesn't seem to make sense if minor only has 2 vertices. Since any cut results in 1 comp?
+        if (graph.getVertices().size() == 2) {
+            return Set.of(s);
+        }
         // FIXME: brute force at this point.
         List<Integer> vertices = new ArrayList<>(graph.getVertices());
+        // s-t cut: may not remove s or t
+        vertices.remove(s);
+        vertices.remove(t);
+        // inclusion[j] = true <=> vertices[j] is in the candidate for vertex cut
         List<Boolean> inclusion = new ArrayList<>();
         for (int j = 0; j < vertices.size(); j++) {
             inclusion.add(true);
         }
-        // inclusion defines the subset of vertices. If no path between vA,vB exists, we found a vertex cut.
-        // Keep looking for the one of the smallest size.
+        // Iterate over all subsets of vertices \ {s,t}, check if subset is a vertex cut. Store the minimal one.
         Set<Integer> vertexCut = new HashSet<>();
         int minVertexCutSize = Integer.MAX_VALUE;
         int inclusionSum = Integer.MAX_VALUE;
         while (inclusionSum > 0) {
-            // Update the inclusion list
+            // Update the inclusion list (works like binary increment)
             int j = inclusion.size() - 1;
             while (j >= 0 && inclusion.get(j).equals(false)) {
                 inclusion.set(j, true);
@@ -406,8 +412,8 @@ public abstract class BranchDecompositionHeuristic {
             if (j >= 0) {
                 inclusion.set(j, false);
             }
-            // Perform
-            Graph<Integer> copy = graph.duplicate();
+            // Remove vertices from the graph.
+            Graph<Integer> graphWithRemovedVertices = graph.duplicate();
             Set<Integer> includedVertices = new HashSet<>();
             for (int k = 0; k < vertices.size(); k++) {
                 if (inclusion.get(k).equals(true)) {
@@ -415,13 +421,26 @@ public abstract class BranchDecompositionHeuristic {
                 }
             }
             for (Integer vertex : includedVertices) {
-                copy.removeVertex(vertex);
+                graphWithRemovedVertices.removeVertex(vertex);
             }
-            if (copy.path(s, t) == null) {
-                // Found a vertex cut
-                if (minVertexCutSize > includedVertices.size()) {
-                    minVertexCutSize = includedVertices.size();
-                    vertexCut = includedVertices;
+            // Check if the subset is a vertex cut.
+            List<Graph<Integer>> components = graphWithRemovedVertices.components();
+            if (components.size() > 1) {
+                // s, t must lie in different components.
+                Graph<Integer> componentWithS = null, componentWithT = null;
+                for (Graph<Integer> component : components) {
+                    if (component.getVertices().contains(s) && !component.getVertices().contains(t)) {
+                        componentWithS = component;
+                    } else if (component.getVertices().contains(t) && !component.getVertices().contains(s)) {
+                        componentWithT = component;
+                    }
+                }
+                if (componentWithS != null && componentWithT != null && componentWithS != componentWithT) {
+                    // Found a vertex cut
+                    if (minVertexCutSize > includedVertices.size()) {
+                        minVertexCutSize = includedVertices.size();
+                        vertexCut = includedVertices;
+                    }
                 }
             }
             // Count the amount of falses
