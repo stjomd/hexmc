@@ -6,7 +6,9 @@ import at.ac.tuwien.student.e11843614.graph.Graph;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -138,10 +140,12 @@ public abstract class BranchDecompositionHeuristic {
             BranchDecompositionNode y = new BranchDecompositionNode();
             // Store leaves of a, remove a's children except b (other internal node), add the leaves to x/y.
             Set<BranchDecompositionNode> leaves = new HashSet<>();
+            Set<Edge<Integer>> leavesEdges = new HashSet<>(); // TODO: needed for tmp check below
             for (BranchDecompositionNode node : a.getChildren()) {
                 if (node.getDegree() == 1) {
                     BranchDecompositionNode decoupledLeaf = new BranchDecompositionNode(node.getEdge());
                     leaves.add(decoupledLeaf);
+                    leavesEdges.add(node.getEdge());
                 }
             }
             // Remove children except b
@@ -149,18 +153,33 @@ public abstract class BranchDecompositionHeuristic {
             setOfB.add(b);
             a.getChildren().retainAll(setOfB);
             // Add leaves to x/y
-            for (BranchDecompositionNode leaf : leaves) {
-                if (eX.contains(leaf.getEdge())) {
-                    x.addChild(leaf);
-                } else if (eY.contains(leaf.getEdge())) {
-                    y.addChild(leaf);
+            if (eX.containsAll(leavesEdges)) {
+                // TODO: if eX contains all edges (leaves), then the loop will add all leaves to x, and y will be empty.
+                // TODO: Therefore, perform this check, and split edges evenly into eX, eY. Probably not correct.
+                int i = 0;
+                for (BranchDecompositionNode leaf : leaves) {
+                    if (i % 2 == 0) {
+                        x.addChild(leaf);
+                    } else {
+                        y.addChild(leaf);
+                    }
+                    i++;
+                }
+            } else {
+                for (BranchDecompositionNode leaf : leaves) {
+                    // TODO: eX and eY are not disjoint. Shared edges go to eX. Not sure if correct.
+                    if (eX.contains(leaf.getEdge())) {
+                        x.addChild(leaf);
+                    } else if (eY.contains(leaf.getEdge())) {
+                        y.addChild(leaf);
+                    }
                 }
             }
             // Make x,y children of a
             a.addChild(x);
             a.addChild(y);
         } else { // |X| = 1
-            assert (eX.size() == 1);
+            assert (sep.get(0).size() == 1);
             // Create new internal node y that has leaves corresponding to eY. a only keeps one leaf corr. to eX.
             BranchDecompositionNode y = new BranchDecompositionNode();
             // Store leaves of a
@@ -422,12 +441,15 @@ public abstract class BranchDecompositionHeuristic {
      * @param root the root node.
      * @return the node with degree larger than specified degree.
      */
-    private static BranchDecompositionNode getNodeWithDegreeLargerThan(int degree, BranchDecompositionNode root) {
-        if (root.getDegree() > degree) {
-            return root;
-        }
-        for (BranchDecompositionNode child : root.getChildren()) {
-            getNodeWithDegreeLargerThan(degree, child);
+    public static BranchDecompositionNode getNodeWithDegreeLargerThan(int degree, BranchDecompositionNode root) {
+        Queue<BranchDecompositionNode> queue = new LinkedList<>();
+        queue.add(root);
+        while (!queue.isEmpty()) {
+            BranchDecompositionNode node = queue.remove();
+            if (node.getDegree() > degree) {
+                return node;
+            }
+            queue.addAll(node.getChildren());
         }
         return null;
     }
