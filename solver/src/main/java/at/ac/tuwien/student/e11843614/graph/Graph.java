@@ -144,6 +144,20 @@ public class Graph<T> {
     // ----- Paths -----------------------------------------------------------------------------------------------------
 
     /**
+     * Returns the set of all paths between two vertices.
+     * @param source the source vertex.
+     * @param target the target vertex.
+     * @return the set of paths between source and target.
+     */
+    public Set<List<T>> allPaths(T source, T target) {
+        Set<List<T>> paths = new HashSet<>();
+        List<T> path = new ArrayList<>();
+        path.add(source);
+        collectPaths(source, target, path, paths);
+        return paths;
+    }
+
+    /**
      * Retrieves the shortest path between two vertices.
      * @param source the source vertex.
      * @param target the target vertex.
@@ -261,6 +275,33 @@ public class Graph<T> {
             }
         }
         return false;
+    }
+
+    // ----- Helpers ---------------------------------------------------------------------------------------------------
+
+    /**
+     * Recursive function that collects all paths between two vertices to a set.
+     * @param source the source vertex.
+     * @param target the target vertex.
+     * @param path a list that contains the source vertex only.
+     * @param paths a set where the paths will be stored.
+     */
+    private void collectPaths(T source, T target, List<T> path, Set<List<T>> paths) {
+        // a-b-c-d-e-f
+        for (T neighbor : neighborsOf(source)) {
+            if (path.contains(neighbor)) {
+                // cycle, skip this neighbor
+                continue;
+            }
+            // Add neighbor to the current path, and call
+            List<T> newPath = new ArrayList<>(path);
+            newPath.add(neighbor);
+            if (neighbor.equals(target)) {
+                // reached target node, add this path to the set
+                paths.add(newPath);
+            }
+            collectPaths(neighbor, target, newPath, paths);
+        }
     }
 
     @Override
