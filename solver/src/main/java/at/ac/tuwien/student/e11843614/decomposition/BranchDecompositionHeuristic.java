@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public abstract class BranchDecompositionFactory {
+public abstract class BranchDecompositionHeuristic {
 
     private final static int ALPHA_STEPS = 10;
 
@@ -29,7 +29,11 @@ public abstract class BranchDecompositionFactory {
         return bd;
     }
 
-    // Constructs T_{i+1} from T_i wer
+    /**
+     * Performs a split on an internal node of the branch decomposition (constructs T_{i+1} from T_{i}).
+     * @param a an internal node of the partial branch decomposition.
+     * @param graph the corresponding graph.
+     */
     private static void split(BranchDecompositionNode a, Graph<Integer> graph) {
         // By construction, a has exactly one neighbor that is not a leaf (deg > 1). We call the neighbor 'b'.
         BranchDecompositionNode b = null;
@@ -155,6 +159,13 @@ public abstract class BranchDecompositionFactory {
         }
     }
 
+    /**
+     * Computes a separation (X,Y) of the associated graph.
+     * @param graph the graph G.
+     * @param associatedGraph the graph G_a associated with the leaves of node a.
+     * @param mid the load vertices set of e.
+     * @return A separation (list of two elements), (X, Y), where |X| <= |Y|.
+     */
     private static List<Set<Integer>> separation(Graph<Integer> graph, Graph<Integer> associatedGraph, Set<Integer> mid) {
         // Linking nodes are vertices of associatedGraph that are also in mid.
         Set<Integer> linkingNodes = new HashSet<>(associatedGraph.getVertices());
@@ -277,7 +288,14 @@ public abstract class BranchDecompositionFactory {
         }
     }
 
-    // minor H of G with A,B identified to vA,vB
+    /**
+     * Computes a minor of the specified graph while contracting edges in such a way that all vertices in partitionA
+     * end up merged into one vertex, and all vertices in partitionB end up merged into another vertex.
+     * @param graph the graph.
+     * @param partitionA a set of vertices.
+     * @param partitionB a set of vertices.
+     * @return the minor of the graph, with both partitions identified to some two vertices.
+     */
     private static Graph<Integer> minor(Graph<Integer> graph, Set<Integer> partitionA, Set<Integer> partitionB) {
         Graph<Integer> minor = graph.duplicate();
         boolean minorable = true;
@@ -303,7 +321,14 @@ public abstract class BranchDecompositionFactory {
         return minor;
     }
 
-    // finds s-t cut
+    /**
+     * Computes a minimum vertex cut in the graph, i.e. a set of vertices that, when removed from the graph, decouples
+     * it into (at least) two components.
+     * @param graph the graph.
+     * @param s a vertex.
+     * @param t a vertex.
+     * @return the minimum vertex s-t-cut.
+     */
     private static Set<Integer> minimumVertexCut(Graph<Integer> graph, Integer s, Integer t) {
         // FIXME: doesn't seem to make sense if minor only has 2 vertices. Since any cut results in 1 comp?
         // FIXME: brute force at this point.
@@ -356,6 +381,11 @@ public abstract class BranchDecompositionFactory {
         return vertexCut;
     }
 
+    /**
+     * Constructs an initial partial branch decomposition.
+     * @param graph the graph.
+     * @return a partial branch decomposition.
+     */
     private static BranchDecompositionNode heuristicInitialSeparation(Graph<Integer> graph) {
         // Create a star
         BranchDecompositionNode root = new BranchDecompositionNode();
@@ -386,6 +416,12 @@ public abstract class BranchDecompositionFactory {
         return root;
     }
 
+    /**
+     * Finds a node with degree larger than specified degree.
+     * @param degree the degree.
+     * @param root the root node.
+     * @return the node with degree larger than specified degree.
+     */
     private static BranchDecompositionNode getNodeWithDegreeLargerThan(int degree, BranchDecompositionNode root) {
         if (root.getDegree() > degree) {
             return root;
