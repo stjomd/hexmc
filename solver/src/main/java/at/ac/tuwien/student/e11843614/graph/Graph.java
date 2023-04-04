@@ -256,7 +256,7 @@ public class Graph<T> {
             graph.addVertex(vertex);
         }
         for (Edge<T> edge : edges) {
-            graph.addEdge(edge);
+            graph.addEdge(new Edge<>(edge.getEndpoints().get(0), edge.getEndpoints().get(1)));
         }
         return graph;
     }
