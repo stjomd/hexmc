@@ -3,6 +3,7 @@ package at.ac.tuwien.student.e11843614.decomposition;
 import at.ac.tuwien.student.e11843614.graph.Edge;
 
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 /**
@@ -83,7 +84,23 @@ public class BranchDecompositionNode {
 
     @Override
     public String toString() {
-        return String.format("(%s, ch=%s)", edge, getChildren());
+        StringBuilder builder = new StringBuilder();
+        buildString(builder, "", "");
+        return builder.toString();
+    }
+
+    // Inspired by https://stackoverflow.com/a/8948691
+    private void buildString(StringBuilder builder, String currentPrefix, String nextPrefix) {
+        builder.append(currentPrefix).append(edge).append('\n');
+        Iterator<BranchDecompositionNode> iterator = children.iterator();
+        while (iterator.hasNext()) {
+            BranchDecompositionNode child = iterator.next();
+            if (iterator.hasNext()) {
+                child.buildString(builder, nextPrefix + "├── ", nextPrefix + "│   ");
+            } else {
+                child.buildString(builder, nextPrefix + "└── ", nextPrefix + "    ");
+            }
+        }
     }
 
 }
