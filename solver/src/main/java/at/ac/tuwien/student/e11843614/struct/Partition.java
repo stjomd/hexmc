@@ -98,6 +98,71 @@ public class Partition<T> {
         return true;
     }
 
+    public boolean isBinaryRefinementOf(Partition<T> p) {
+        if (!isRefinementOf(p)) {
+            return false;
+        }
+        // For all pEC in p ...
+        for (Set<T> pEC : p.equivalenceClasses) {
+            // In this, there must be [ec_1, ec_2]  s.t.  pEC is a subset of union([ec_1, ec_2]).
+            // Iterate over pairs of (ec1,ec2), check if union is superset.
+            boolean fulfils = false;
+            for (Set<T> ec1 : this.equivalenceClasses) {
+                for (Set<T> ec2 : this.equivalenceClasses) {
+                    if (ec1 != ec2) {
+                        Set<T> union = new HashSet<>(ec1);
+                        union.addAll(ec2);
+                        if (union.containsAll(pEC)) {
+                            fulfils = true;
+                            break;
+                        }
+                    }
+                }
+                if (fulfils)
+                    break;
+            }
+            // If no pair was found, return false, otherwise check next pEC.
+            if (!fulfils)
+                return false;
+        }
+        return true;
+    }
+
+    public boolean isTernaryRefinementOf(Partition<T> p) {
+        if (!isRefinementOf(p)) {
+            return false;
+        }
+        // For all pEC in p ...
+        for (Set<T> pEC : p.equivalenceClasses) {
+            // In this, there must be [ec_1, ec_2, ec_3]  s.t.  pEC is a subset of union([ec_1, ec_2, ec_3]).
+            // Iterate over pairs of (ec1,ec2,ec3), check if union is superset.
+            boolean fulfils = false;
+            for (Set<T> ec1 : this.equivalenceClasses) {
+                for (Set<T> ec2 : this.equivalenceClasses) {
+                    for (Set<T> ec3: this.equivalenceClasses) {
+                        if (ec1 != ec2 && ec2 != ec3) {
+                            Set<T> union = new HashSet<>(ec1);
+                            union.addAll(ec2);
+                            union.addAll(ec3);
+                            if (union.containsAll(pEC)) {
+                                fulfils = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (fulfils)
+                        break;
+                }
+                if (fulfils)
+                    break;
+            }
+            // If no pair was found, return false, otherwise check next pEC.
+            if (!fulfils)
+                return false;
+        }
+        return true;
+    }
+
     // ----- Helpers ---------------------------------------------------------------------------------------------------
 
     /**
