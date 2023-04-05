@@ -16,10 +16,9 @@ public abstract class SATEncodingFactory {
      * @return a SAT encoding for this graph that contains a formula which is satisfiable if bw(graph) <= w.
      */
     public static SATEncoding forBranchWidth(Graph<Integer> graph, int w) {
-        int d = (int) (Math.floor(graph.getEdges().size() / 2.0)
-            - Math.ceil(w / 2.0)
-            + Math.ceil(Math.log(Math.floor(w / 2.0)) / Math.log(2))
-        ) + 1; // TODO: weird values of d
+        int d = (int) Math.floor(graph.getEdges().size() / 2.0)
+            - (int) Math.ceil(w / 2.0)
+            + (int) Math.ceil(Math.log(Math.floor(w / 2.0)) / Math.log(2));
         SATEncoding sat = new SATEncoding(graph);
         // 1
         for (Integer e : sat.getEdgeMap().getDestination()) {
