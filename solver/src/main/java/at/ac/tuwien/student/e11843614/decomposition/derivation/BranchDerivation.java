@@ -25,6 +25,23 @@ public class BranchDerivation {
     }
 
     /**
+     * Returns the partition at the specified level of this derivation.
+     * @param level the level, a number between 1 and the size of this partition.
+     * @return the partition at the specified level.
+     */
+    public Partition<Edge<Integer>> getLevel(int level) {
+        return derivation.get(level - 1);
+    }
+
+    /**
+     * Returns the size of this derivation (amount of partitions).
+     * @return the size.
+     */
+    public int size() {
+        return derivation.size();
+    }
+
+    /**
      * Fills the derivation's partitions.
      * @param model the model set.
      * @param sat the SAT encoding.
@@ -56,14 +73,6 @@ public class BranchDerivation {
             }
         }
         // TODO: does not meet conditions
-    }
-
-    public Partition<Edge<Integer>> getLevel(int level) {
-        return derivation.get(level - 1);
-    }
-
-    public int size() {
-        return derivation.size();
     }
 
     @Override

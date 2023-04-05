@@ -77,6 +77,8 @@ public class Partition<T> {
         return equivalenceClasses.size();
     }
 
+    // ----- Refinements -----------------------------------------------------------------------------------------------
+
     /**
      * Checks if this partition is a refinement of another partition.
      * @param p a partition.
@@ -98,6 +100,11 @@ public class Partition<T> {
         return true;
     }
 
+    /**
+     * Checks if this partition is a 2-ary refinement of another partition.
+     * @param p a partition.
+     * @return true, if this partition is a 2-ary refinement of p, and false otherwise.
+     */
     public boolean isBinaryRefinementOf(Partition<T> p) {
         if (!isRefinementOf(p)) {
             return false;
@@ -128,6 +135,11 @@ public class Partition<T> {
         return true;
     }
 
+    /**
+     * Checks if this partition is a 3-ary refinement of another partition.
+     * @param p a partition.
+     * @return true, if this partition is a 3-ary refinement of p, and false otherwise.
+     */
     public boolean isTernaryRefinementOf(Partition<T> p) {
         if (!isRefinementOf(p)) {
             return false;
