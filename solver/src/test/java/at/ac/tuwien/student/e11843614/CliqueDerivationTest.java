@@ -33,7 +33,7 @@ public class CliqueDerivationTest {
         graph.addEdge(2, 3);
         graph.addEdge(2, 4);
         SATEncoding encoding = SATEncodingFactory.forCliqueWidth(graph, 2);
-        Set<Variable> model = SATSolver.getModel(encoding);
+        Set<Variable> model = SATSolver.getSatisfyingAssignment(encoding);
         derivation = new CliqueDerivation(model, encoding);
         //derivation = exampleDerivation();
     }

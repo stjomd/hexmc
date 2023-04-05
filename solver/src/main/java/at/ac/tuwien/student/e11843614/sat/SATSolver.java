@@ -21,7 +21,7 @@ public abstract class SATSolver {
      * @return a set of true variables.
      * @throws TimeoutException if the SAT solver takes too long.
      */
-    public static Set<Variable> getModel(SATEncoding satEncoding) throws TimeoutException {
+    public static Set<Variable> getSatisfyingAssignment(SATEncoding satEncoding) throws TimeoutException {
         int[] assignments = SATSolver.getModel(satEncoding.getFormula());
         Set<Variable> truth = new HashSet<>();
         for (int assignment : assignments) {
