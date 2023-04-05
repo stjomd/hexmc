@@ -58,6 +58,14 @@ public class BranchDerivation {
         // TODO: does not meet conditions
     }
 
+    public Partition<Edge<Integer>> getLevel(int level) {
+        return derivation.get(level - 1);
+    }
+
+    public int size() {
+        return derivation.size();
+    }
+
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
