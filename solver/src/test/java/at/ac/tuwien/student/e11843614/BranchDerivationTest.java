@@ -28,7 +28,7 @@ public class BranchDerivationTest {
     public void beforeEach() throws TimeoutException {
         graph = GraphExamples.example();
         SATEncoding encoding = SATEncodingFactory.forBranchWidth(graph, 2);
-        Set<Variable> model = SATSolver.getModel(encoding);
+        Set<Variable> model = SATSolver.getSatisfyingAssignment(encoding);
         derivation = new BranchDerivation(model, encoding);
     }
 
