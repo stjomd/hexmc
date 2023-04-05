@@ -2,6 +2,7 @@ package at.ac.tuwien.student.e11843614.formula;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -54,6 +55,30 @@ public class Formula {
     @Override
     public String toString() {
         return clauses.toString();
+    }
+
+    // TODO: remove
+    public boolean isSatisfied(int[] trueVars) {
+        List<Integer> truths = new ArrayList<>();
+        for (int var : trueVars) {
+            if (var > 0)
+                truths.add(var);
+        }
+        for (Clause clause : clauses) {
+            boolean satisfied = false;
+            for (Integer literal : clause.getLiterals()) {
+                if (literal > 0 && truths.contains(literal)) {
+                    satisfied = true;
+                    break;
+                } else if (literal < 0 && !truths.contains(literal)) {
+                    satisfied = true;
+                    break;
+                }
+            }
+            if (!satisfied)
+                return false;
+        }
+        return true;
     }
 
 }
