@@ -21,7 +21,7 @@ public abstract class BranchDecompositionHeuristic {
      * @param graph the graph to construct a branch decomposition of.
      * @return the root node of the branch decomposition.
      */
-    public static BranchDecompositionNode heuristic(Graph<Integer> graph) {
+    public static BranchDecompositionNode of(Graph<Integer> graph) {
         BranchDecompositionNode bd = initialPartialDecomposition(graph);
         BranchDecompositionNode internalNode = getNodeWithDegreeLargerThan(3, bd);
         while (internalNode != null) {
@@ -67,9 +67,9 @@ public abstract class BranchDecompositionHeuristic {
     }
 
     /**
-     * Performs a split on an internal node of the branch decomposition (constructs T_{i+1} from T_{i}).
-     * @param a an internal node of the partial branch decomposition.
-     * @param graph the corresponding graph.
+     * Performs a split of the partial branch decomposition.
+     * @param a an internal node of degree larger than 3.
+     * @param graph the graph for which a branch decomposition is being computed.
      */
     private static void split(BranchDecompositionNode a, Graph<Integer> graph) {
         // By construction, a has exactly one neighbor that is not a leaf (deg > 1). We call the neighbor 'b'.
@@ -83,132 +83,152 @@ public abstract class BranchDecompositionHeuristic {
         if (b == null) {
             b = a.getParent();
         }
-        assert (b != null && b.getDegree() > 1);
-        // The edge e is <a, b>. e partitions the graph's edges. One partition is a's children, the other is b's,
+        // The edge e is <a, b>. e separates the graph's edges. One separation is a's children, the other is b's,
         // evtl. minus a and b themselves. We need the endpoints of the edges in both partitions.
-        Set<Integer> partA = new HashSet<>(), partB = new HashSet<>();
+        Set<Integer> separationA = new HashSet<>(), separationB = new HashSet<>();
         for (BranchDecompositionNode child : a.getChildren()) {
             if (child.getDegree() == 1) {
                 List<Integer> endpoints = child.getEdge().getEndpoints();
-                partA.add(endpoints.get(0));
-                partA.add(endpoints.get(1));
+                separationA.add(endpoints.get(0));
+                separationA.add(endpoints.get(1));
             }
         }
         for (BranchDecompositionNode child : b.getChildren()) {
             if (child.getDegree() == 1) {
                 List<Integer> endpoints = child.getEdge().getEndpoints();
-                partB.add(endpoints.get(0));
-                partB.add(endpoints.get(1));
+                separationB.add(endpoints.get(0));
+                separationB.add(endpoints.get(1));
             }
         }
-        // The set of linking nodes mid(e) is the intersection of partA and partB.
-        Set<Integer> mid = new HashSet<>(partA);
-        mid.retainAll(partB);
-        // associatedGraph is G_a in the paper. We obtain it by selecting the children of a that are leaves, and adding
+        // The set of load vertices mid(e) is the intersection of separationA and separationB.
+        Set<Integer> mid = new HashSet<>(separationA);
+        mid.retainAll(separationB);
+        // associatedGraph (G_a). We obtain it by selecting the children of a that are leaves, and adding
         // their edges to the associatedGraph.
         Graph<Integer> associatedGraph = new Graph<>();
         for (BranchDecompositionNode child : a.getChildren()) {
             if (child.getDegree() == 1) {
                 List<Integer> endpoints = child.getEdge().getEndpoints();
-                associatedGraph.addEdge(endpoints.get(0), endpoints.get(1));
+                associatedGraph.addEdge(endpoints.get(0), endpoints.get(1)); // creates new Edge instances
             }
         }
         // Now we need to find a separation (X,Y) of associatedGraph.
-        List<Set<Integer>> sep = separation(graph, associatedGraph, mid);
-        // Get the corresponding edges, E(X) and E(Y).
+        List<Graph<Integer>> sep = separation(graph, associatedGraph, mid);
+        List<Set<Edge<Integer>>> edgeSets = prepareEdgeSets(a, sep);
+        // Now eX and eY are a partition of the edges in the associated graph.
+        distributeLeaves(a, edgeSets.get(0), edgeSets.get(1));
+    }
+
+    /**
+     * For a given internal node and a separation of the associated graph, returns the disjoint sets eX and eY of edges.
+     * @param a an internal node of degree larger than 3.
+     * @param separation a separation of the associated graph.
+     * @return a list of two disjoint sets, eX and eY.
+     */
+    private static List<Set<Edge<Integer>>> prepareEdgeSets(BranchDecompositionNode a, List<Graph<Integer>> separation) {
+        // X and Y are subgraphs which overlap in separation nodes. Both X and Y have Edge instances decoupled from
+        // the associated graph. To simplify things further, we build sets E(X) and E(Y) that contain edge instances
+        // from the associated graph.
+        Set<Edge<Integer>> edgesInA = new HashSet<>();
+        for (BranchDecompositionNode node : a.getChildren()) {
+            if (node.getDegree() == 1) {
+                edgesInA.add(node.getEdge());
+            }
+        }
         Set<Edge<Integer>> eX = new HashSet<>();
         Set<Edge<Integer>> eY = new HashSet<>();
-        for (Integer x : sep.get(0)) {
-            for (Edge<Integer> edge : graph.getEdges()) {
-                if (edge.getEndpoints().contains(x)) {
-                    eX.add(edge);
-                }
+        for (Edge<Integer> edge : edgesInA) {
+            Integer u = edge.getEndpoints().get(0);
+            Integer v = edge.getEndpoints().get(1);
+            if (separation.get(0).hasEdgeWithEndpoints(u, v)) {
+                eX.add(edge);
+            } else if (separation.get(1).hasEdgeWithEndpoints(u, v)) {
+                eY.add(edge);
             }
         }
-        for (Integer y : sep.get(1)) {
-            for (Edge<Integer> edge : graph.getEdges()) {
-                if (edge.getEndpoints().contains(y)) {
-                    eY.add(edge);
-                }
+        // eX and eY should, united, include all edges of the associated graph. If not, add the rest to eX.
+        Set<Edge<Integer>> rest = new HashSet<>(edgesInA);
+        rest.removeAll(eX);
+        rest.removeAll(eX);
+        eX.addAll(rest);
+        // Make eX and eY disjoint
+        Set<Edge<Integer>> intersect = new HashSet<>(eX);
+        intersect.retainAll(eY);
+        if (eX.size() > eY.size()) {
+            eX.removeAll(intersect);
+        } else {
+            eY.removeAll(intersect);
+        }
+        // If one of eX or eY is empty, move one edge over.
+        if (eX.isEmpty()) {
+            Edge<Integer> edge = eY.iterator().next();
+            eX.add(edge);
+            eY.remove(edge);
+        } else if (eY.isEmpty()) {
+            Edge<Integer> edge = eX.iterator().next();
+            eY.add(edge);
+            eX.remove(edge);
+        }
+        // Let |eX| <= |eY|.
+        if (eX.size() > eY.size()) {
+            Set<Edge<Integer>> temp = eX;
+            //noinspection ReassignedVariable,SuspiciousNameCombination
+            eX = eY;
+            eY = temp;
+        }
+        return List.of(eX, eY);
+    }
+
+    /**
+     * For a specified internal node, distributes its leaves to new internal nodes.
+     * @param a an internal node of degree larger than 3.
+     * @param eX a set of edges.
+     * @param eY a set of edges.
+     */
+    private static void distributeLeaves(BranchDecompositionNode a, Set<Edge<Integer>> eX, Set<Edge<Integer>> eY) {
+        // Store a's leaves.
+        Set<BranchDecompositionNode> leaves = new HashSet<>();
+        for (BranchDecompositionNode node : a.getChildren()) {
+            if (node.getDegree() == 1) {
+                leaves.add(node);
             }
         }
-        // Split
-        if (sep.get(0).size() > 1) { // if |X| > 1
-            // Create new internal nodes x, y.
-            // x has leaves corresponding to eX, y has leaves corresponding to eY.
-            BranchDecompositionNode x = new BranchDecompositionNode();
+        if (eX.size() == 1) {
+            // Right now, node a has leaves eX U eY. After the split, a has two children.
+            // One child is a leaf x with the edge in eX. Other child is an internal node y with edges in eY.
+            BranchDecompositionNode x = new BranchDecompositionNode(eX.iterator().next());
             BranchDecompositionNode y = new BranchDecompositionNode();
-            // Store leaves of a, remove a's children except b (other internal node), add the leaves to x/y.
-            Set<BranchDecompositionNode> leaves = new HashSet<>();
-            Set<Edge<Integer>> leavesEdges = new HashSet<>(); // TODO: needed for tmp check below
-            for (BranchDecompositionNode node : a.getChildren()) {
-                if (node.getDegree() == 1) {
-                    BranchDecompositionNode decoupledLeaf = new BranchDecompositionNode(node.getEdge());
-                    leaves.add(decoupledLeaf);
-                    leavesEdges.add(node.getEdge());
-                }
+            // Add children to y.
+            for (Edge<Integer> edge : eY) {
+                y.addChild(new BranchDecompositionNode(edge));
             }
-            // Remove children except b
-            Set<BranchDecompositionNode> setOfB = new HashSet<>();
-            setOfB.add(b);
-            a.getChildren().retainAll(setOfB);
-            // Add leaves to x/y
-            if (eX.containsAll(leavesEdges)) {
-                // TODO: if eX contains all edges (leaves), then the loop will add all leaves to x, and y will be empty.
-                // TODO: Therefore, perform this check, and split edges evenly into eX, eY. Probably not correct.
-                int i = 0;
-                for (BranchDecompositionNode leaf : leaves) {
-                    if (i % 2 == 0) {
-                        x.addChild(leaf);
-                    } else {
-                        y.addChild(leaf);
-                    }
-                    i++;
-                }
-            } else {
-                for (BranchDecompositionNode leaf : leaves) {
-                    // TODO: eX and eY are not disjoint. Shared edges go to eX. Not sure if correct.
-                    if (eX.contains(leaf.getEdge())) {
-                        x.addChild(leaf);
-                    } else if (eY.contains(leaf.getEdge())) {
-                        y.addChild(leaf);
-                    }
-                }
+            // Remove a's leaves.
+            for (BranchDecompositionNode leaf : leaves) {
+                a.removeChild(leaf);
             }
-            // Make x,y children of a
+            // Add x, y.
             a.addChild(x);
             a.addChild(y);
-        } else { // |X| = 1
-            assert (sep.get(0).size() == 1);
-            // Create new internal node y that has leaves corresponding to eY. a only keeps one leaf corr. to eX.
+        } else {
+            // Right now, node a has leaves eX U eY. After the split, a has two children.
+            // Both are internal nodes x,y. Each has edges from the corresponding set.
+            BranchDecompositionNode x = new BranchDecompositionNode();
             BranchDecompositionNode y = new BranchDecompositionNode();
-            // Store leaves of a
-            Set<BranchDecompositionNode> leaves = new HashSet<>();
-            for (BranchDecompositionNode node : a.getChildren()) {
-                if (node.getDegree() == 1) {
-                    BranchDecompositionNode decoupledLeaf = new BranchDecompositionNode(node.getEdge());
-                    leaves.add(decoupledLeaf);
+            // Add children to the internal nodes.
+            for (BranchDecompositionNode leaf : leaves) {
+                Edge<Integer> edge = leaf.getEdge();
+                if (eX.contains(edge)) {
+                    x.addChild(new BranchDecompositionNode(edge));
+                } else if (eY.contains(edge)) {
+                    y.addChild(new BranchDecompositionNode(edge));
                 }
             }
-            // Remove children except b
-            Set<BranchDecompositionNode> setOfB = new HashSet<>();
-            setOfB.add(b);
-            a.getChildren().retainAll(setOfB);
-            // Re-add the leaf corresponding to eX
-            BranchDecompositionNode xLeaf = null;
+            // Remove a's leaves.
             for (BranchDecompositionNode leaf : leaves) {
-                if (eX.contains(leaf.getEdge())) {
-                    xLeaf = leaf;
-                }
+                a.removeChild(leaf);
             }
-            assert (xLeaf != null);
-            a.addChild(xLeaf);
-            leaves.remove(xLeaf);
-            // Add the rest of the leaves to y
-            for (BranchDecompositionNode leaf : leaves) {
-                y.addChild(leaf);
-            }
-            // Add y to the children of a
+            // Add x, y.
+            a.addChild(x);
             a.addChild(y);
         }
     }
@@ -220,7 +240,7 @@ public abstract class BranchDecompositionHeuristic {
      * @param mid the load vertices set of e.
      * @return A separation (list of two elements), (X, Y), where |X| <= |Y|.
      */
-    private static List<Set<Integer>> separation(Graph<Integer> graph, Graph<Integer> associatedGraph, Set<Integer> mid) {
+    private static List<Graph<Integer>> separation(Graph<Integer> graph, Graph<Integer> associatedGraph, Set<Integer> mid) {
         // Linking nodes are vertices of associatedGraph that are also in mid.
         Set<Integer> linkingNodes = new HashSet<>(associatedGraph.getVertices());
         linkingNodes.retainAll(mid);
@@ -235,81 +255,125 @@ public abstract class BranchDecompositionHeuristic {
         // Iterate over source nodes and alphas, determine work/play pairs.
         int owork = Integer.MAX_VALUE;
         int oplay = Integer.MIN_VALUE;
-        Set<Integer> oSepX = new HashSet<>();
-        Set<Integer> oSepY = new HashSet<>();
+        Graph<Integer> oSepX = null;
+        Graph<Integer> oSepY = null;
         for (Integer chosenSourceNode : sourceNodes) {
             for (double alpha = 0.01; alpha < 1; alpha += 1.0/ALPHA_STEPS) {
                 // Choose a source node. Sort vertices of associatedGraph in non-decreasing order acc. to their distance to it.
                 List<Integer> sortedVertices = associatedGraph.getVertices().stream()
                     .sorted(Comparator.comparing(v -> associatedGraph.distance(v, chosenSourceNode)))
                     .collect(Collectors.toList());
-                // Partition the sorted vertices of associatedGraph into partA, partB using the cutoff index.
-                int cutoff = (int) (alpha * (sortedVertices.size() - 1)) + 1;
-                Set<Integer> partA = new HashSet<>(), partB = new HashSet<>();
-                int i = 0;
-                for (Integer vertex : sortedVertices) {
-                    if (i < cutoff) {
-                        partA.add(vertex);
-                    } else {
-                        partB.add(vertex);
-                    }
-                    i++;
+                // Create setA, setB of vertices. Each has 'amount' vertices.
+                int size = sortedVertices.size();
+                int amount = (int) (alpha * (sortedVertices.size() - 1)) + 1;
+                // Add the first 'amount' vertices to setA, the last 'amount' vertices to setB
+                Set<Integer> setA = new HashSet<>(), setB = new HashSet<>();
+                for (int i = 0; i < amount; i++) {
+                    setA.add(sortedVertices.get(i));
+                    setB.add(sortedVertices.get(size - 1 - i));
                 }
-                // Compute the minor of G with partA identified to v_A, partB identified to v_B.
-                Graph<Integer> minor = minor(graph, partA, partB);
-                // v_A, v_B are named in 'minor' after some vertex from partA or partB respectively.
+                // Compute the minor of G with setA identified to v_A, setB identified to v_B.
+                Graph<Integer> minor = minor(graph, setA, setB);
+                // v_A, v_B are named in 'minor' after some vertex from setA or setB respectively.
                 Integer vA = null, vB = null;
                 for (Integer v : minor.getVertices()) {
-                    if (partA.contains(v)) {
+                    if (setA.contains(v)) {
                         vA = v;
-                    } else if (partB.contains(v)) {
+                    } else if (setB.contains(v)) {
                         vB = v;
                     }
                     if (vA != null && vB != null) {
                         break;
                     }
                 }
-                assert (vA != null && vB != null);
-                // Now find the minimum vertex cut intersecting all v_A,v_B-paths. We call the vertices in the min
-                // vertex cut 'separation nodes'.
+                // Now find the minimum vertex cut in minor intersecting all v_A,v_B-paths. We call the vertices in the
+                // min vertex cut 'separation nodes'.
                 Set<Integer> separationNodes = minimumVertexCut(minor, vA, vB);
                 // Nodes that are both linking and separation nodes are labeled 'share nodes'.
                 Set<Integer> shareNodes = new HashSet<>(separationNodes);
                 shareNodes.retainAll(linkingNodes);
                 // Linking nodes on one side of the cut (in one component) but not separation nodes are labeled 'side nodes'.
                 // TODO: not sure of the formulation?
-                Graph<Integer> separatedGraph = minor.duplicate();
+                Graph<Integer> separatedMinor = minor.duplicate();
                 for (Integer node : separationNodes) {
-                    separatedGraph.removeVertex(node);
+                    separatedMinor.removeVertex(node);
                 }
-                Set<Integer> sideNodes = new HashSet<>(separatedGraph.getVertices());
+                Set<Integer> sideNodes = new HashSet<>(separatedMinor.getVertices());
                 sideNodes.retainAll(linkingNodes);
-                // Compute separation (X,Y). partA is a subset of X, partB is a subset of Y. Intersection of X and Y is
-                // the set of separation nodes. Vertices in vA,vB-paths before separation nodes are in X, after in Y.
-                Set<Integer> sepX = new HashSet<>(partA);
-                Set<Integer> sepY = new HashSet<>(partB);
-                sepX.addAll(separationNodes);
-                sepY.addAll(separationNodes);
-                for (List<Integer> path : minor.allPaths(vA, vB)) {
-                    // If the path starts in partA, we add all vertices in the path until the separation node to sepX...
-                    boolean startsInPartA = partA.contains(path.get(0));
-                    int j = 0;
-                    while (!separationNodes.contains(path.get(j))) {
-                        if (startsInPartA) {
-                            sepX.add(path.get(j));
-                        } else {
-                            sepY.add(path.get(j));
-                        }
-                        j++;
+                // (X, Y) is a separation of G_a. X, Y are subgraphs of G_a.
+                // First remove separation nodes, which results in a graph with >1 components.
+                Graph<Integer> separatedGraph = associatedGraph.duplicate();
+                for (Integer vertex : separationNodes) {
+                    separatedGraph.removeVertex(vertex);
+                }
+                List<Graph<Integer>> components = separatedGraph.components();
+                // Determine the components X and Y.
+                Graph<Integer> componentX = null; // component that contains vA
+                Graph<Integer> componentY = null; // component that contains vB
+                for (Graph<Integer> cmp : components) {
+                    if (cmp.getVertices().contains(vA)) {
+                        componentX = cmp;
+                    } else if (cmp.getVertices().contains(vB)) {
+                        componentY = cmp;
                     }
-                    // And all vertices after to sepY.
-                    while (j < path.size()) {
-                        if (startsInPartA) {
-                            sepY.add(path.get(j));
-                        } else {
-                            sepX.add(path.get(j));
+                }
+                // If one is null, create an empty one.
+                if (componentX == null) {
+                    componentX = new Graph<>();
+                    for (Integer sepNode : separationNodes) {
+                        componentX.addVertex(sepNode);
+                    }
+                }
+                if (componentY == null) {
+                    componentY = new Graph<>();
+                    for (Integer sepNode : separationNodes) {
+                        componentY.addVertex(sepNode);
+                    }
+                }
+                // Add the separation nodes to the two components, as well as corresponding edges
+                for (Integer separationNode : separationNodes) {
+                    componentX.addVertex(separationNode);
+                    componentY.addVertex(separationNode);
+                }
+                for (Edge<Integer> edge : associatedGraph.getEdges()) {
+                    Integer u = edge.getEndpoints().get(0);
+                    Integer v = edge.getEndpoints().get(1);
+                    // Add edges between separation nodes
+                    if (separationNodes.contains(u) && separationNodes.contains(v)) {
+                        componentX.addEdge(u, v);
+                        componentY.addEdge(v, u);
+                        continue;
+                    }
+                    // Add edges that as one endpoint have a separation node.
+                    if (separationNodes.contains(u)) {
+                        if (componentX.getVertices().contains(v)) {
+                            componentX.addEdge(u, v);
+                        } else if (componentY.getVertices().contains(v)) {
+                            componentY.addEdge(u, v);
                         }
-                        j++;
+                    } else if (separationNodes.contains(v)) {
+                        if (componentX.getVertices().contains(v)) {
+                            componentX.addEdge(u, v);
+                        } else if (componentY.getVertices().contains(v)) {
+                            componentY.addEdge(u, v);
+                        }
+                    }
+                }
+                // If there are > 2 components, merge the rest into the smallest of X or Y
+                if (components.size() > 2) {
+                    Graph<Integer> smallest = (componentX.getVertices().size() < componentY.getVertices().size())
+                        ? componentX : componentY;
+                    for (Graph<Integer> cmp : components) {
+                        if (cmp != componentX && cmp != componentY) {
+                            // Add vertices...
+                            for (Integer vertex : cmp.getVertices()) {
+                                smallest.addVertex(vertex);
+                            }
+                            // and edges.
+                            for (Edge<Integer> edge : cmp.getEdges()) {
+                                smallest.addEdge(edge);
+                            }
+                        }
                     }
                 }
                 // Define work and play values
@@ -325,17 +389,17 @@ public abstract class BranchDecompositionHeuristic {
                 if (work < owork) {
                     owork = work;
                     oplay = play;
-                    oSepX = sepX;
-                    oSepY = sepY;
+                    oSepX = componentX;
+                    oSepY = componentY;
                 } else if (work == owork && play > oplay) {
                     oplay = play;
-                    oSepX = sepX;
-                    oSepY = sepY;
+                    oSepX = componentX;
+                    oSepY = componentY;
                 }
             }
         }
         // Return a list where |oSepX| <= |oSepY|.
-        if (oSepX.size() <= oSepY.size()) {
+        if (oSepX.getEdges().size() <= oSepY.getEdges().size()) {
             return List.of(oSepX, oSepY);
         } else {
             return List.of(oSepY, oSepX);
@@ -343,14 +407,14 @@ public abstract class BranchDecompositionHeuristic {
     }
 
     /**
-     * Computes a minor of the specified graph while contracting edges in such a way that all vertices in partitionA
-     * end up merged into one vertex, and all vertices in partitionB end up merged into another vertex.
+     * Computes a minor of the specified graph while contracting edges in such a way that all vertices in setA
+     * end up merged into one vertex, and all vertices in setB end up merged into another vertex.
      * @param graph the graph.
-     * @param partitionA a set of vertices.
-     * @param partitionB a set of vertices.
+     * @param setA a set of vertices.
+     * @param setB a set of vertices.
      * @return the minor of the graph, with both partitions identified to some two vertices.
      */
-    private static Graph<Integer> minor(Graph<Integer> graph, Set<Integer> partitionA, Set<Integer> partitionB) {
+    private static Graph<Integer> minor(Graph<Integer> graph, Set<Integer> setA, Set<Integer> setB) {
         Graph<Integer> minor = graph.duplicate();
         boolean minorable = true;
         while (minorable) {
@@ -363,8 +427,7 @@ public abstract class BranchDecompositionHeuristic {
                 if (endpoints.get(0).equals(endpoints.get(1))) {
                     continue;
                 }
-                boolean hasCandidates = (partitionA.contains(endpoints.get(0)) && partitionA.contains(endpoints.get(1)))
-                    || (partitionB.contains(endpoints.get(0)) && partitionB.contains(endpoints.get(1)));
+                boolean hasCandidates = setA.containsAll(endpoints) || setB.containsAll(endpoints);
                 if (hasCandidates) {
                     minor.contractEdge(edge);
                     minorable = true;
@@ -383,9 +446,9 @@ public abstract class BranchDecompositionHeuristic {
      * @param t a vertex.
      * @return the minimum vertex s-t-cut.
      */
-    private static Set<Integer> minimumVertexCut(Graph<Integer> graph, Integer s, Integer t) {
-        // FIXME: doesn't seem to make sense if minor only has 2 vertices. Since any cut results in 1 comp?
-        if (graph.getVertices().size() == 2) {
+    public static Set<Integer> minimumVertexCut(Graph<Integer> graph, Integer s, Integer t) {
+        // FIXME: Doesn't make sense if there is an edge between s and t?
+        if (graph.hasEdgeWithEndpoints(s, t)) {
             return Set.of(s);
         }
         // FIXME: brute force at this point.
@@ -403,23 +466,9 @@ public abstract class BranchDecompositionHeuristic {
         int minVertexCutSize = Integer.MAX_VALUE;
         int inclusionSum = Integer.MAX_VALUE;
         while (inclusionSum > 0) {
-            // Update the inclusion list (works like binary increment)
-            int j = inclusion.size() - 1;
-            while (j >= 0 && inclusion.get(j).equals(false)) {
-                inclusion.set(j, true);
-                j--;
-            }
-            if (j >= 0) {
-                inclusion.set(j, false);
-            }
-            // Remove vertices from the graph.
+            // Get subset
             Graph<Integer> graphWithRemovedVertices = graph.duplicate();
-            Set<Integer> includedVertices = new HashSet<>();
-            for (int k = 0; k < vertices.size(); k++) {
-                if (inclusion.get(k).equals(true)) {
-                    includedVertices.add(vertices.get(k));
-                }
-            }
+            Set<Integer> includedVertices = getSubset(vertices, inclusion);
             for (Integer vertex : includedVertices) {
                 graphWithRemovedVertices.removeVertex(vertex);
             }
@@ -440,10 +489,13 @@ public abstract class BranchDecompositionHeuristic {
                     if (minVertexCutSize > includedVertices.size()) {
                         minVertexCutSize = includedVertices.size();
                         vertexCut = includedVertices;
+                        if (minVertexCutSize == 1) {
+                            break;
+                        }
                     }
                 }
             }
-            // Count the amount of falses
+            // Count the amount of falses for the loop condition. When sum is 0, we went through all subsets
             inclusionSum = 0;
             for (Boolean bool : inclusion) {
                 if (bool.equals(false)) {
@@ -452,6 +504,32 @@ public abstract class BranchDecompositionHeuristic {
             }
         }
         return vertexCut;
+    }
+
+    /**
+     * Returns a subset of the specified list, and increments the inclusion list.
+     * @param list the list to obtain a subset of.
+     * @param inclusion an inclusion list, a list of booleans, which indicates which elements go into the subset.
+     * @return the subset of list.
+     */
+    private static Set<Integer> getSubset(List<Integer> list, List<Boolean> inclusion) {
+        Set<Integer> subset = new HashSet<>();
+        // Update inclusion
+        int j = inclusion.size() - 1;
+        while (j >= 0 && inclusion.get(j).equals(false)) {
+            inclusion.set(j, true);
+            j--;
+        }
+        if (j >= 0) {
+            inclusion.set(j, false);
+        }
+        // Build subset
+        for (int k = 0; k < list.size(); k++) {
+            if (inclusion.get(k).equals(true)) {
+                subset.add(list.get(k));
+            }
+        }
+        return subset;
     }
 
     /**
