@@ -1,6 +1,6 @@
 package at.ac.tuwien.student.e11843614;
 
-import at.ac.tuwien.student.e11843614.decomposition.BDHeuristic;
+import at.ac.tuwien.student.e11843614.decomposition.BranchDecompositionHeuristic;
 
 import at.ac.tuwien.student.e11843614.decomposition.BranchDecompositionNode;
 import at.ac.tuwien.student.e11843614.example.GraphExamples;
@@ -27,7 +27,7 @@ public class BranchDecompositionTest {
     public void beforeEach() {
         // a1, b2, c3, d4, e5, f6, g7, h8, i9, j10, k11
         graph = GraphExamples.example();
-        heuristic = BDHeuristic.heuristic(graph);
+        heuristic = BranchDecompositionHeuristic.of(graph);
     }
 
     @AfterEach
