@@ -265,7 +265,9 @@ public abstract class BranchDecompositionHeuristic {
                     .collect(Collectors.toList());
                 // Create setA, setB of vertices. Each has 'amount' vertices.
                 int size = sortedVertices.size();
-                int amount = (int) (alpha * (sortedVertices.size() - 1)) + 1;
+                int amount = (int) (alpha * (size - 1)) + 1;
+                // TODO: fix to make setA and setB not overlap
+                amount = Math.min(amount, size / 2);
                 // Add the first 'amount' vertices to setA, the last 'amount' vertices to setB
                 Set<Integer> setA = new HashSet<>(), setB = new HashSet<>();
                 for (int i = 0; i < amount; i++) {
