@@ -288,6 +288,16 @@ public abstract class BranchDecompositionHeuristic {
                         break;
                     }
                 }
+                // Minor might have edges between vA, vB. Which makes the minimum vertex cut undefined. => delete
+                Set<Edge<Integer>> minorEdgesToRemove = new HashSet<>();
+                for (Edge<Integer> edge : minor.getEdges()) {
+                    if (edge.getEndpoints().contains(vA) && edge.getEndpoints().contains(vB)) {
+                        minorEdgesToRemove.add(edge);
+                    }
+                }
+                for (Edge<Integer> edge : minorEdgesToRemove) {
+                    minor.removeEdge(edge);
+                }
                 // Now find the minimum vertex cut in minor intersecting all v_A,v_B-paths. We call the vertices in the
                 // min vertex cut 'separation nodes'.
                 Set<Integer> separationNodes = minimumVertexCut(minor, vA, vB);
@@ -442,16 +452,15 @@ public abstract class BranchDecompositionHeuristic {
 
     /**
      * Computes a minimum vertex cut in the graph, i.e. a set of vertices that, when removed from the graph, decouples
-     * it into (at least) two components.
+     * it into (at least) two components. If there is an edge between s and t, returns an empty vertex cut.
      * @param graph the graph.
      * @param s a vertex.
      * @param t a vertex.
      * @return the minimum vertex s-t-cut.
      */
     public static Set<Integer> minimumVertexCut(Graph<Integer> graph, Integer s, Integer t) {
-        // FIXME: Doesn't make sense if there is an edge between s and t?
         if (graph.hasEdgeWithEndpoints(s, t)) {
-            return Set.of(s);
+            return Set.of();
         }
         // FIXME: brute force at this point.
         List<Integer> vertices = new ArrayList<>(graph.getVertices());
