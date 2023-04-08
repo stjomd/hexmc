@@ -329,6 +329,15 @@ public abstract class BranchDecompositionHeuristic {
                         componentY = cmp;
                     }
                 }
+                // TODO: bug fix for case when an edge gets "lost". Suppose separatedGraph has 2 components,
+                // TODO: and X has both vA,vB and Y has other vertices/edges. Then Y is null and forgotten.
+                if (components.size() == 2 && componentY == null) {
+                    for (Graph<Integer> cmp : components) {
+                        if (!cmp.getVertices().contains(vA) && !cmp.getVertices().contains(vB)) {
+                            componentY = cmp;
+                        }
+                    }
+                }
                 // If one is null, create an empty one.
                 if (componentX == null) {
                     componentX = new Graph<>();
@@ -340,6 +349,25 @@ public abstract class BranchDecompositionHeuristic {
                     componentY = new Graph<>();
                     for (Integer sepNode : separationNodes) {
                         componentY.addVertex(sepNode);
+                    }
+                }
+                // TODO: bug fix for union < edgesInA (moved the merging below up)
+                // If there are > 2 components, merge the rest into the smallest of X or Y
+                if (components.size() > 2) {
+//                    System.out.println(">=2 COMPONENTS!");
+                    Graph<Integer> smallest = (componentX.getVertices().size() < componentY.getVertices().size())
+                        ? componentX : componentY;
+                    for (Graph<Integer> cmp : components) {
+                        if (cmp != componentX && cmp != componentY) {
+                            // Add vertices...
+                            for (Integer vertex : cmp.getVertices()) {
+                                smallest.addVertex(vertex);
+                            }
+                            // and edges.
+                            for (Edge<Integer> edge : cmp.getEdges()) {
+                                smallest.addEdge(edge);
+                            }
+                        }
                     }
                 }
                 // Add the separation nodes to the two components, as well as corresponding edges
