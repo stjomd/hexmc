@@ -4,7 +4,7 @@ import at.ac.tuwien.student.e11843614.decomposition.derivation.CliqueDerivation;
 import at.ac.tuwien.student.e11843614.graph.Edge;
 import at.ac.tuwien.student.e11843614.graph.Graph;
 import at.ac.tuwien.student.e11843614.sat.SATEncoding;
-import at.ac.tuwien.student.e11843614.sat.SATEncodingFactory;
+import at.ac.tuwien.student.e11843614.sat.factory.SATEncodingFactory;
 import at.ac.tuwien.student.e11843614.sat.SATSolver;
 import at.ac.tuwien.student.e11843614.sat.Variable;
 import org.junit.jupiter.api.AfterEach;
