@@ -2,6 +2,7 @@ package at.ac.tuwien.student.e11843614;
 
 import at.ac.tuwien.student.e11843614.formula.Formula;
 import net.sourceforge.argparse4j.ArgumentParsers;
+import net.sourceforge.argparse4j.impl.Arguments;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
 import net.sourceforge.argparse4j.inf.Namespace;
@@ -13,9 +14,14 @@ public class Main {
         parser.addArgument("input")
             .type(String.class)
             .help("the input path for the DIMACS CNF file");
+        parser.addArgument("--verbose")
+            .type(boolean.class)
+            .action(Arguments.storeTrue()) // defaults to... false
+            .help("output additional information");
         try {
             Namespace namespace = parser.parseArgs(args);
             String path = namespace.getString("input");
+            Logger.set(namespace.getBoolean("verbose"));
             Formula formula = Formula.fromPath(path);
         } catch (ArgumentParserException exception) {
             parser.handleError(exception);
