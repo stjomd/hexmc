@@ -100,6 +100,14 @@ public class Graph<T> {
     }
 
     /**
+     * Removes an edge from the graph. Does not affect the graph's vertices.
+     * @param edge the edge to be removed.
+     */
+    public void removeEdge(Edge<T> edge) {
+        edges.remove(edge);
+    }
+
+    /**
      * Performs edge contraction in this graph. Contraction of an edge e=uv results in a graph without the edge e,
      * with u and v merged into a single vertex, and with edges to u/v being redirected to the new merged vertex.
      * @param edge the edge to be contracted.
