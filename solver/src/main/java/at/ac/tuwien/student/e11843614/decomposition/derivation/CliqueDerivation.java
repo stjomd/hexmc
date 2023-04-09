@@ -1,5 +1,6 @@
 package at.ac.tuwien.student.e11843614.decomposition.derivation;
 
+import at.ac.tuwien.student.e11843614.Logger;
 import at.ac.tuwien.student.e11843614.sat.SATEncoding;
 import at.ac.tuwien.student.e11843614.sat.Variable;
 import at.ac.tuwien.student.e11843614.struct.Partition;
@@ -100,6 +101,7 @@ public class CliqueDerivation {
                 getGroups(level).add(u);
             }
         }
+        Logger.debug("Constructed a derivation for clique-width of length " + (size() - 1));
         // TODO: does not meet the conditions
     }
 

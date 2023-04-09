@@ -1,5 +1,6 @@
 package at.ac.tuwien.student.e11843614.sat.factory;
 
+import at.ac.tuwien.student.e11843614.Logger;
 import at.ac.tuwien.student.e11843614.formula.Clause;
 import at.ac.tuwien.student.e11843614.struct.graph.Graph;
 import at.ac.tuwien.student.e11843614.sat.SATEncoding;
@@ -15,6 +16,7 @@ public abstract class SATEncodingFactoryForCliqueWidth {
      */
     public static SATEncoding of(Graph<Integer> graph, int k) {
         int t = graph.getVertices().size() - k + 1;
+        Logger.debug("Constructing a SAT encoding for clique-width, k = " + k + ", t = " + t);
         SATEncoding sat = new SATEncoding(graph);
         clause1(sat, t);
         clause2(sat, t);
@@ -23,6 +25,8 @@ public abstract class SATEncodingFactoryForCliqueWidth {
         clause5(sat, graph, t);
         clause6(sat, t);
         clause7(sat, t, k);
+        Logger.debug("Constructed a SAT encoding for clique-width; formula has " + sat.getVariableMap().size()
+            + " variables and " + sat.getFormula().getClauses().size() + " clauses");
         return sat;
     }
 
