@@ -7,6 +7,7 @@ import at.ac.tuwien.student.e11843614.graph.Graph;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -38,9 +39,27 @@ public abstract class BranchDecompositionHeuristic {
     /**
      * Constructs an initial partial branch decomposition.
      * @param graph the graph.
-     * @return a partial branch decomposition.
+     * @return a partial branch decomposition, or null, if a branch decomposition doesn't exist.
      */
     private static BranchDecompositionNode initialPartialDecomposition(Graph<Integer> graph) {
+        // Special cases
+        int size = graph.getEdges().size();
+        if (size == 0) {
+            return null;
+        } else if (size == 1) {
+            Edge<Integer> edge = graph.getEdges().iterator().next();
+            return new BranchDecompositionNode(edge);
+        } else if (size == 2) {
+            Iterator<Edge<Integer>> iterator = graph.getEdges().iterator();
+            BranchDecompositionNode node = new BranchDecompositionNode(iterator.next());
+            node.addChild(new BranchDecompositionNode(iterator.next()));
+        } else if (size == 3) {
+            BranchDecompositionNode node = new BranchDecompositionNode();
+            for (Edge<Integer> edge : graph.getEdges()) {
+                node.addChild(new BranchDecompositionNode(edge));
+            }
+            return node;
+        }
         // Create a star
         BranchDecompositionNode root = new BranchDecompositionNode();
         for (Edge<Integer> edge : graph.getEdges()) {
@@ -49,7 +68,6 @@ public abstract class BranchDecompositionHeuristic {
         // Initial separation
         // Separate nodes and store one part. Remove those nodes from the star.
         // Create another star with those nodes, and join the two stars.
-        assert (root.getChildren().size() >= 4);
         Set<BranchDecompositionNode> initialSeparation = new HashSet<>();
         int i = 0;
         for (BranchDecompositionNode child : root.getChildren()) {
