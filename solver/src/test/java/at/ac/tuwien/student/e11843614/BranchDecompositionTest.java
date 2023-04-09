@@ -4,8 +4,8 @@ import at.ac.tuwien.student.e11843614.decomposition.BranchDecompositionHeuristic
 
 import at.ac.tuwien.student.e11843614.decomposition.BranchDecompositionNode;
 import at.ac.tuwien.student.e11843614.example.GraphExamples;
-import at.ac.tuwien.student.e11843614.graph.Edge;
-import at.ac.tuwien.student.e11843614.graph.Graph;
+import at.ac.tuwien.student.e11843614.struct.graph.Edge;
+import at.ac.tuwien.student.e11843614.struct.graph.Graph;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
