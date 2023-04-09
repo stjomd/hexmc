@@ -23,12 +23,15 @@ public abstract class BranchDecompositionHeuristic {
      * @return the root node of the branch decomposition.
      */
     public static BranchDecompositionNode of(Graph<Integer> graph) {
+        Logger.debug("Computing a branch decomposition using a heuristic");
         BranchDecompositionNode bd = initialPartialDecomposition(graph);
         BranchDecompositionNode internalNode = getNodeWithDegreeLargerThan(3, bd);
         while (internalNode != null) {
+            Logger.debug("\nObtained an internal node with degree > 3, performing split");
             split(internalNode, graph);
             internalNode = getNodeWithDegreeLargerThan(3, bd);
         }
+        Logger.debug("Computed a branch decomposition using a heuristic");
         return bd;
     }
 
@@ -101,8 +104,6 @@ public abstract class BranchDecompositionHeuristic {
                 separationB.add(endpoints.get(1));
             }
         }
-        Logger.debug("Edges in a: " + separationA);
-        Logger.debug("Edges in b: " + separationB);
         // The set of load vertices mid(e) is the intersection of separationA and separationB.
         Set<Integer> mid = new HashSet<>(separationA);
         mid.retainAll(separationB);
@@ -263,7 +264,6 @@ public abstract class BranchDecompositionHeuristic {
         Logger.debug("Determining the best (work, play) pair");
         for (Integer chosenSourceNode : sourceNodes) {
             for (double alpha = 0.01; alpha < 1; alpha += 1.0/ALPHA_STEPS) {
-                Logger.debug("Source node = " + chosenSourceNode + ", alpha = " + alpha);
                 // Choose a source node. Sort vertices of associatedGraph in non-decreasing order acc. to their distance to it.
                 List<Integer> sortedVertices = associatedGraph.getVertices().stream()
                     .sorted(Comparator.comparing(v -> associatedGraph.distance(v, chosenSourceNode)))
@@ -282,11 +282,8 @@ public abstract class BranchDecompositionHeuristic {
                     setA.add(sortedVertices.get(i));
                     setB.add(sortedVertices.get(size - 1 - i));
                 }
-                Logger.debug("A: " + setA);
-                Logger.debug("B: " + setB);
                 // Compute the minor of G with setA identified to v_A, setB identified to v_B.
                 Graph<Integer> minor = minor(graph, setA, setB);
-                Logger.debug("Minor: " + minor);
                 // v_A, v_B are named in 'minor' after some vertex from setA or setB respectively.
                 Integer vA = null, vB = null;
                 for (Integer v : minor.getVertices()) {
@@ -299,7 +296,6 @@ public abstract class BranchDecompositionHeuristic {
                         break;
                     }
                 }
-                Logger.debug("vA = " + vA + ", vB = " + vB);
                 // Minor might have edges between vA, vB. Which makes the minimum vertex cut undefined. => delete
                 Set<Edge<Integer>> minorEdgesToRemove = new HashSet<>();
                 for (Edge<Integer> edge : minor.getEdges()) {
@@ -316,7 +312,6 @@ public abstract class BranchDecompositionHeuristic {
                 // Now find the minimum vertex cut in minor intersecting all v_A,v_B-paths. We call the vertices in the
                 // min vertex cut 'separation nodes'.
                 Set<Integer> separationNodes = minimumVertexCut(minor, vA, vB);
-                Logger.debug("Minimum vertex cut in minor: " + separationNodes);
                 // Nodes that are both linking and separation nodes are labeled 'share nodes'.
                 Set<Integer> shareNodes = new HashSet<>(separationNodes);
                 shareNodes.retainAll(linkingNodes);
@@ -335,7 +330,6 @@ public abstract class BranchDecompositionHeuristic {
                     separatedGraph.removeVertex(vertex);
                 }
                 List<Graph<Integer>> components = separatedGraph.components();
-                Logger.debug("Components of the separated graph: " + components);
                 // Determine the components X and Y.
                 Graph<Integer> componentX = null; // component that contains vA
                 Graph<Integer> componentY = null; // component that contains vB
@@ -349,7 +343,6 @@ public abstract class BranchDecompositionHeuristic {
                 // TODO: bug fix for case when an edge gets "lost". Suppose separatedGraph has 2 components,
                 // TODO: and X has both vA,vB and Y has other vertices/edges. Then Y is null and forgotten.
                 if (components.size() == 2 && componentY == null) {
-                    Logger.debug("Component X contains both vA, vB; component Y was prevented from being forgotten");
                     for (Graph<Integer> cmp : components) {
                         if (!cmp.getVertices().contains(vA) && !cmp.getVertices().contains(vB)) {
                             componentY = cmp;
@@ -358,14 +351,12 @@ public abstract class BranchDecompositionHeuristic {
                 }
                 // If one is null, create an empty one.
                 if (componentX == null) {
-                    Logger.debug("Created an empty component X");
                     componentX = new Graph<>();
                     for (Integer sepNode : separationNodes) {
                         componentX.addVertex(sepNode);
                     }
                 }
                 if (componentY == null) {
-                    Logger.debug("Created an empty component Y");
                     componentY = new Graph<>();
                     for (Integer sepNode : separationNodes) {
                         componentY.addVertex(sepNode);
@@ -374,7 +365,7 @@ public abstract class BranchDecompositionHeuristic {
                 // TODO: bug fix for union < edgesInA (moved the merging below up)
                 // If there are > 2 components, merge the rest into the smallest of X or Y
                 if (components.size() > 2) {
-                    Logger.warn("There are more than 2 components in the separated graph. Merging into the smallest of X and Y.");
+                    Logger.warn("Separated graph has more than 2 components. Merging into the smallest of X and Y.");
                     Graph<Integer> smallest = (componentX.getVertices().size() < componentY.getVertices().size())
                         ? componentX : componentY;
                     for (Graph<Integer> cmp : components) {
@@ -429,25 +420,31 @@ public abstract class BranchDecompositionHeuristic {
                     linkingNodes.size() - sideNodes.size() - shareNodes.size() + separationNodes.size()
                 );
                 // Store optimal pair
+                boolean output = false;
                 if (work < owork) {
-                    Logger.debug("New smallest work pair (work = " + work + ", play = " + play + ")");
-                    Logger.debug("X = " + componentX);
-                    Logger.debug("Y = " + componentY);
+                    output = true;
                     owork = work;
                     oplay = play;
                     oSepX = componentX;
                     oSepY = componentY;
                 } else if (work == owork && play > oplay) {
-                    Logger.debug("New biggest play pair (work = " + work + ", play = " + play + ")");
-                    Logger.debug("X = " + componentX);
-                    Logger.debug("Y = " + componentY);
+                    output = true;
                     oplay = play;
                     oSepX = componentX;
                     oSepY = componentY;
                 }
+                if (output) {
+                    Logger.debug("New best pair (work = " + work + ", play = " + play + ")");
+                    Logger.debug("Source node = " + chosenSourceNode + ", alpha = " + alpha);
+                    Logger.debug("A = " + setA + ", B = " + setB);
+                    Logger.debug("Minor = " + minor);
+                    Logger.debug("vA = " + vA + ", vB = " + vB);
+                    Logger.debug("Minimum vertex cut = " + separationNodes);
+                    Logger.debug("X = " + componentX);
+                    Logger.debug("Y = " + componentY);
+                }
             }
         }
-        Logger.debug("Best (work, play) pair is (" + owork + ", " + oplay + ")");
         // Return a list where |oSepX| <= |oSepY|.
         if (oSepX.getEdges().size() <= oSepY.getEdges().size()) {
             return List.of(oSepX, oSepY);
