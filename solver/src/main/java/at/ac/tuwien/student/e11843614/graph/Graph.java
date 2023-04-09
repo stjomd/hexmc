@@ -111,15 +111,14 @@ public class Graph<T> {
      * Performs edge contraction in this graph. Contraction of an edge e=uv results in a graph without the edge e,
      * with u and v merged into a single vertex, and with edges to u/v being redirected to the new merged vertex.
      * @param edge the edge to be contracted.
-     * @return a list of two vertices, where the first is the source vertex, and the second the target vertex.
      * The source vertex is always merged into target.
      */
-    public List<T> contractEdge(Edge<T> edge) {
+    public void contractEdge(Edge<T> edge) {
         T u = edge.getEndpoints().get(0), v = edge.getEndpoints().get(1);
         if (u.equals(v)) {
             // An edge that is a loop. In this case just remove the edge.
             this.edges.remove(edge);
-            return List.of(u, v);
+            return;
         }
         // Choose a source and target vertex.
         Set<T> neighborsU = neighborsOf(u);
@@ -146,24 +145,9 @@ public class Graph<T> {
                 eEndpoints.set(1, target);
             }
         }
-        return List.of(source, target);
     }
 
     // ----- Paths -----------------------------------------------------------------------------------------------------
-
-    /**
-     * Returns the set of all paths between two vertices.
-     * @param source the source vertex.
-     * @param target the target vertex.
-     * @return the set of paths between source and target.
-     */
-    public Set<List<T>> allPaths(T source, T target) {
-        Set<List<T>> paths = new HashSet<>();
-        List<T> path = new ArrayList<>();
-        path.add(source);
-        collectPaths(source, target, path, paths);
-        return paths;
-    }
 
     /**
      * Retrieves the shortest path between two vertices.
@@ -315,33 +299,6 @@ public class Graph<T> {
             components.add(component);
         }
         return components;
-    }
-
-    // ----- Helpers ---------------------------------------------------------------------------------------------------
-
-    /**
-     * Recursive function that collects all paths between two vertices to a set.
-     * @param source the source vertex.
-     * @param target the target vertex.
-     * @param path a list that contains the source vertex only.
-     * @param paths a set where the paths will be stored.
-     */
-    private void collectPaths(T source, T target, List<T> path, Set<List<T>> paths) {
-        // a-b-c-d-e-f
-        for (T neighbor : neighborsOf(source)) {
-            if (path.contains(neighbor)) {
-                // cycle, skip this neighbor
-                continue;
-            }
-            // Add neighbor to the current path, and call
-            List<T> newPath = new ArrayList<>(path);
-            newPath.add(neighbor);
-            if (neighbor.equals(target)) {
-                // reached target node, add this path to the set
-                paths.add(newPath);
-            }
-            collectPaths(neighbor, target, newPath, paths);
-        }
     }
 
     @Override
