@@ -1,8 +1,8 @@
 package at.ac.tuwien.student.e11843614.sat.factory;
 
 import at.ac.tuwien.student.e11843614.formula.Clause;
-import at.ac.tuwien.student.e11843614.graph.Edge;
-import at.ac.tuwien.student.e11843614.graph.Graph;
+import at.ac.tuwien.student.e11843614.struct.graph.Edge;
+import at.ac.tuwien.student.e11843614.struct.graph.Graph;
 import at.ac.tuwien.student.e11843614.sat.SATEncoding;
 import at.ac.tuwien.student.e11843614.sat.Variable;
 

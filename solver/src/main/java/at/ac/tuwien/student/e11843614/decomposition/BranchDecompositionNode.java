@@ -1,6 +1,6 @@
 package at.ac.tuwien.student.e11843614.decomposition;
 
-import at.ac.tuwien.student.e11843614.graph.Edge;
+import at.ac.tuwien.student.e11843614.struct.graph.Edge;
 
 import java.util.HashSet;
 import java.util.Iterator;

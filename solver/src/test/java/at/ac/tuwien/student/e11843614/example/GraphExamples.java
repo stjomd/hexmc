@@ -1,6 +1,6 @@
 package at.ac.tuwien.student.e11843614.example;
 
-import at.ac.tuwien.student.e11843614.graph.Graph;
+import at.ac.tuwien.student.e11843614.struct.graph.Graph;
 
 public abstract class GraphExamples {
 

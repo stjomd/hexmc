@@ -1,4 +1,4 @@
-package at.ac.tuwien.student.e11843614.graph;
+package at.ac.tuwien.student.e11843614.struct.graph;
 
 import at.ac.tuwien.student.e11843614.formula.Formula;
 
