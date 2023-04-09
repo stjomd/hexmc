@@ -1,5 +1,6 @@
 package at.ac.tuwien.student.e11843614.sat.factory;
 
+import at.ac.tuwien.student.e11843614.Logger;
 import at.ac.tuwien.student.e11843614.formula.Clause;
 import at.ac.tuwien.student.e11843614.struct.graph.Edge;
 import at.ac.tuwien.student.e11843614.struct.graph.Graph;
@@ -18,6 +19,7 @@ public abstract class SATEncodingFactoryForBranchWidth {
         int d = (int) Math.floor(graph.getEdges().size() / 2.0)
             - (int) Math.ceil(w / 2.0)
             + (int) Math.ceil(Math.log(Math.floor(w / 2.0)) / Math.log(2));
+        Logger.debug("Constructing a SAT encoding for branch-width, d = " + d + ", w = " + w);
         SATEncoding sat = new SATEncoding(graph);
         clause1(sat, d);
         clause2(sat, d);
@@ -30,6 +32,8 @@ public abstract class SATEncodingFactoryForBranchWidth {
         clause9(sat, d);
         clause10(sat, d, w);
         clause11(sat, d);
+        Logger.debug("Constructed a SAT encoding for branch-width; formula has " + sat.getVariableMap().size()
+            + " variables and " + sat.getFormula().getClauses().size() + " clauses");
         return sat;
     }
 
