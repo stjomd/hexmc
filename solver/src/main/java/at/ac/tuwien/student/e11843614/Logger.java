@@ -8,10 +8,11 @@ public abstract class Logger {
     private static boolean on = false;
 
     private static final String YELLOW = "\u001B[33m";
+    private static final String BLUE = "\u001B[34m";
     private static final String RESET = "\u001B[0m";
 
     /**
-     * Turns the logger on or off. If off, the logger will output only error messages.
+     * Turns the logger on or off. If off, the logger will output only info and error messages.
      * @param verbose a boolean value that indicates whether this logger is on.
      */
     public static void set(boolean verbose) {
@@ -19,12 +20,20 @@ public abstract class Logger {
     }
 
     /**
-     * Outputs an info message to the console.
+     * Outputs an info message to the console, even when the logger is off.
      * @param x the object to be output.
      */
     public static void info(Object x) {
+        System.out.println(x);
+    }
+
+    /**
+     * Outputs a debug message to the console.
+     * @param x the object to be output.
+     */
+    public static void debug(Object x) {
         if (on) {
-            System.out.println(x);
+            System.out.println(BLUE + x.toString() + RESET);
         }
     }
 

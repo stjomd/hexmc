@@ -1,5 +1,6 @@
 package at.ac.tuwien.student.e11843614.decomposition;
 
+import at.ac.tuwien.student.e11843614.Logger;
 import at.ac.tuwien.student.e11843614.graph.Edge;
 import at.ac.tuwien.student.e11843614.graph.Graph;
 
@@ -100,6 +101,8 @@ public abstract class BranchDecompositionHeuristic {
                 separationB.add(endpoints.get(1));
             }
         }
+        Logger.debug("Edges in a: " + separationA);
+        Logger.debug("Edges in b: " + separationB);
         // The set of load vertices mid(e) is the intersection of separationA and separationB.
         Set<Integer> mid = new HashSet<>(separationA);
         mid.retainAll(separationB);
@@ -112,9 +115,14 @@ public abstract class BranchDecompositionHeuristic {
                 associatedGraph.addEdge(endpoints.get(0), endpoints.get(1)); // creates new Edge instances
             }
         }
+        Logger.debug("Associated graph: " + associatedGraph);
         // Now we need to find a separation (X,Y) of associatedGraph.
         List<Graph<Integer>> sep = separation(graph, associatedGraph, mid);
+        Logger.debug("Best X = " + sep.get(0));
+        Logger.debug("Best Y = " + sep.get(1));
         List<Set<Edge<Integer>>> edgeSets = prepareEdgeSets(a, sep);
+        Logger.debug("E(X) = " + edgeSets.get(0));
+        Logger.debug("E(Y) = " + edgeSets.get(1));
         // Now eX and eY are a partition of the edges in the associated graph.
         distributeLeaves(a, edgeSets.get(0), edgeSets.get(1));
     }
@@ -146,25 +154,20 @@ public abstract class BranchDecompositionHeuristic {
                 eY.add(edge);
             }
         }
-        // eX and eY should, united, include all edges of the associated graph. If not, add the rest to eX.
-        Set<Edge<Integer>> rest = new HashSet<>(edgesInA);
-        rest.removeAll(eX);
-        rest.removeAll(eX);
-        eX.addAll(rest);
-        // Make eX and eY disjoint
-        Set<Edge<Integer>> intersect = new HashSet<>(eX);
-        intersect.retainAll(eY);
-        if (eX.size() > eY.size()) {
-            eX.removeAll(intersect);
-        } else {
-            eY.removeAll(intersect);
+        // TODO: Remove when this does not happen
+        Set<Edge<Integer>> union = new HashSet<>(eX);
+        union.addAll(eY);
+        if (!edgesInA.containsAll(union) || !union.containsAll(edgesInA)) {
+            throw new Error("eX and eY don't cover all edges in a.");
         }
         // If one of eX or eY is empty, move one edge over.
         if (eX.isEmpty()) {
+            Logger.warn("E(X) was empty; moved one edge over from E(Y)");
             Edge<Integer> edge = eY.iterator().next();
             eX.add(edge);
             eY.remove(edge);
         } else if (eY.isEmpty()) {
+            Logger.warn("E(Y) was empty; moved one edge over from E(X)");
             Edge<Integer> edge = eX.iterator().next();
             eY.add(edge);
             eX.remove(edge);
@@ -257,8 +260,10 @@ public abstract class BranchDecompositionHeuristic {
         int oplay = Integer.MIN_VALUE;
         Graph<Integer> oSepX = null;
         Graph<Integer> oSepY = null;
+        Logger.debug("Determining the best (work, play) pair");
         for (Integer chosenSourceNode : sourceNodes) {
             for (double alpha = 0.01; alpha < 1; alpha += 1.0/ALPHA_STEPS) {
+                Logger.debug("Source node = " + chosenSourceNode + ", alpha = " + alpha);
                 // Choose a source node. Sort vertices of associatedGraph in non-decreasing order acc. to their distance to it.
                 List<Integer> sortedVertices = associatedGraph.getVertices().stream()
                     .sorted(Comparator.comparing(v -> associatedGraph.distance(v, chosenSourceNode)))
@@ -267,15 +272,21 @@ public abstract class BranchDecompositionHeuristic {
                 int size = sortedVertices.size();
                 int amount = (int) (alpha * (size - 1)) + 1;
                 // TODO: fix to make setA and setB not overlap
-                amount = Math.min(amount, size / 2);
+                if (amount > size / 2) {
+                    Logger.warn("Prevented A, B from overlapping");
+                    amount = Math.min(amount, size / 2);
+                }
                 // Add the first 'amount' vertices to setA, the last 'amount' vertices to setB
                 Set<Integer> setA = new HashSet<>(), setB = new HashSet<>();
                 for (int i = 0; i < amount; i++) {
                     setA.add(sortedVertices.get(i));
                     setB.add(sortedVertices.get(size - 1 - i));
                 }
+                Logger.debug("A: " + setA);
+                Logger.debug("B: " + setB);
                 // Compute the minor of G with setA identified to v_A, setB identified to v_B.
                 Graph<Integer> minor = minor(graph, setA, setB);
+                Logger.debug("Minor: " + minor);
                 // v_A, v_B are named in 'minor' after some vertex from setA or setB respectively.
                 Integer vA = null, vB = null;
                 for (Integer v : minor.getVertices()) {
@@ -288,6 +299,7 @@ public abstract class BranchDecompositionHeuristic {
                         break;
                     }
                 }
+                Logger.debug("vA = " + vA + ", vB = " + vB);
                 // Minor might have edges between vA, vB. Which makes the minimum vertex cut undefined. => delete
                 Set<Edge<Integer>> minorEdgesToRemove = new HashSet<>();
                 for (Edge<Integer> edge : minor.getEdges()) {
@@ -295,12 +307,16 @@ public abstract class BranchDecompositionHeuristic {
                         minorEdgesToRemove.add(edge);
                     }
                 }
-                for (Edge<Integer> edge : minorEdgesToRemove) {
-                    minor.removeEdge(edge);
+                if (!minorEdgesToRemove.isEmpty()) {
+                    Logger.warn("Removed vA,vB edges in minor for vA = " + vA + ", vB = " + vB);
+                    for (Edge<Integer> edge : minorEdgesToRemove) {
+                        minor.removeEdge(edge);
+                    }
                 }
                 // Now find the minimum vertex cut in minor intersecting all v_A,v_B-paths. We call the vertices in the
                 // min vertex cut 'separation nodes'.
                 Set<Integer> separationNodes = minimumVertexCut(minor, vA, vB);
+                Logger.debug("Minimum vertex cut in minor: " + separationNodes);
                 // Nodes that are both linking and separation nodes are labeled 'share nodes'.
                 Set<Integer> shareNodes = new HashSet<>(separationNodes);
                 shareNodes.retainAll(linkingNodes);
@@ -313,12 +329,13 @@ public abstract class BranchDecompositionHeuristic {
                 Set<Integer> sideNodes = new HashSet<>(separatedMinor.getVertices());
                 sideNodes.retainAll(linkingNodes);
                 // (X, Y) is a separation of G_a. X, Y are subgraphs of G_a.
-                // First remove separation nodes, which results in a graph with >1 components.
+                // First remove separation nodes.
                 Graph<Integer> separatedGraph = associatedGraph.duplicate();
                 for (Integer vertex : separationNodes) {
                     separatedGraph.removeVertex(vertex);
                 }
                 List<Graph<Integer>> components = separatedGraph.components();
+                Logger.debug("Components of the separated graph: " + components);
                 // Determine the components X and Y.
                 Graph<Integer> componentX = null; // component that contains vA
                 Graph<Integer> componentY = null; // component that contains vB
@@ -332,6 +349,7 @@ public abstract class BranchDecompositionHeuristic {
                 // TODO: bug fix for case when an edge gets "lost". Suppose separatedGraph has 2 components,
                 // TODO: and X has both vA,vB and Y has other vertices/edges. Then Y is null and forgotten.
                 if (components.size() == 2 && componentY == null) {
+                    Logger.debug("Component X contains both vA, vB; component Y was prevented from being forgotten");
                     for (Graph<Integer> cmp : components) {
                         if (!cmp.getVertices().contains(vA) && !cmp.getVertices().contains(vB)) {
                             componentY = cmp;
@@ -340,12 +358,14 @@ public abstract class BranchDecompositionHeuristic {
                 }
                 // If one is null, create an empty one.
                 if (componentX == null) {
+                    Logger.debug("Created an empty component X");
                     componentX = new Graph<>();
                     for (Integer sepNode : separationNodes) {
                         componentX.addVertex(sepNode);
                     }
                 }
                 if (componentY == null) {
+                    Logger.debug("Created an empty component Y");
                     componentY = new Graph<>();
                     for (Integer sepNode : separationNodes) {
                         componentY.addVertex(sepNode);
@@ -354,7 +374,7 @@ public abstract class BranchDecompositionHeuristic {
                 // TODO: bug fix for union < edgesInA (moved the merging below up)
                 // If there are > 2 components, merge the rest into the smallest of X or Y
                 if (components.size() > 2) {
-//                    System.out.println(">=2 COMPONENTS!");
+                    Logger.warn("There are more than 2 components in the separated graph. Merging into the smallest of X and Y.");
                     Graph<Integer> smallest = (componentX.getVertices().size() < componentY.getVertices().size())
                         ? componentX : componentY;
                     for (Graph<Integer> cmp : components) {
@@ -399,23 +419,6 @@ public abstract class BranchDecompositionHeuristic {
                         }
                     }
                 }
-                // If there are > 2 components, merge the rest into the smallest of X or Y
-                if (components.size() > 2) {
-                    Graph<Integer> smallest = (componentX.getVertices().size() < componentY.getVertices().size())
-                        ? componentX : componentY;
-                    for (Graph<Integer> cmp : components) {
-                        if (cmp != componentX && cmp != componentY) {
-                            // Add vertices...
-                            for (Integer vertex : cmp.getVertices()) {
-                                smallest.addVertex(vertex);
-                            }
-                            // and edges.
-                            for (Edge<Integer> edge : cmp.getEdges()) {
-                                smallest.addEdge(edge);
-                            }
-                        }
-                    }
-                }
                 // Define work and play values
                 int work = Math.max(
                     sideNodes.size() + separationNodes.size(),
@@ -427,17 +430,24 @@ public abstract class BranchDecompositionHeuristic {
                 );
                 // Store optimal pair
                 if (work < owork) {
+                    Logger.debug("New smallest work pair (work = " + work + ", play = " + play + ")");
+                    Logger.debug("X = " + componentX);
+                    Logger.debug("Y = " + componentY);
                     owork = work;
                     oplay = play;
                     oSepX = componentX;
                     oSepY = componentY;
                 } else if (work == owork && play > oplay) {
+                    Logger.debug("New biggest play pair (work = " + work + ", play = " + play + ")");
+                    Logger.debug("X = " + componentX);
+                    Logger.debug("Y = " + componentY);
                     oplay = play;
                     oSepX = componentX;
                     oSepY = componentY;
                 }
             }
         }
+        Logger.debug("Best (work, play) pair is (" + owork + ", " + oplay + ")");
         // Return a list where |oSepX| <= |oSepY|.
         if (oSepX.getEdges().size() <= oSepY.getEdges().size()) {
             return List.of(oSepX, oSepY);
