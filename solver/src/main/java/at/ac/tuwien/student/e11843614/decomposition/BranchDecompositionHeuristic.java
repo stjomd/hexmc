@@ -524,7 +524,7 @@ public abstract class BranchDecompositionHeuristic {
      * @param t a vertex.
      * @return the minimum vertex s-t-cut.
      */
-    public static Set<Integer> minimumVertexCut(Graph<Integer> graph, Integer s, Integer t) {
+    private static Set<Integer> minimumVertexCut(Graph<Integer> graph, Integer s, Integer t) {
         if (graph.hasEdgeWithEndpoints(s, t)) {
             return Set.of();
         }
@@ -615,7 +615,7 @@ public abstract class BranchDecompositionHeuristic {
      * @param root the root node.
      * @return the node with degree larger than specified degree.
      */
-    public static BranchDecompositionNode getNodeWithDegreeLargerThan(int degree, BranchDecompositionNode root) {
+    private static BranchDecompositionNode getNodeWithDegreeLargerThan(int degree, BranchDecompositionNode root) {
         Queue<BranchDecompositionNode> queue = new LinkedList<>();
         queue.add(root);
         while (!queue.isEmpty()) {
