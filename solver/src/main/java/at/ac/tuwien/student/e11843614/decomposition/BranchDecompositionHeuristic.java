@@ -167,9 +167,7 @@ public abstract class BranchDecompositionHeuristic {
      * @return a list of two disjoint sets, eX and eY.
      */
     private static List<Set<Edge<Integer>>> prepareEdgeSets(BranchDecompositionNode a, List<Graph<Integer>> separation) {
-        // X and Y are subgraphs which overlap in separation nodes. Both X and Y have Edge instances decoupled from
-        // the associated graph. To simplify things further, we build sets E(X) and E(Y) that contain edge instances
-        // from the associated graph.
+        // X and Y are subgraphs which overlap in separation nodes.
         Set<Edge<Integer>> edgesInA = new HashSet<>();
         for (BranchDecompositionNode node : a.getChildren()) {
             if (node.getDegree() == 1) {
