@@ -185,12 +185,6 @@ public abstract class BranchDecompositionHeuristic {
                 eY.add(edge);
             }
         }
-        // TODO: Remove when this does not happen
-        Set<Edge<Integer>> union = new HashSet<>(eX);
-        union.addAll(eY);
-        if (!edgesInA.containsAll(union) || !union.containsAll(edgesInA)) {
-            throw new Error("eX and eY don't cover all edges in a.");
-        }
         // If one of eX or eY is empty, move one edge over.
         if (eX.isEmpty()) {
             Logger.warn("E(X) was empty; moved one edge over from E(Y)");
@@ -300,7 +294,7 @@ public abstract class BranchDecompositionHeuristic {
                 // Create setA, setB of vertices. Each has 'amount' vertices.
                 int size = sortedVertices.size();
                 int amount = (int) (alpha * (size - 1)) + 1;
-                // TODO: fix to make setA and setB not overlap
+                // Fix to make setA and setB not overlap
                 boolean preventedOverlapping = false;
                 if (amount > size / 2) {
                     preventedOverlapping = true;
@@ -344,14 +338,6 @@ public abstract class BranchDecompositionHeuristic {
                 // Nodes that are both linking and separation nodes are labeled 'share nodes'.
                 Set<Integer> shareNodes = new HashSet<>(separationNodes);
                 shareNodes.retainAll(linkingNodes);
-                // Linking nodes on one side of the cut (in one component) but not separation nodes are labeled 'side nodes'.
-                // TODO: not sure of the formulation?
-                Graph<Integer> separatedMinor = minor.duplicate();
-                for (Integer node : separationNodes) {
-                    separatedMinor.removeVertex(node);
-                }
-                Set<Integer> sideNodes = new HashSet<>(separatedMinor.getVertices());
-                sideNodes.retainAll(linkingNodes);
                 // (X, Y) is a separation of G_a. X, Y are subgraphs of G_a.
                 // First remove separation nodes.
                 Graph<Integer> separatedGraph = associatedGraph.duplicate();
@@ -369,8 +355,8 @@ public abstract class BranchDecompositionHeuristic {
                         componentY = cmp;
                     }
                 }
-                // TODO: bug fix for case when an edge gets "lost". Suppose separatedGraph has 2 components,
-                // TODO: and X has both vA,vB and Y has other vertices/edges. Then Y is null and forgotten.
+                // Bug fix for case when an edge gets "lost". Suppose separatedGraph has 2 components, and X has both
+                // vA, vB and Y has other vertices/edges. Then Y is null and the component without vA, vB is forgotten.
                 if (components.size() == 2 && componentY == null) {
                     for (Graph<Integer> cmp : components) {
                         if (!cmp.getVertices().contains(vA) && !cmp.getVertices().contains(vB)) {
@@ -439,6 +425,11 @@ public abstract class BranchDecompositionHeuristic {
                         }
                     }
                 }
+                // Linking nodes on one side of the cut but not separation nodes are labeled 'side nodes'.
+                // TODO: not sure of the formulation?
+                Set<Integer> sideNodes = new HashSet<>(componentX.getVertices());
+                sideNodes.addAll(componentY.getVertices());
+                sideNodes.retainAll(linkingNodes);
                 // Define work and play values
                 int work = Math.max(
                     sideNodes.size() + separationNodes.size(),
