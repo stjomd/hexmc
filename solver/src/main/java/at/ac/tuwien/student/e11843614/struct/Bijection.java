@@ -47,7 +47,7 @@ public class Bijection<S, T> {
      * Returns the domain set of this bijection.
      * @return the domain.
      */
-    public Collection<S> getDomain() {
+    public Collection<S> domainSet() {
         return forward.keySet();
     }
 
@@ -55,17 +55,8 @@ public class Bijection<S, T> {
      * Returns the destination (codomain) set of this bijection.
      * @return the destination (codomain).
      */
-    public Collection<T> getDestination() {
+    public Collection<T> destinationSet() {
         return forward.values();
-    }
-
-    // TODO: needed for debugging, TBR
-    /**
-     * Returns a map between the two sets of this bijection.
-     * @return the map.
-     */
-    public Map<S, T> getMap() {
-        return forward;
     }
 
     /**
