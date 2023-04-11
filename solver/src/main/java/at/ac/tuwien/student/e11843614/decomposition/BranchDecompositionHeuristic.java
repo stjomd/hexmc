@@ -25,7 +25,9 @@ public abstract class BranchDecompositionHeuristic {
      */
     public static BranchDecompositionNode of(Graph<Integer> graph) {
         Logger.debug("Computing a branch decomposition using a heuristic");
+        Logger.debug("Performing initial split");
         BranchDecompositionNode bd = initialPartialDecomposition(graph);
+        Logger.debug("Performing subsequent splits");
         BranchDecompositionNode internalNode = getNodeWithDegreeLargerThan(3, bd);
         while (internalNode != null) {
             Logger.debug("\nObtained an internal node with degree > 3, performing split");
@@ -68,23 +70,35 @@ public abstract class BranchDecompositionHeuristic {
         // Initial separation
         // Separate nodes and store one part. Remove those nodes from the star.
         // Create another star with those nodes, and join the two stars.
-        Set<BranchDecompositionNode> initialSeparation = new HashSet<>();
-        int i = 0;
-        for (BranchDecompositionNode child : root.getChildren()) {
-            if (i >= root.getChildren().size() / 2) {
-                break;
-            }
-            initialSeparation.add(child);
-            i++;
+        List<Graph<Integer>> separation = separation(graph, graph, graph.getVertices());
+        List<Set<Edge<Integer>>> edgeSets = prepareEdgeSets(root, separation);
+        if (edgeSets.get(0).size() < 2) {
+            Logger.warn("E(A) has < 2 edges; moved one over from E(B)");
+            Edge<Integer> edge = edgeSets.get(1).iterator().next();
+            edgeSets.get(0).add(edge);
+            edgeSets.get(1).remove(edge);
+        } else if (edgeSets.get(1).size() < 2) {
+            Logger.warn("E(B) has < 2 edges; moved one over from E(A)");
+            Edge<Integer> edge = edgeSets.get(0).iterator().next();
+            edgeSets.get(1).add(edge);
+            edgeSets.get(0).remove(edge);
         }
-        for (BranchDecompositionNode node : initialSeparation) {
+        // Create a new star with children corresponding to edges in E(B); store children in a set to remove them later
+        // from root
+        BranchDecompositionNode newStar = new BranchDecompositionNode();
+        Set<BranchDecompositionNode> newChildren = new HashSet<>();
+        for (BranchDecompositionNode child : root.getChildren()) {
+            if (edgeSets.get(1).contains(child.getEdge())) {
+                newStar.addChild(new BranchDecompositionNode(child.getEdge()));
+                newChildren.add(child);
+            }
+        }
+        // Now remove nodes with edges in E(B) from root. As such root will only contain edges in E(A)
+        for (BranchDecompositionNode node : newChildren) {
             root.removeChild(node);
         }
-        BranchDecompositionNode initialNewStar = new BranchDecompositionNode();
-        for (BranchDecompositionNode node : initialSeparation) {
-            initialNewStar.addChild(node);
-        }
-        root.addChild(initialNewStar);
+        // At this point we have to stars, root with E(A) and newStar with E(B). Join the two.
+        root.addChild(newStar);
         return root;
     }
 
