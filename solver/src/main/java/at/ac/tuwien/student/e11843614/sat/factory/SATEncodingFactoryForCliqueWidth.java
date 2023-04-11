@@ -62,20 +62,22 @@ public abstract class SATEncodingFactoryForCliqueWidth {
                 for (Integer w : sat.vertexMap().destinationSet()) {
                     if (u < v && v < w) {
                         for (int i = 0; i <= t; i++) {
-                            int[] var = new int[]{
+                            int[] varc = new int[]{
                                 sat.encodeVariable(Variable.component(u, v, i)),
                                 sat.encodeVariable(Variable.component(v, w, i)),
                                 sat.encodeVariable(Variable.component(u, w, i)),
+                            };
+                            sat.getFormula().addClause(-varc[0], -varc[1], varc[2]);
+                            sat.getFormula().addClause(-varc[0], -varc[2], varc[1]);
+                            sat.getFormula().addClause(-varc[2], -varc[1], varc[0]);
+                            int[] varg = new int[]{
                                 sat.encodeVariable(Variable.group(u, v, i)),
                                 sat.encodeVariable(Variable.group(v, w, i)),
                                 sat.encodeVariable(Variable.group(u, w, i))
                             };
-                            sat.getFormula().addClause(-var[0], -var[1], var[2]);
-                            sat.getFormula().addClause(-var[0], -var[2], var[1]);
-                            sat.getFormula().addClause(-var[2], -var[1], var[0]);
-                            sat.getFormula().addClause(-var[3], -var[4], var[5]);
-                            sat.getFormula().addClause(-var[3], -var[5], var[4]);
-                            sat.getFormula().addClause(-var[5], -var[4], var[3]);
+                            sat.getFormula().addClause(-varg[0], -varg[1], varg[2]);
+                            sat.getFormula().addClause(-varg[0], -varg[2], varg[1]);
+                            sat.getFormula().addClause(-varg[2], -varg[1], varg[0]);
                         }
                     }
                 }
@@ -88,9 +90,9 @@ public abstract class SATEncodingFactoryForCliqueWidth {
             for (Integer v : sat.vertexMap().destinationSet()) {
                 if (u < v) {
                     // Unmap u, v to check edges
-                    Integer ud = sat.vertexMap().getFromDomain(u);
-                    Integer vd = sat.vertexMap().getFromDomain(v);
-                    if (graph.hasEdgeWithEndpoints(ud, vd)) {
+                    Integer uVertex = sat.vertexMap().getFromDomain(u);
+                    Integer vVertex = sat.vertexMap().getFromDomain(v);
+                    if (graph.hasEdgeWithEndpoints(uVertex, vVertex)) {
                         for (int i = 1; i <= t; i++) {
                             int[] var = new int[]{
                                 sat.encodeVariable(Variable.component(u, v, i - 1)),
@@ -109,10 +111,10 @@ public abstract class SATEncodingFactoryForCliqueWidth {
             for (Integer v : sat.vertexMap().destinationSet()) {
                 for (Integer w : sat.vertexMap().destinationSet()) {
                     // Unmap u, v, w to check edges
-                    Integer ud = sat.vertexMap().getFromDomain(u);
-                    Integer vd = sat.vertexMap().getFromDomain(v);
-                    Integer wd = sat.vertexMap().getFromDomain(w);
-                    if (graph.hasEdgeWithEndpoints(ud, vd) && !graph.hasEdgeWithEndpoints(ud, wd)) {
+                    Integer uVertex = sat.vertexMap().getFromDomain(u);
+                    Integer vVertex = sat.vertexMap().getFromDomain(v);
+                    Integer wVertex = sat.vertexMap().getFromDomain(w);
+                    if (graph.hasEdgeWithEndpoints(uVertex, vVertex) && !graph.hasEdgeWithEndpoints(uVertex, wVertex)) {
                         for (int i = 1; i <= t; i++) {
                             int[] var = new int[]{
                                 sat.encodeVariable(Variable.component(Math.min(u, v), Math.max(u, v), i - 1)),
@@ -132,12 +134,12 @@ public abstract class SATEncodingFactoryForCliqueWidth {
                 for (Integer w : sat.vertexMap().destinationSet()) {
                     for (Integer x : sat.vertexMap().destinationSet()) {
                         // Unmap u, v, w to check edges
-                        Integer ud = sat.vertexMap().getFromDomain(u);
-                        Integer vd = sat.vertexMap().getFromDomain(v);
-                        Integer wd = sat.vertexMap().getFromDomain(w);
-                        Integer xd = sat.vertexMap().getFromDomain(x);
-                        if (graph.hasEdgeWithEndpoints(ud, vd) && graph.hasEdgeWithEndpoints(ud, wd)
-                            && graph.hasEdgeWithEndpoints(vd, xd) && !graph.hasEdgeWithEndpoints(wd, xd)) {
+                        Integer uVertex = sat.vertexMap().getFromDomain(u);
+                        Integer vVertex = sat.vertexMap().getFromDomain(v);
+                        Integer wVertex = sat.vertexMap().getFromDomain(w);
+                        Integer xVertex = sat.vertexMap().getFromDomain(x);
+                        if (graph.hasEdgeWithEndpoints(uVertex, vVertex) && graph.hasEdgeWithEndpoints(uVertex, wVertex)
+                            && graph.hasEdgeWithEndpoints(vVertex, xVertex) && !graph.hasEdgeWithEndpoints(wVertex, xVertex)) {
                             for (int i = 1; i <= t; i++) {
                                 int[] var = new int[]{
                                     sat.encodeVariable(Variable.component(u, v, i - 1)),
@@ -156,9 +158,9 @@ public abstract class SATEncodingFactoryForCliqueWidth {
     private static void clause6(SATEncoding sat, int t) {
         for (Integer v : sat.vertexMap().destinationSet()) {
             for (int i = 0; i <= t; i++) {
+                int var1 = sat.encodeVariable(Variable.representative(v, i));
                 // Left part
                 Clause clause = new Clause();
-                int var1 = sat.encodeVariable(Variable.representative(v, i));
                 clause.addLiteral(var1);
                 for (Integer u : sat.vertexMap().destinationSet()) {
                     if (u < v) {
@@ -170,8 +172,8 @@ public abstract class SATEncodingFactoryForCliqueWidth {
                 // Right part
                 for (Integer u : sat.variableMap().destinationSet()) {
                     if (u < v) {
-                        int var4 = sat.encodeVariable(Variable.group(u, v, i));
-                        sat.getFormula().addClause(-var1, -var4);
+                        int var2 = sat.encodeVariable(Variable.group(u, v, i));
+                        sat.getFormula().addClause(-var1, -var2);
                     }
                 }
             }
