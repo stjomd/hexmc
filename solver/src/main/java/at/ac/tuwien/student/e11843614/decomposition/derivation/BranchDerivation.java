@@ -61,13 +61,13 @@ public class BranchDerivation {
         // Go through leader and set variables
         for (Variable variable : model) {
             if (variable.getType() == Variable.Type.LEADER) {
-                Edge<Integer> edge = sat.getEdgeMap().getFromDomain(variable.getArgs().get(0));
+                Edge<Integer> edge = sat.edgeMap().getFromDomain(variable.getArgs().get(0));
                 int level = variable.getArgs().get(1);
                 Partition<Edge<Integer>> partition = derivation.get(level - 1);
                 partition.add(edge);
             } else if (variable.getType() == Variable.Type.SET) {
-                Edge<Integer> edge1 = sat.getEdgeMap().getFromDomain(variable.getArgs().get(0));
-                Edge<Integer> edge2 = sat.getEdgeMap().getFromDomain(variable.getArgs().get(1));
+                Edge<Integer> edge1 = sat.edgeMap().getFromDomain(variable.getArgs().get(0));
+                Edge<Integer> edge2 = sat.edgeMap().getFromDomain(variable.getArgs().get(1));
                 int level = variable.getArgs().get(2);
                 Partition<Edge<Integer>> partition = derivation.get(level - 1);
                 partition.add(edge1, edge2);
