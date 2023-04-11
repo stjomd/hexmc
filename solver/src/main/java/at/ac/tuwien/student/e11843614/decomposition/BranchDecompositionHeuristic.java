@@ -472,7 +472,7 @@ public abstract class BranchDecompositionHeuristic {
                 }
             }
         }
-        Logger.debug("Finished determining the best (work, play) pair for this split");
+        Logger.debug("\nFinished determining the best (work, play) pair for this split");
         // Return a list where |oSepX| <= |oSepY|.
         if (oSepX.getEdges().size() <= oSepY.getEdges().size()) {
             return List.of(oSepX, oSepY);
