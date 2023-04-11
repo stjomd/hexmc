@@ -27,7 +27,7 @@ public abstract class SATSolver {
         Set<Variable> truth = new HashSet<>();
         for (int assignment : assignments) {
             if (assignment > 0) {
-                truth.add(satEncoding.getVariableMap().getFromDomain(assignment));
+                truth.add(satEncoding.variableMap().getFromDomain(assignment));
             }
         }
         return truth;

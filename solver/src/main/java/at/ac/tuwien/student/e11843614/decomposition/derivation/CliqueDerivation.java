@@ -87,8 +87,8 @@ public class CliqueDerivation {
         // Look at component and group variables and fill the derivation.
         for (Variable variable : model) {
             if (variable.getType() == Variable.Type.COMPONENT || variable.getType() == Variable.Type.GROUP) {
-                int u = sat.getVertexMap().getFromDomain(variable.getArgs().get(0));
-                int v = sat.getVertexMap().getFromDomain(variable.getArgs().get(1));
+                int u = sat.vertexMap().getFromDomain(variable.getArgs().get(0));
+                int v = sat.vertexMap().getFromDomain(variable.getArgs().get(1));
                 int level = variable.getArgs().get(2);
                 if (variable.getType() == Variable.Type.COMPONENT) {
                     getComponents(level).add(u, v);
@@ -96,7 +96,7 @@ public class CliqueDerivation {
                     getGroups(level).add(u, v);
                 }
             } else if (variable.getType() == Variable.Type.REPRESENTATIVE) {
-                int u = sat.getVertexMap().getFromDomain(variable.getArgs().get(0));
+                int u = sat.vertexMap().getFromDomain(variable.getArgs().get(0));
                 int level = variable.getArgs().get(1);
                 getGroups(level).add(u);
             }

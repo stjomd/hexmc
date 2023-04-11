@@ -37,7 +37,7 @@ public class SATEncoding {
      * Returns the bijection between the variables and their integer representations in the formula of this encoding.
      * @return a bijection between variables and integers.
      */
-    public Bijection<Variable, Integer> getVariableMap() {
+    public Bijection<Variable, Integer> variableMap() {
         return variableMap;
     }
 
@@ -45,7 +45,7 @@ public class SATEncoding {
      * Returns the bijection between the vertices and their integer representations.
      * @return a bijection between vertices and integers.
      */
-    public Bijection<Integer, Integer> getVertexMap() {
+    public Bijection<Integer, Integer> vertexMap() {
         return vertexMap;
     }
 
@@ -53,7 +53,7 @@ public class SATEncoding {
      * Returns the bijection between the edges and their integer representations.
      * @return a bijection between edges and integers.
      */
-    public Bijection<Edge<Integer>, Integer> getEdgeMap() {
+    public Bijection<Edge<Integer>, Integer> edgeMap() {
         return edgeMap;
     }
 
