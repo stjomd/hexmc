@@ -7,9 +7,13 @@ import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
 import net.sourceforge.argparse4j.inf.Namespace;
 
+import java.util.Locale;
+
 public class Main {
     public static void main(String[] args) {
-        ArgumentParser parser = ArgumentParsers.newFor("solver").build()
+        ArgumentParser parser = ArgumentParsers.newFor("solver")
+            .locale(Locale.US)
+            .build()
             .description("Accepts a CNF formula in DIMACS CNF format, and counts the number of its models.");
         parser.addArgument("input")
             .type(String.class)
