@@ -18,7 +18,7 @@ public abstract class SATEncodingFactoryForBranchWidth {
     public static SATEncoding of(Graph<Integer> graph, int w) {
         int d = (int) Math.floor(graph.getEdges().size() / 2.0)
             - (int) Math.ceil(w / 2.0)
-            + (int) Math.ceil(Math.log(Math.floor(w / 2.0)) / Math.log(2));
+            + (int) Math.max(0, Math.ceil(Math.log(Math.floor(w / 2.0)) / Math.log(2))); // prevent overflow when w=1
         Logger.debug("Constructing a SAT encoding for branch-width, d = " + d + ", w = " + w);
         SATEncoding sat = new SATEncoding(graph);
         clause1(sat, d);
