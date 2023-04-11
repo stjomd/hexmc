@@ -81,9 +81,9 @@ public abstract class SATEncodingFactoryForBranchWidth {
     private static void clause3(SATEncoding sat, int d) {
         for (Integer e : sat.edgeMap().destinationSet()) {
             for (int i = 1; i <= d; i++) {
+                int var1 = sat.encodeVariable(Variable.leader(e, i));
                 // Part A
                 Clause clause = new Clause();
-                int var1 = sat.encodeVariable(Variable.leader(e, i));
                 clause.addLiteral(var1);
                 for (Integer f : sat.edgeMap().destinationSet()) {
                     if (f < e) {
@@ -165,8 +165,8 @@ public abstract class SATEncodingFactoryForBranchWidth {
                         Edge<Integer> gEdge = sat.edgeMap().getFromDomain(g);
                         for (Integer u : sat.vertexMap().destinationSet()) {
                             // Unmap u to check edge endpoints
-                            Integer ud = sat.vertexMap().getFromDomain(u);
-                            if (fEdge.getEndpoints().contains(ud) && gEdge.getEndpoints().contains(ud)) {
+                            Integer uVertex = sat.vertexMap().getFromDomain(u);
+                            if (fEdge.getEndpoints().contains(uVertex) && gEdge.getEndpoints().contains(uVertex)) {
                                 for (int i = 1; i <= d; i++) {
                                     int[] var = new int[]{
                                         sat.encodeVariable(Variable.leader(e, i)),
@@ -192,8 +192,8 @@ public abstract class SATEncodingFactoryForBranchWidth {
                     Edge<Integer> fEdge = sat.edgeMap().getFromDomain(f);
                     for (Integer u : sat.vertexMap().destinationSet()) {
                         // Unmap u to check edge endpoints
-                        Integer ud = sat.vertexMap().getFromDomain(u);
-                        if (eEdge.getEndpoints().contains(ud) && fEdge.getEndpoints().contains(ud)) {
+                        Integer uVertex = sat.vertexMap().getFromDomain(u);
+                        if (eEdge.getEndpoints().contains(uVertex) && fEdge.getEndpoints().contains(uVertex)) {
                             for (int i = 1; i <= d; i++) {
                                 int[] var = new int[]{
                                     sat.encodeVariable(Variable.leader(e, i)),
@@ -242,7 +242,7 @@ public abstract class SATEncodingFactoryForBranchWidth {
                             sat.encodeVariable(Variable.counter(e, u - 1, i, w))
                         };
                         sat.getFormula().addClause(-var[0], var[1]);
-                        sat.getFormula().addClause(-var[2], var[3], var[4]);
+                        sat.getFormula().addClause(-var[2], -var[3], var[4]);
                         sat.getFormula().addClause(-var[5], -var[6]);
                     }
                 }
