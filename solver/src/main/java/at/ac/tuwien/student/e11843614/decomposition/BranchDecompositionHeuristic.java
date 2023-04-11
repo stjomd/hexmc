@@ -279,7 +279,6 @@ public abstract class BranchDecompositionHeuristic {
         int oplay = Integer.MIN_VALUE;
         Graph<Integer> oSepX = null;
         Graph<Integer> oSepY = null;
-        Logger.debug("Determining the best (work, play) pair");
         for (Integer chosenSourceNode : sourceNodes) {
             for (double alpha = 0.01; alpha < 1; alpha += 1.0/ALPHA_STEPS) {
                 // Choose a source node. Sort vertices of associatedGraph in non-decreasing order acc. to their distance to it.
@@ -290,8 +289,9 @@ public abstract class BranchDecompositionHeuristic {
                 int size = sortedVertices.size();
                 int amount = (int) (alpha * (size - 1)) + 1;
                 // TODO: fix to make setA and setB not overlap
+                boolean preventedOverlapping = false;
                 if (amount > size / 2) {
-                    Logger.warn("Prevented A, B from overlapping");
+                    preventedOverlapping = true;
                     amount = Math.min(amount, size / 2);
                 }
                 // Add the first 'amount' vertices to setA, the last 'amount' vertices to setB
@@ -322,7 +322,6 @@ public abstract class BranchDecompositionHeuristic {
                     }
                 }
                 if (!minorEdgesToRemove.isEmpty()) {
-                    Logger.warn("Removed vA,vB edges in minor for vA = " + vA + ", vB = " + vB);
                     for (Edge<Integer> edge : minorEdgesToRemove) {
                         minor.removeEdge(edge);
                     }
@@ -380,10 +379,10 @@ public abstract class BranchDecompositionHeuristic {
                         componentY.addVertex(sepNode);
                     }
                 }
-                // TODO: bug fix for union < edgesInA (moved the merging below up)
                 // If there are > 2 components, merge the rest into the smallest of X or Y
+                boolean mergedComponents = false;
                 if (components.size() > 2) {
-                    Logger.warn("Separated graph has more than 2 components. Merging into the smallest of X and Y.");
+                    mergedComponents = true;
                     Graph<Integer> smallest = (componentX.getVertices().size() < componentY.getVertices().size())
                         ? componentX : componentY;
                     for (Graph<Integer> cmp : components) {
@@ -451,18 +450,29 @@ public abstract class BranchDecompositionHeuristic {
                     oSepX = componentX;
                     oSepY = componentY;
                 }
+                // Output debug information for the new best pair
                 if (output) {
-                    Logger.debug("New best pair (work = " + work + ", play = " + play + ")");
+                    Logger.debug("\nNew best pair (work = " + work + ", play = " + play + ")");
                     Logger.debug("Source node = " + chosenSourceNode + ", alpha = " + alpha);
+                    if (preventedOverlapping) {
+                        Logger.warn("Prevented A, B from overlapping");
+                    }
                     Logger.debug("A = " + setA + ", B = " + setB);
+                    if (!minorEdgesToRemove.isEmpty()) {
+                        Logger.warn("Removed vA-vB edges in minor for vA = " + vA + ", vB = " + vB);
+                    }
                     Logger.debug("Minor = " + minor);
                     Logger.debug("vA = " + vA + ", vB = " + vB);
                     Logger.debug("Minimum vertex cut = " + separationNodes);
+                    if (mergedComponents) {
+                        Logger.warn("Separated graph has more than 2 components. Merged into the smallest of X and Y.");
+                    }
                     Logger.debug("X = " + componentX);
                     Logger.debug("Y = " + componentY);
                 }
             }
         }
+        Logger.debug("Finished determining the best (work, play) pair for this split");
         // Return a list where |oSepX| <= |oSepY|.
         if (oSepX.getEdges().size() <= oSepY.getEdges().size()) {
             return List.of(oSepX, oSepY);
