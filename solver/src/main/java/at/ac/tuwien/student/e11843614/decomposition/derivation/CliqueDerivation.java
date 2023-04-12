@@ -17,12 +17,12 @@ public class CliqueDerivation {
     List<Template> templates = new ArrayList<>();
 
     /**
-     * Constructs a derivation from the component and group variables of the model.
-     * @param model a set of variables set to true by the SAT solver.
+     * Constructs a derivation from the component and group variables of the assignment.
+     * @param assignment a set of variables set to true by the SAT solver.
      * @param sat the SAT encoding for the graph.
      */
-    public CliqueDerivation(Set<Variable> model, SATEncoding sat) {
-        construct(model, sat);
+    public CliqueDerivation(Set<Variable> assignment, SATEncoding sat) {
+        construct(assignment, sat);
     }
 
     // TODO: for tests, TBR
@@ -68,13 +68,13 @@ public class CliqueDerivation {
 
     /**
      * Fills the derivation's templates.
-     * @param model the model set.
+     * @param assignment the satisfying assignment, the set of variables set to true.
      * @param sat the SAT encoding.
      */
-    private void construct(Set<Variable> model, SATEncoding sat) {
+    private void construct(Set<Variable> assignment, SATEncoding sat) {
         // Create enough templates. Look at component/group variables and their levels.
         int levels = 0;
-        for (Variable variable : model) {
+        for (Variable variable : assignment) {
             if (variable.getType() == Variable.Type.COMPONENT || variable.getType() == Variable.Type.GROUP) {
                 int level = variable.getArgs().get(2);
                 levels = Math.max(levels, level);
@@ -85,7 +85,7 @@ public class CliqueDerivation {
             templates.add(template);
         }
         // Look at component and group variables and fill the derivation.
-        for (Variable variable : model) {
+        for (Variable variable : assignment) {
             if (variable.getType() == Variable.Type.COMPONENT || variable.getType() == Variable.Type.GROUP) {
                 int u = sat.vertexMap().getFromDomain(variable.getArgs().get(0));
                 int v = sat.vertexMap().getFromDomain(variable.getArgs().get(1));
