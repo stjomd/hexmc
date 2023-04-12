@@ -58,11 +58,14 @@ public class Formula {
     }
 
     // TODO: remove
-    public boolean isSatisfied(int[] trueVars) {
+    public boolean isSatisfied(int[] model) {
         List<Integer> truths = new ArrayList<>();
-        for (int var : trueVars) {
+        List<Integer> falses = new ArrayList<>();
+        for (int var : model) {
             if (var > 0)
                 truths.add(var);
+            else if (var < 0)
+                falses.add(var);
         }
         for (Clause clause : clauses) {
             boolean satisfied = false;
@@ -70,7 +73,7 @@ public class Formula {
                 if (literal > 0 && truths.contains(literal)) {
                     satisfied = true;
                     break;
-                } else if (literal < 0 && !truths.contains(literal)) {
+                } else if (literal < 0 && falses.contains(literal)) {
                     satisfied = true;
                     break;
                 }
