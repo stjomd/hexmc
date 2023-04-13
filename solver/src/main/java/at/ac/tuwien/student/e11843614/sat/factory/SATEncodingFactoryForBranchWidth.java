@@ -19,6 +19,7 @@ public abstract class SATEncodingFactoryForBranchWidth {
         int d = (int) Math.floor(graph.getEdges().size() / 2.0)
             - (int) Math.ceil(w / 2.0)
             + (int) Math.max(0, Math.ceil(Math.log(Math.floor(w / 2.0)) / Math.log(2))); // prevent overflow when w=1
+        d = Math.max(2, d); // undefined for d < 2
         Logger.debug("Constructing a SAT encoding for branch-width, w = " + w + ", d = " + d);
         SATEncoding sat = new SATEncoding(graph);
         clause1(sat, d);
@@ -41,7 +42,7 @@ public abstract class SATEncodingFactoryForBranchWidth {
         for (Integer e : sat.edgeMap().destinationSet()) {
             for (Integer f : sat.edgeMap().destinationSet()) {
                 if (e < f) {
-                    for (int i = 1; i < d; i++) {
+                    for (int i = 0; i < d; i++) {
                         int[] var = new int[]{
                             sat.encodeVariable(Variable.set(e, f, 0)),
                             sat.encodeVariable(Variable.set(e, f, d)),
@@ -62,7 +63,7 @@ public abstract class SATEncodingFactoryForBranchWidth {
             for (Integer f : sat.edgeMap().destinationSet()) {
                 for (Integer g : sat.edgeMap().destinationSet()) {
                     if (e < f && f < g) {
-                        for (int i = 1; i <= d; i++) {
+                        for (int i = 0; i <= d; i++) {
                             int[] var = new int[]{
                                 sat.encodeVariable(Variable.set(e, f, i)),
                                 sat.encodeVariable(Variable.set(e, g, i)),
@@ -80,7 +81,7 @@ public abstract class SATEncodingFactoryForBranchWidth {
 
     private static void clause3(SATEncoding sat, int d) {
         for (Integer e : sat.edgeMap().destinationSet()) {
-            for (int i = 1; i <= d; i++) {
+            for (int i = 0; i <= d; i++) {
                 int var1 = sat.encodeVariable(Variable.leader(e, i));
                 // Part A
                 Clause clause = new Clause();
@@ -107,7 +108,7 @@ public abstract class SATEncodingFactoryForBranchWidth {
         for (Integer e : sat.edgeMap().destinationSet()) {
             for (Integer f : sat.edgeMap().destinationSet()) {
                 if (e < f) {
-                    for (int i = 1; i < d - 1; i++) {
+                    for (int i = 0; i < d - 1; i++) {
                         int[] var = new int[]{
                             sat.encodeVariable(Variable.leader(e, i)),
                             sat.encodeVariable(Variable.leader(f, i)),
@@ -146,7 +147,7 @@ public abstract class SATEncodingFactoryForBranchWidth {
 
     private static void clause6(SATEncoding sat, int d) {
         for (Integer e : sat.edgeMap().destinationSet()) {
-            for (int i = 1; i < d; i++) {
+            for (int i = 0; i < d; i++) {
                 int[] var = new int[]{
                     sat.encodeVariable(Variable.leader(e, i)),
                     sat.encodeVariable(Variable.leader(e, i + 1))
@@ -167,7 +168,7 @@ public abstract class SATEncodingFactoryForBranchWidth {
                             // Unmap u to check edge endpoints
                             Integer uVertex = sat.vertexMap().getFromDomain(u);
                             if (fEdge.getEndpoints().contains(uVertex) && gEdge.getEndpoints().contains(uVertex)) {
-                                for (int i = 1; i <= d; i++) {
+                                for (int i = 0; i <= d; i++) {
                                     int[] var = new int[]{
                                         sat.encodeVariable(Variable.leader(e, i)),
                                         sat.encodeVariable(Variable.load(e, u, i)),
@@ -194,7 +195,7 @@ public abstract class SATEncodingFactoryForBranchWidth {
                         // Unmap u to check edge endpoints
                         Integer uVertex = sat.vertexMap().getFromDomain(u);
                         if (eEdge.getEndpoints().contains(uVertex) && fEdge.getEndpoints().contains(uVertex)) {
-                            for (int i = 1; i <= d; i++) {
+                            for (int i = 0; i <= d; i++) {
                                 int[] var = new int[]{
                                     sat.encodeVariable(Variable.leader(e, i)),
                                     sat.encodeVariable(Variable.set(Math.min(e, f), Math.max(e, f), i)),
@@ -212,7 +213,7 @@ public abstract class SATEncodingFactoryForBranchWidth {
     private static void clause9(SATEncoding sat, int d) {
         for (Integer e : sat.edgeMap().destinationSet()) {
             for (Integer u : sat.vertexMap().destinationSet()) {
-                for (int i = 1; i <= d - 2; i++) {
+                for (int i = 0; i <= d - 2; i++) {
                     int[] var = new int[]{
                         sat.encodeVariable(Variable.leader(e, i)),
                         sat.encodeVariable(Variable.leader(e, i + 1)),
@@ -230,7 +231,7 @@ public abstract class SATEncodingFactoryForBranchWidth {
     private static void clause10(SATEncoding sat, int d, int w) {
         for (Integer e : sat.edgeMap().destinationSet()) {
             for (int u = 2; u <= sat.vertexMap().size(); u++) {
-                for (int i = 1; i <= d; i++) {
+                for (int i = 0; i <= d; i++) {
                     for (int j = 1; j <= w; j++) {
                         int[] var = new int[]{
                             sat.encodeVariable(Variable.counter(e, u - 1, i, j)),
@@ -253,7 +254,7 @@ public abstract class SATEncodingFactoryForBranchWidth {
     private static void clause11(SATEncoding sat, int d) {
         for (Integer e : sat.edgeMap().destinationSet()) {
             for (int u = 1; u <= sat.vertexMap().size(); u++) {
-                for (int i = 1; i <= d; i++) {
+                for (int i = 0; i <= d; i++) {
                     int[] var = new int[]{
                         sat.encodeVariable(Variable.load(e, u, i)),
                         sat.encodeVariable(Variable.counter(e, u, i, 1))
