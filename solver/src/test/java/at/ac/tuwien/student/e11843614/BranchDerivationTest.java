@@ -27,7 +27,7 @@ public class BranchDerivationTest {
     @BeforeEach
     public void beforeEach() throws TimeoutException {
         graph = GraphExamples.example();
-        SATEncoding encoding = SATEncodingFactory.forBranchWidth(graph, 2);
+        SATEncoding encoding = SATEncodingFactory.forBranchWidth(graph, 4);
         Set<Variable> model = SATSolver.getSatisfyingAssignment(encoding);
         derivation = new BranchDerivation(model, encoding);
     }
@@ -41,10 +41,10 @@ public class BranchDerivationTest {
     @Test
     @DisplayName("D1")
     public void d1() {
-        int l = derivation.size();
+        int l = derivation.size() - 1;
         // P_1 has |E(G)| equivalence classes, each consisting of one element
-        assertEquals(graph.getEdges().size(), derivation.getLevel(1).size());
-        for (Set<Edge<Integer>> ec : derivation.getLevel(1).getEquivalenceClasses()) {
+        assertEquals(graph.getEdges().size(), derivation.getLevel(0).size());
+        for (Set<Edge<Integer>> ec : derivation.getLevel(0).getEquivalenceClasses()) {
             assertEquals(1, ec.size());
         }
         // P_l has 1 equivalence class which contains all edges
@@ -56,7 +56,7 @@ public class BranchDerivationTest {
     @Test
     @DisplayName("D2")
     public void d2() {
-        int l = derivation.size();
+        int l = derivation.size() - 1;
         for (int i = 1; i < l - 2; i++) {
             assertTrue(derivation.getLevel(i).isBinaryRefinementOf(derivation.getLevel(i + 1)));
         }
@@ -65,7 +65,8 @@ public class BranchDerivationTest {
     @Test
     @DisplayName("D3")
     public void d3() {
-        int l = derivation.size();
+        int l = derivation.size() - 1;
+        System.out.println(derivation);
         assertTrue(derivation.getLevel(l - 1).isTernaryRefinementOf(derivation.getLevel(l)));
     }
 

@@ -15,6 +15,7 @@ import java.util.Set;
  */
 public class BranchDerivation {
 
+    // P_0, P_1, ..., P_l
     List<Partition<Edge<Integer>>> derivation = new ArrayList<>();
 
     /**
@@ -27,11 +28,11 @@ public class BranchDerivation {
 
     /**
      * Returns the partition at the specified level of this derivation.
-     * @param level the level, a number between 1 and the size of this partition.
+     * @param level the level.
      * @return the partition at the specified level.
      */
     public Partition<Edge<Integer>> getLevel(int level) {
-        return derivation.get(level - 1);
+        return derivation.get(level);
     }
 
     /**
@@ -55,7 +56,7 @@ public class BranchDerivation {
             }
         }
         // Create a partition for each level.
-        for (int i = 1; i <= levels; i++) {
+        for (int i = 0; i <= levels; i++) {
             derivation.add(new Partition<>());
         }
         // Go through leader and set variables
@@ -63,17 +64,17 @@ public class BranchDerivation {
             if (variable.getType() == Variable.Type.LEADER) {
                 Edge<Integer> edge = sat.edgeMap().getFromDomain(variable.getArgs().get(0));
                 int level = variable.getArgs().get(1);
-                Partition<Edge<Integer>> partition = derivation.get(level - 1);
+                Partition<Edge<Integer>> partition = derivation.get(level);
                 partition.add(edge);
             } else if (variable.getType() == Variable.Type.SET) {
                 Edge<Integer> edge1 = sat.edgeMap().getFromDomain(variable.getArgs().get(0));
                 Edge<Integer> edge2 = sat.edgeMap().getFromDomain(variable.getArgs().get(1));
                 int level = variable.getArgs().get(2);
-                Partition<Edge<Integer>> partition = derivation.get(level - 1);
+                Partition<Edge<Integer>> partition = derivation.get(level);
                 partition.add(edge1, edge2);
             }
         }
-        Logger.debug("Constructed a derivation for branch-width with " + size() + " levels");
+        Logger.debug("Constructed a derivation for branch-width with l = " + (size() - 1));
         // TODO: does not meet conditions
     }
 
@@ -82,7 +83,7 @@ public class BranchDerivation {
         StringBuilder builder = new StringBuilder();
         for (int i = 0; i < derivation.size(); i++) {
             Partition<Edge<Integer>> partition = derivation.get(i);
-            builder.append(i + 1).append(": ").append(partition).append("\n");
+            builder.append(i).append(": ").append(partition).append("\n");
         }
         return builder.toString();
     }
