@@ -1,9 +1,6 @@
 package at.ac.tuwien.student.e11843614.struct;
 
-import at.ac.tuwien.student.e11843614.sat.Variable;
-
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 
 /**
