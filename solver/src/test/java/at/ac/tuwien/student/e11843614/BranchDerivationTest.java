@@ -66,7 +66,6 @@ public class BranchDerivationTest {
     @DisplayName("D3")
     public void d3() {
         int l = derivation.size() - 1;
-        System.out.println(derivation);
         assertTrue(derivation.getLevel(l - 1).isTernaryRefinementOf(derivation.getLevel(l)));
     }
 
