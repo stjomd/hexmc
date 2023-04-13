@@ -1,6 +1,9 @@
 package at.ac.tuwien.student.e11843614.struct;
 
+import at.ac.tuwien.student.e11843614.sat.Variable;
+
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -152,7 +155,7 @@ public class Partition<T> {
             for (Set<T> ec1 : this.equivalenceClasses) {
                 for (Set<T> ec2 : this.equivalenceClasses) {
                     for (Set<T> ec3: this.equivalenceClasses) {
-                        if (ec1 != ec2 && ec2 != ec3) {
+                        if (ec1 != ec2 && ec2 != ec3 && ec3 != ec1) {
                             Set<T> union = new HashSet<>(ec1);
                             union.addAll(ec2);
                             union.addAll(ec3);
