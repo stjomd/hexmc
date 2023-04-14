@@ -57,7 +57,7 @@ public class BranchDerivationTest {
     @DisplayName("D2")
     public void d2() {
         int l = derivation.size() - 1;
-        for (int i = 1; i < l - 2; i++) {
+        for (int i = 0; i < l - 2; i++) {
             assertTrue(derivation.getLevel(i).isBinaryRefinementOf(derivation.getLevel(i + 1)));
         }
     }
