@@ -5,6 +5,7 @@ import at.ac.tuwien.student.e11843614.struct.graph.Edge;
 import at.ac.tuwien.student.e11843614.sat.SATEncoding;
 import at.ac.tuwien.student.e11843614.sat.Variable;
 import at.ac.tuwien.student.e11843614.struct.Partition;
+import at.ac.tuwien.student.e11843614.struct.graph.Graph;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -76,6 +77,43 @@ public class BranchDerivation {
         }
         Logger.debug("Constructed a derivation for branch-width with l = " + (size() - 1));
         // TODO: does not meet conditions
+    }
+
+    /**
+     * Checks whether this derivation fulfils the conditions.
+     * @param graph the graph associated with this derivation.
+     * @return true, if all conditions are satisfied, and false otherwise.
+     */
+    public boolean fulfilsConditions(Graph<Integer> graph) {
+        int l = derivation.size() - 1;
+        // D1
+        // P_0 has |E(G)| equivalence classes, each consisting of one element
+        if (getLevel(0).size() != graph.getEdges().size()) {
+            return false;
+        }
+        for (Set<Edge<Integer>> ec : getLevel(0).getEquivalenceClasses()) {
+            if (ec.size() != 1) {
+                return false;
+            }
+        }
+        // P_l has 1 equivalence class which contains all edges
+        if (getLevel(l).size() != 1) {
+            return false;
+        }
+        if (!getLevel(l).getEquivalenceClasses().iterator().next().containsAll(graph.getEdges())) {
+            return false;
+        }
+        // D2
+        for (int i = 0; i < l - 2; i++) {
+            if (!getLevel(i).isBinaryRefinementOf(getLevel(i + 1))) {
+                return false;
+            }
+        }
+        // D3
+        if (!getLevel(l - 1).isTernaryRefinementOf(getLevel(l))) {
+            return false;
+        }
+        return true;
     }
 
     @Override
