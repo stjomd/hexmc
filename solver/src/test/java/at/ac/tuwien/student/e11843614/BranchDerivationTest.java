@@ -41,10 +41,10 @@ public class BranchDerivationTest {
     @Test
     @DisplayName("D1")
     public void d1() {
-        int l = derivation.size() - 1;
+        int l = derivation.size();
         // P_1 has |E(G)| equivalence classes, each consisting of one element
-        assertEquals(graph.getEdges().size(), derivation.getLevel(0).size());
-        for (Set<Edge<Integer>> ec : derivation.getLevel(0).getEquivalenceClasses()) {
+        assertEquals(graph.getEdges().size(), derivation.getLevel(1).size());
+        for (Set<Edge<Integer>> ec : derivation.getLevel(1).getEquivalenceClasses()) {
             assertEquals(1, ec.size());
         }
         // P_l has 1 equivalence class which contains all edges
@@ -56,8 +56,8 @@ public class BranchDerivationTest {
     @Test
     @DisplayName("D2")
     public void d2() {
-        int l = derivation.size() - 1;
-        for (int i = 0; i < l - 2; i++) {
+        int l = derivation.size();
+        for (int i = 1; i < l - 2; i++) {
             assertTrue(derivation.getLevel(i).isBinaryRefinementOf(derivation.getLevel(i + 1)));
         }
     }
@@ -65,7 +65,7 @@ public class BranchDerivationTest {
     @Test
     @DisplayName("D3")
     public void d3() {
-        int l = derivation.size() - 1;
+        int l = derivation.size();
         assertTrue(derivation.getLevel(l - 1).isTernaryRefinementOf(derivation.getLevel(l)));
     }
 
