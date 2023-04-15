@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class BranchDerivationTest {
 
-    private Graph<Integer> graph;
+    private Graph graph;
     private BranchDerivation derivation;
 
     @BeforeEach
@@ -44,12 +44,12 @@ public class BranchDerivationTest {
         int l = derivation.size();
         // P_1 has |E(G)| equivalence classes, each consisting of one element
         assertEquals(graph.getEdges().size(), derivation.getLevel(1).size());
-        for (Set<Edge<Integer>> ec : derivation.getLevel(1).getEquivalenceClasses()) {
+        for (Set<Edge> ec : derivation.getLevel(1).getEquivalenceClasses()) {
             assertEquals(1, ec.size());
         }
         // P_l has 1 equivalence class which contains all edges
         assertEquals(1, derivation.getLevel(l).size());
-        Set<Edge<Integer>> ec = derivation.getLevel(l).getEquivalenceClasses().iterator().next();
+        Set<Edge> ec = derivation.getLevel(l).getEquivalenceClasses().iterator().next();
         assertTrue(ec.containsAll(graph.getEdges()));
     }
 

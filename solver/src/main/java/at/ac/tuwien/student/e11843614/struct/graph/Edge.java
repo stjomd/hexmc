@@ -5,19 +5,18 @@ import java.util.List;
 
 /**
  * A class that represents an edge between two vertices.
- * @param <T> the class of this edge's endpoints (vertices).
  */
-public class Edge<T> {
+public class Edge {
 
-    private final List<T> endpoints;
+    private final List<Integer> endpoints;
 
-    public Edge (T u, T v) {
+    public Edge (int u, int v) {
         this.endpoints = new LinkedList<>();
         this.endpoints.add(u);
         this.endpoints.add(v);
     }
 
-    public List<T> getEndpoints() {
+    public List<Integer> getEndpoints() {
         return endpoints;
     }
 

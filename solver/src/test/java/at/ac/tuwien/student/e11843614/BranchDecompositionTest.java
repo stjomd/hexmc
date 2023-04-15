@@ -20,8 +20,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class BranchDecompositionTest {
 
-    private Graph<Integer> graph;
-    private TreeNode<Edge<Integer>> heuristic;
+    private Graph graph;
+    private TreeNode<Edge> heuristic;
 
     @BeforeEach
     public void beforeEach() {
@@ -39,11 +39,11 @@ public class BranchDecompositionTest {
     @Test
     @DisplayName("Heuristic produces valid branch decomposition")
     public void heuristicShouldProduceValidBranchDecomposition() {
-        Queue<TreeNode<Edge<Integer>>> queue = new LinkedList<>();
-        Set<Edge<Integer>> edges = new HashSet<>();
+        Queue<TreeNode<Edge>> queue = new LinkedList<>();
+        Set<Edge> edges = new HashSet<>();
         queue.add(heuristic);
         while (!queue.isEmpty()) {
-            TreeNode<Edge<Integer>> node = queue.remove();
+            TreeNode<Edge> node = queue.remove();
             if (node.getObject() == null) {
                 // Internal nodes have no edge, and have degree 3.
                 assertEquals(3, node.getDegree());

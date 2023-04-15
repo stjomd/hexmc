@@ -14,7 +14,7 @@ public abstract class SATEncodingFactory {
      * @param w the target branch-width.
      * @return a SAT encoding for this graph that contains a formula which is satisfiable if bw(graph) <= w.
      */
-    public static SATEncoding forBranchWidth(Graph<Integer> graph, int w) {
+    public static SATEncoding forBranchWidth(Graph graph, int w) {
         return SATEncodingFactoryForBranchWidth.of(graph, w);
     }
 
@@ -24,7 +24,7 @@ public abstract class SATEncodingFactory {
      * @param k the target clique-width.
      * @return a SAT encoding for this graph that contains a formula which is satisfiable if cw(graph) <= k.
      */
-    public static SATEncoding forCliqueWidth(Graph<Integer> graph, int k) {
+    public static SATEncoding forCliqueWidth(Graph graph, int k) {
         return SATEncodingFactoryForCliqueWidth.of(graph, k);
     }
 

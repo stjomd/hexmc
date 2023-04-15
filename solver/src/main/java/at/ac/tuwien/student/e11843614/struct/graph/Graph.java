@@ -11,13 +11,12 @@ import java.util.Queue;
 import java.util.Set;
 
 /**
- * A class that represents a graph.
- * @param <T> the class of this graph's vertices.
+ * An object that represents a graph.
  */
-public class Graph<T> {
+public class Graph {
 
-    private final Set<Edge<T>> edges = new HashSet<>();
-    private final Set<T> vertices = new HashSet<>();
+    private final Set<Edge> edges = new HashSet<>();
+    private final Set<Integer> vertices = new HashSet<>();
 
     // ----- Properties ------------------------------------------------------------------------------------------------
 
@@ -25,7 +24,7 @@ public class Graph<T> {
      * Returns the set of vertices in this graph.
      * @return the set of vertices.
      */
-    public Set<T> getVertices() {
+    public Set<Integer> getVertices() {
         return vertices;
     }
 
@@ -33,7 +32,7 @@ public class Graph<T> {
      * Returns the set of edges of this graph.
      * @return the set of Edge instances.
      */
-    public Set<Edge<T>> getEdges() {
+    public Set<Edge> getEdges() {
         return edges;
     }
 
@@ -42,9 +41,9 @@ public class Graph<T> {
      * @param vertex the vertex to find neighbors of.
      * @return the set of neighbors/adjacent vertices.
      */
-    private Set<T> neighborsOf(T vertex) {
-        Set<T> neighbors = new HashSet<>();
-        for (Edge<T> edge : edges) {
+    private Set<Integer> neighborsOf(int vertex) {
+        Set<Integer> neighbors = new HashSet<>();
+        for (Edge edge : edges) {
             if (edge.getEndpoints().get(0) == vertex) {
                 neighbors.add(edge.getEndpoints().get(1));
             } else if (edge.getEndpoints().get(1) == vertex) {
@@ -60,7 +59,7 @@ public class Graph<T> {
      * Adds a vertex to this graph.
      * @param v the new vertex.
      */
-    public void addVertex(T v) {
+    public void addVertex(int v) {
         vertices.add(v);
     }
 
@@ -68,7 +67,7 @@ public class Graph<T> {
      * Adds an edge between two vertices.
      * @param edge the edge to be added.
      */
-    public void addEdge(Edge<T> edge) {
+    public void addEdge(Edge edge) {
         edges.add(edge);
         vertices.add(edge.getEndpoints().get(0));
         vertices.add(edge.getEndpoints().get(1));
@@ -79,19 +78,19 @@ public class Graph<T> {
      * @param v a vertex, represented by an integer.
      * @param u a vertex, represented by an integer.
      */
-    public void addEdge(T u, T v) {
-        addEdge(new Edge<>(u, v));
+    public void addEdge(int u, int v) {
+        addEdge(new Edge(u, v));
     }
 
     /**
      * Removes a vertex and the incident edges from this graph.
      * @param v the vertex to be removed.
      */
-    public void removeVertex(T v) {
+    public void removeVertex(int v) {
         vertices.remove(v);
-        Set<Edge<T>> removing = new HashSet<>();
-        for (Edge<T> edge : edges) {
-            List<T> endpoints = edge.getEndpoints();
+        Set<Edge> removing = new HashSet<>();
+        for (Edge edge : edges) {
+            List<Integer> endpoints = edge.getEndpoints();
             if (endpoints.contains(v)) {
                 removing.add(edge);
             }
@@ -103,7 +102,7 @@ public class Graph<T> {
      * Removes an edge from the graph. Does not affect the graph's vertices.
      * @param edge the edge to be removed.
      */
-    public void removeEdge(Edge<T> edge) {
+    public void removeEdge(Edge edge) {
         edges.remove(edge);
     }
 
@@ -113,32 +112,32 @@ public class Graph<T> {
      * @param edge the edge to be contracted.
      * The source vertex is always merged into target.
      */
-    public void contractEdge(Edge<T> edge) {
-        T u = edge.getEndpoints().get(0), v = edge.getEndpoints().get(1);
-        if (u.equals(v)) {
+    public void contractEdge(Edge edge) {
+        int u = edge.getEndpoints().get(0), v = edge.getEndpoints().get(1);
+        if (u == v) {
             // An edge that is a loop. In this case just remove the edge.
             this.edges.remove(edge);
             return;
         }
         // Choose a source and target vertex.
-        Set<T> neighborsU = neighborsOf(u);
-        Set<T> neighborsV = neighborsOf(v);
+        Set<Integer> neighborsU = neighborsOf(u);
+        Set<Integer> neighborsV = neighborsOf(v);
         boolean sourceIsU = neighborsU.size() < neighborsV.size();
-        T source = sourceIsU ? u : v;
-        T target = sourceIsU ? v : u;
+        int source = sourceIsU ? u : v;
+        int target = sourceIsU ? v : u;
         // Remove the edge, remove the source vertex. (it 'merges' into target)
         this.edges.remove(edge);
         this.vertices.remove(source);
         // Set of edges still contains edges to just removed source vertex. Find such, and 'redirect' them to target.
-        Set<Edge<T>> edgesToRedirect = new HashSet<>();
-        for (Edge<T> e : this.edges) {
-            List<T> eEndpoints = e.getEndpoints();
+        Set<Edge> edgesToRedirect = new HashSet<>();
+        for (Edge e : this.edges) {
+            List<Integer> eEndpoints = e.getEndpoints();
             if (eEndpoints.contains(source)) {
                 edgesToRedirect.add(e);
             }
         }
-        for (Edge<T> e : edgesToRedirect) {
-            List<T> eEndpoints = e.getEndpoints();
+        for (Edge e : edgesToRedirect) {
+            List<Integer> eEndpoints = e.getEndpoints();
             if (eEndpoints.get(0).equals(source)) {
                 eEndpoints.set(0, target);
             } else if (eEndpoints.get(1).equals(source)) {
@@ -155,19 +154,19 @@ public class Graph<T> {
      * @param target the target vertex.
      * @return a list of vertices, representing the shortest path in the graph between source and target.
      */
-    public List<T> path(T source, T target) {
-        Map<T, T> parents = new HashMap<>();
-        Queue<T> queue = new LinkedList<>();
-        Set<T> visited = new HashSet<>();
+    public List<Integer> path(int source, int target) {
+        Map<Integer, Integer> parents = new HashMap<>();
+        Queue<Integer> queue = new LinkedList<>();
+        Set<Integer> visited = new HashSet<>();
         // Breadth-first search; keep track of parent nodes to retrieve path later
         queue.add(source);
         while (!queue.isEmpty()) {
-            T vertex = queue.remove();
-            if (vertex.equals(target)) {
+            int vertex = queue.remove();
+            if (vertex == target) {
                 break;
             }
             visited.add(vertex);
-            for (T neighbor : neighborsOf(vertex)) {
+            for (int neighbor : neighborsOf(vertex)) {
                 if (!visited.contains(neighbor)) {
                     queue.add(neighbor);
                     parents.put(neighbor, vertex);
@@ -175,10 +174,10 @@ public class Graph<T> {
             }
         }
         // Backtrack to retrieve the path
-        List<T> path = new ArrayList<>();
-        T vertex = target;
+        List<Integer> path = new ArrayList<>();
+        Integer vertex = target;
         path.add(vertex);
-        while (!vertex.equals(source)) {
+        while (vertex != source) {
             vertex = parents.get(vertex);
             if (vertex == null) {
                 return null; // no path exists
@@ -195,8 +194,8 @@ public class Graph<T> {
      * @param v the target vertex.
      * @return the distance between u and v.
      */
-    public int distance(T u, T v) {
-        List<T> path = path(u, v);
+    public int distance(int u, int v) {
+        List<Integer> path = path(u, v);
         if (path == null) {
             return Integer.MAX_VALUE;
         } else {
@@ -210,10 +209,10 @@ public class Graph<T> {
      * @param vertex the vertex to calculate the eccentricity of.
      * @return the eccentricity of the vertex.
      */
-    public int eccentricity(T vertex) {
+    public int eccentricity(int vertex) {
         int eccentricity = 0;
-        for (T v : vertices) {
-            List<T> path = path(vertex, v);
+        for (int v : vertices) {
+            List<Integer> path = path(vertex, v);
             if (path == null) {
                 eccentricity = Integer.MAX_VALUE; // eccentricity is defined to be infinite if no path exists
             } else {
@@ -230,7 +229,7 @@ public class Graph<T> {
      */
     public int diameter() {
         int diameter = 0;
-        for (T v : vertices) {
+        for (int v : vertices) {
             diameter = Math.max(diameter, eccentricity(v));
         }
         return diameter;
@@ -242,13 +241,13 @@ public class Graph<T> {
      * Creates a duplicate of the graph. This method creates new Edge instances, but keeps the instances of the vertices.
      * @return the duplicate of this graph.
      */
-    public Graph<T> duplicate() {
-        Graph<T> graph = new Graph<>();
-        for (T vertex : vertices) {
+    public Graph duplicate() {
+        Graph graph = new Graph();
+        for (int vertex : vertices) {
             graph.addVertex(vertex);
         }
-        for (Edge<T> edge : edges) {
-            graph.addEdge(new Edge<>(edge.getEndpoints().get(0), edge.getEndpoints().get(1)));
+        for (Edge edge : edges) {
+            graph.addEdge(new Edge(edge.getEndpoints().get(0), edge.getEndpoints().get(1)));
         }
         return graph;
     }
@@ -259,9 +258,9 @@ public class Graph<T> {
      * @param v a vertex.
      * @return true, if this graph has an edge uv or vu, and false otherwise.
      */
-    public boolean hasEdgeWithEndpoints(T u, T v) {
-        for (Edge<T> edge : edges) {
-            List<T> endpoints = edge.getEndpoints();
+    public boolean hasEdgeWithEndpoints(int u, int v) {
+        for (Edge edge : edges) {
+            List<Integer> endpoints = edge.getEndpoints();
             if (endpoints.contains(u) && endpoints.contains(v)) {
                 return true;
             }
@@ -273,21 +272,21 @@ public class Graph<T> {
      * Computes a list of this graph's components.
      * @return a list of graphs, each a component, and a different object from this graph.
      */
-    public List<Graph<T>> components() {
-        List<Graph<T>> components = new ArrayList<>();
-        Queue<T> queue = new LinkedList<>();
-        Set<T> visited = new HashSet<>();
-        for (T vertex : vertices) {
+    public List<Graph> components() {
+        List<Graph> components = new ArrayList<>();
+        Queue<Integer> queue = new LinkedList<>();
+        Set<Integer> visited = new HashSet<>();
+        for (int vertex : vertices) {
             if (visited.contains(vertex)) {
                 continue;
             }
             queue.add(vertex);
-            Graph<T> component = new Graph<>();
+            Graph component = new Graph();
             component.addVertex(vertex);
             while (!queue.isEmpty()) {
-                T visiting = queue.remove();
+                int visiting = queue.remove();
                 visited.add(visiting);
-                for (T neighbor : neighborsOf(visiting)) {
+                for (int neighbor : neighborsOf(visiting)) {
                     if (!component.hasEdgeWithEndpoints(visiting, neighbor)) {
                         component.addEdge(visiting, neighbor);
                     }

@@ -15,7 +15,7 @@ public abstract class SATEncodingFactoryForBranchWidth {
      * @param w the target branch-width.
      * @return a SAT encoding for this graph that contains a formula which is satisfiable if bw(graph) <= w.
      */
-    public static SATEncoding of(Graph<Integer> graph, int w) {
+    public static SATEncoding of(Graph graph, int w) {
         int d = (int) Math.floor(graph.getEdges().size() / 2.0)
             - (int) Math.ceil(w / 2.0)
             + (int) Math.max(0, Math.ceil(Math.log(Math.floor(w / 2.0)) / Math.log(2))); // prevent overflow when w=1
@@ -161,8 +161,8 @@ public abstract class SATEncodingFactoryForBranchWidth {
             for (Integer f : sat.edgeMap().destinationSet()) {
                 for (Integer g : sat.edgeMap().destinationSet()) {
                     if (!e.equals(f) && !e.equals(g)) {
-                        Edge<Integer> fEdge = sat.edgeMap().getFromDomain(f);
-                        Edge<Integer> gEdge = sat.edgeMap().getFromDomain(g);
+                        Edge fEdge = sat.edgeMap().getFromDomain(f);
+                        Edge gEdge = sat.edgeMap().getFromDomain(g);
                         for (Integer u : sat.vertexMap().destinationSet()) {
                             // Unmap u to check edge endpoints
                             Integer uVertex = sat.vertexMap().getFromDomain(u);
@@ -188,8 +188,8 @@ public abstract class SATEncodingFactoryForBranchWidth {
         for (Integer e : sat.edgeMap().destinationSet()) {
             for (Integer f : sat.edgeMap().destinationSet()) {
                 if (!e.equals(f)) {
-                    Edge<Integer> eEdge = sat.edgeMap().getFromDomain(e);
-                    Edge<Integer> fEdge = sat.edgeMap().getFromDomain(f);
+                    Edge eEdge = sat.edgeMap().getFromDomain(e);
+                    Edge fEdge = sat.edgeMap().getFromDomain(f);
                     for (Integer u : sat.vertexMap().destinationSet()) {
                         // Unmap u to check edge endpoints
                         Integer uVertex = sat.vertexMap().getFromDomain(u);

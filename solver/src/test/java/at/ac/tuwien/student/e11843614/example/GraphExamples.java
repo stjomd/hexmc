@@ -4,9 +4,9 @@ import at.ac.tuwien.student.e11843614.struct.graph.Graph;
 
 public abstract class GraphExamples {
 
-    public static Graph<Integer> example() {
+    public static Graph example() {
         // a1, b2, c3, d4, e5, f6, g7, h8, i9, j10, k11
-        Graph<Integer> graph = new Graph<>();
+        Graph graph = new Graph();
         graph.addEdge(1, 4); // ad
         graph.addEdge(1, 8); // ah
         graph.addEdge(1, 2); // ab
@@ -28,8 +28,8 @@ public abstract class GraphExamples {
         return graph;
     }
 
-    public static Graph<Integer> petersen() {
-        Graph<Integer> petersen = new Graph<>();
+    public static Graph petersen() {
+        Graph petersen = new Graph();
         petersen.addEdge(0, 1);
         petersen.addEdge(0, 4);
         petersen.addEdge(0, 5);

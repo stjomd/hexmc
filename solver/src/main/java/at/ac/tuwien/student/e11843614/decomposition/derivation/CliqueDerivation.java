@@ -111,7 +111,7 @@ public class CliqueDerivation {
      * @param graph the graph associated with this derivation.
      * @return true, if all conditions are satisfied, and false otherwise.
      */
-    public boolean fulfilsConditions(Graph<Integer> graph) {
+    public boolean fulfilsConditions(Graph graph) {
         // D1
         int t = templates.size() - 1;
         if (graph.getVertices().size() != getComponents(0).size()

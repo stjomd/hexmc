@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class PartitionTest {
 
     @Test
-    @DisplayName("add(a, b) adds a/b to existing EC if b/a present")
+    @DisplayName("Adding two elements")
     public void addWithTwoArgs_shouldAddElemToExistingEC_ifOtherElemPresent() {
         Partition<Integer> partition = new Partition<>();
         partition.add(1);
@@ -19,7 +19,7 @@ public class PartitionTest {
     }
 
     @Test
-    @DisplayName("Merging equivalence classes works correctly")
+    @DisplayName("Merging")
     public void shouldMergeEC_ifHasECWithDuplicateElems() {
         Partition<Integer> partition = new Partition<>();
         partition.add(1, 2);
