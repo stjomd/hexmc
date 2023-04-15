@@ -26,12 +26,6 @@ public class CliqueDerivation {
         construct(assignment, sat);
     }
 
-    // TODO: for tests, TBR
-    public CliqueDerivation(int t) {
-        for (int i = 0; i <= t; i++)
-            templates.add(new Template());
-    }
-
     /**
      * Returns the template at the specified level.
      * @param level the level.
@@ -110,9 +104,13 @@ public class CliqueDerivation {
             }
         }
         Logger.debug("Constructed a derivation for clique-width of length " + (size() - 1));
-        // TODO: does not meet the conditions
     }
 
+    /**
+     * Checks whether this derivation fulfils the conditions.
+     * @param graph the graph associated with this derivation.
+     * @return true, if all conditions are satisfied, and false otherwise.
+     */
     public boolean fulfilsConditions(Graph<Integer> graph) {
         // D1
         int t = templates.size() - 1;

@@ -75,7 +75,6 @@ public class BranchDerivation {
             }
         }
         Logger.debug("Constructed a derivation for branch-width with l = " + size());
-        // TODO: does not meet conditions
     }
 
     /**
