@@ -28,4 +28,25 @@ public abstract class GraphExamples {
         return graph;
     }
 
+    public static Graph<Integer> petersen() {
+        Graph<Integer> petersen = new Graph<>();
+        petersen.addEdge(0, 1);
+        petersen.addEdge(0, 4);
+        petersen.addEdge(0, 5);
+        petersen.addEdge(1, 2);
+        petersen.addEdge(1, 6);
+        petersen.addEdge(2, 3);
+        petersen.addEdge(2, 7);
+        petersen.addEdge(3, 4);
+        petersen.addEdge(3, 8);
+        petersen.addEdge(4, 9);
+        // inner star
+        petersen.addEdge(7, 5);
+        petersen.addEdge(5, 8);
+        petersen.addEdge(8, 6);
+        petersen.addEdge(6, 9);
+        petersen.addEdge(9, 7);
+        return petersen;
+    }
+
 }

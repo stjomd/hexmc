@@ -1,6 +1,7 @@
 package at.ac.tuwien.student.e11843614;
 
 import at.ac.tuwien.student.e11843614.decomposition.derivation.CliqueDerivation;
+import at.ac.tuwien.student.e11843614.example.GraphExamples;
 import at.ac.tuwien.student.e11843614.struct.graph.Edge;
 import at.ac.tuwien.student.e11843614.struct.graph.Graph;
 import at.ac.tuwien.student.e11843614.sat.SATEncoding;
@@ -27,15 +28,10 @@ public class CliqueDerivationTest {
 
     @BeforeEach
     public void beforeEach() throws TimeoutException {
-        graph = new Graph<>();
-        graph.addEdge(1, 2);
-        graph.addEdge(1, 4);
-        graph.addEdge(2, 3);
-        graph.addEdge(2, 4);
-        SATEncoding encoding = SATEncodingFactory.forCliqueWidth(graph, 2);
+        graph = GraphExamples.example();
+        SATEncoding encoding = SATEncodingFactory.forCliqueWidth(graph, 5);
         Set<Variable> model = SATSolver.getSatisfyingAssignment(encoding);
         derivation = new CliqueDerivation(model, encoding);
-        //derivation = exampleDerivation();
     }
 
     @AfterEach
@@ -183,32 +179,6 @@ public class CliqueDerivationTest {
                 }
             }
         }
-    }
-
-    // TODO: TBR
-    private CliqueDerivation exampleDerivation() {
-        CliqueDerivation cd = new CliqueDerivation(3);
-        // 0
-        cd.getComponents(0).add(1); cd.getComponents(0).add(2);
-        cd.getComponents(0).add(3); cd.getComponents(0).add(4);
-        cd.getGroups(0).add(1); cd.getGroups(0).add(2);
-        cd.getGroups(0).add(3); cd.getGroups(0).add(4);
-        // 1
-        cd.getComponents(1).add(1, 2); cd.getComponents(1).add(3);
-        cd.getComponents(1).add(4);
-        cd.getGroups(1).add(1); cd.getGroups(1).add(2);
-        cd.getGroups(1).add(3); cd.getGroups(1).add(4);
-        // 2
-        cd.getComponents(2).add(1, 2); cd.getComponents(2).add(2, 3);
-        cd.getComponents(2).add(4);
-        cd.getGroups(2).add(1); cd.getGroups(2).add(2);
-        cd.getGroups(2).add(3); cd.getGroups(2).add(4);
-        // 3
-        cd.getComponents(3).add(1, 2); cd.getComponents(3).add(2, 3);
-        cd.getComponents(3).add(3, 4);
-        cd.getGroups(3).add(1, 2); cd.getGroups(3).add(3);
-        cd.getGroups(3).add(4);
-        return cd;
     }
 
 }
