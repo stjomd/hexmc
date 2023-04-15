@@ -170,7 +170,7 @@ public abstract class SATEncodingFactoryForCliqueWidth {
                 }
                 sat.getFormula().addClause(clause);
                 // Right part
-                for (Integer u : sat.variableMap().destinationSet()) {
+                for (Integer u : sat.vertexMap().destinationSet()) {
                     if (u < v) {
                         int var2 = sat.encodeVariable(Variable.group(u, v, i));
                         sat.getFormula().addClause(-var1, -var2);
