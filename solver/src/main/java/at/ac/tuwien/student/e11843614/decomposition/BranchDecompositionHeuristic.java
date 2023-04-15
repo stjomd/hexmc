@@ -426,9 +426,7 @@ public abstract class BranchDecompositionHeuristic {
                     }
                 }
                 // Linking nodes on one side of the cut but not separation nodes are labeled 'side nodes'.
-                // TODO: not sure of the formulation?
                 Set<Integer> sideNodes = new HashSet<>(componentX.getVertices());
-                sideNodes.addAll(componentY.getVertices());
                 sideNodes.retainAll(linkingNodes);
                 // Define work and play values
                 int work = Math.max(
