@@ -1,4 +1,4 @@
-package at.ac.tuwien.student.e11843614.decomposition;
+package at.ac.tuwien.student.e11843614.struct.tree;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -7,7 +7,7 @@ import java.util.Set;
 /**
  * An object that represents a node of a tree.
  */
-public class TreeNode<T> {
+public class TreeNode<T> implements Iterable<TreeNode<T>> {
 
     private T object;
     private TreeNode<T> parent = null;
@@ -56,6 +56,14 @@ public class TreeNode<T> {
     }
 
     /**
+     * Detaches this node from its parent: this node loses its parent, the parent node loses this child.
+     */
+    public void detach() {
+        parent.children.remove(this);
+        this.parent = null;
+    }
+
+    /**
      * Returns the parent of this node.
      * @return the parent of this node.
      */
@@ -99,6 +107,11 @@ public class TreeNode<T> {
                 child.buildString(builder, nextPrefix + "└── ", nextPrefix + "    ");
             }
         }
+    }
+
+    @Override
+    public Iterator<TreeNode<T>> iterator() {
+        return new TreeNodeIterator<>(this);
     }
 
 }
