@@ -2,7 +2,7 @@ package at.ac.tuwien.student.e11843614;
 
 import at.ac.tuwien.student.e11843614.decomposition.BranchDecompositionHeuristic;
 
-import at.ac.tuwien.student.e11843614.decomposition.BranchDecompositionNode;
+import at.ac.tuwien.student.e11843614.decomposition.TreeNode;
 import at.ac.tuwien.student.e11843614.example.GraphExamples;
 import at.ac.tuwien.student.e11843614.struct.graph.Edge;
 import at.ac.tuwien.student.e11843614.struct.graph.Graph;
@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class BranchDecompositionTest {
 
     private Graph<Integer> graph;
-    private BranchDecompositionNode heuristic;
+    private TreeNode<Edge<Integer>> heuristic;
 
     @BeforeEach
     public void beforeEach() {
@@ -39,18 +39,18 @@ public class BranchDecompositionTest {
     @Test
     @DisplayName("Heuristic produces valid branch decomposition")
     public void heuristicShouldProduceValidBranchDecomposition() {
-        Queue<BranchDecompositionNode> queue = new LinkedList<>();
+        Queue<TreeNode<Edge<Integer>>> queue = new LinkedList<>();
         Set<Edge<Integer>> edges = new HashSet<>();
         queue.add(heuristic);
         while (!queue.isEmpty()) {
-            BranchDecompositionNode node = queue.remove();
-            if (node.getEdge() == null) {
+            TreeNode<Edge<Integer>> node = queue.remove();
+            if (node.getObject() == null) {
                 // Internal nodes have no edge, and have degree 3.
                 assertEquals(3, node.getDegree());
             } else {
                 // Leaves must have an edge, and have degree 1.
                 assertEquals(1, node.getDegree());
-                edges.add(node.getEdge());
+                edges.add(node.getObject());
             }
             queue.addAll(node.getChildren());
         }

@@ -1,48 +1,46 @@
 package at.ac.tuwien.student.e11843614.decomposition;
 
-import at.ac.tuwien.student.e11843614.struct.graph.Edge;
-
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
 /**
- * A class representing a node of the branch decomposition tree, mapped to a graph's edge.
+ * An object that represents a node of a tree.
  */
-public class BranchDecompositionNode {
+public class TreeNode<T> {
 
-    private Edge<Integer> edge;
-    private BranchDecompositionNode parent = null;
-    private final Set<BranchDecompositionNode> children = new HashSet<>();
+    private T object;
+    private TreeNode<T> parent = null;
+    private final Set<TreeNode<T>> children = new HashSet<>();
 
-    public BranchDecompositionNode() {
-        this.edge = null;
+    public TreeNode() {
+        this.object = null;
     }
-    public BranchDecompositionNode(Edge<Integer> edge) {
-        this.edge = edge;
-    }
-
-    /**
-     * Sets the edge of this node.
-     * @param edge the edge to be stored.
-     */
-    public void setEdge(Edge<Integer> edge) {
-        this.edge = edge;
+    public TreeNode(T object) {
+        this.object = object;
     }
 
     /**
-     * Returns the edge associated with this node.
-     * @return the edge.
+     * Sets the object stored in this node.
+     * @param object the object to be stored.
      */
-    public Edge<Integer> getEdge() {
-        return edge;
+    public void setObject(T object) {
+        this.object = object;
+    }
+
+    /**
+     * Returns the object associated with this node.
+     * @return the object.
+     */
+    public T getObject() {
+        return object;
     }
 
     /**
      * Adds a child to this node.
      * @param node the new child node.
      */
-    public void addChild(BranchDecompositionNode node) {
+    public void addChild(TreeNode<T> node) {
         this.children.add(node);
         node.parent = this;
     }
@@ -52,7 +50,7 @@ public class BranchDecompositionNode {
      * Does nothing if the node was not contained in the set of this node's children.
      * @param node the child to be removed.
      */
-    public void removeChild(BranchDecompositionNode node) {
+    public void removeChild(TreeNode<T> node) {
         this.children.remove(node);
         node.parent = null;
     }
@@ -61,7 +59,7 @@ public class BranchDecompositionNode {
      * Returns the parent of this node.
      * @return the parent of this node.
      */
-    public BranchDecompositionNode getParent() {
+    public TreeNode<T> getParent() {
         return parent;
     }
 
@@ -69,7 +67,7 @@ public class BranchDecompositionNode {
      * Returns the set of this node's children.
      * @return the set of children.
      */
-    public Set<BranchDecompositionNode> getChildren() {
+    public Set<TreeNode<T>> getChildren() {
         return children;
     }
 
@@ -91,10 +89,10 @@ public class BranchDecompositionNode {
 
     // Inspired by https://stackoverflow.com/a/8948691
     private void buildString(StringBuilder builder, String currentPrefix, String nextPrefix) {
-        builder.append(currentPrefix).append(edge).append('\n');
-        Iterator<BranchDecompositionNode> iterator = children.iterator();
+        builder.append(currentPrefix).append(object).append('\n');
+        Iterator<TreeNode<T>> iterator = children.iterator();
         while (iterator.hasNext()) {
-            BranchDecompositionNode child = iterator.next();
+            TreeNode child = iterator.next();
             if (iterator.hasNext()) {
                 child.buildString(builder, nextPrefix + "├── ", nextPrefix + "│   ");
             } else {
