@@ -45,9 +45,9 @@ public class CliqueDerivationTest {
     public void d1() {
         int t = derivation.size() - 1;
         assertAll(
-            () -> assertEquals(graph.getVertices().size(), derivation.getComponents(0).size()),
-            () -> assertEquals(graph.getVertices().size(), derivation.getGroups(0).size()),
-            () -> assertEquals(1, derivation.getComponents(t).size())
+            () -> assertEquals(graph.getVertices().size(), derivation.getComponents(0).size(), "|cmp(T_0)| is not |V|"),
+            () -> assertEquals(graph.getVertices().size(), derivation.getGroups(0).size(), "|grp(T_0)| is not |V|"),
+            () -> assertEquals(1, derivation.getComponents(t).size(), "|cmp(T_t)| is not 1")
         );
     }
 
@@ -56,8 +56,8 @@ public class CliqueDerivationTest {
     public void d2() {
         for (int i = 0; i < derivation.size(); i++) {
             assertTrue(
-                derivation.getGroups(i)
-                    .isRefinementOf(derivation.getComponents(i))
+                derivation.getGroups(i).isRefinementOf(derivation.getComponents(i)),
+                "grp(T_" + i + ") is not a refinement of cmp(T_" + i + ")"
             );
         }
     }
@@ -67,8 +67,8 @@ public class CliqueDerivationTest {
     public void d3() {
         for (int i = 1; i < derivation.size(); i++) {
             assertTrue(
-                derivation.getComponents(i - 1)
-                    .isRefinementOf(derivation.getComponents(i))
+                derivation.getComponents(i - 1).isRefinementOf(derivation.getComponents(i)),
+                "cmp(T_" + (i-1) + ") is not a refinement of cmp(T_" + i + ")"
             );
         }
     }
@@ -78,8 +78,8 @@ public class CliqueDerivationTest {
     public void d4() {
         for (int i = 1; i < derivation.size(); i++) {
             assertTrue(
-                derivation.getGroups(i - 1)
-                    .isRefinementOf(derivation.getGroups(i))
+                derivation.getGroups(i - 1).isRefinementOf(derivation.getGroups(i)),
+                "grp(T_" + (i-1) + ") is not a refinement of grp(T_" + i + ")"
             );
         }
     }
@@ -105,7 +105,11 @@ public class CliqueDerivationTest {
                             break;
                         }
                     }
-                    assertTrue(inSameComponent);
+                    assertTrue(
+                        inSameComponent,
+                        String.format("%d, %d are both in same group in T_%d, but aren't in same component in T_%d",
+                            endpoints.get(0), endpoints.get(1), i, i - 1)
+                    );
                 }
             }
         }
@@ -134,7 +138,11 @@ public class CliqueDerivationTest {
                                         break;
                                     }
                                 }
-                                assertTrue(inSameComponent);
+                                assertTrue(
+                                    inSameComponent,
+                                    String.format("%d, %d are both in same group in T_%d, but %d, %d aren't both in same component in T_%d",
+                                        v, w, i, u, v, i - 1)
+                                );
                             }
                         }
                     }
@@ -171,7 +179,12 @@ public class CliqueDerivationTest {
                                             break;
                                         }
                                     }
-                                    assertTrue(uvInSameComponent);
+                                    assertTrue(
+                                        uvInSameComponent,
+                                        String.format("%d, %d are both in same group in T_%d; %d, %d are both in same "
+                                            + "group in T_%d; but %d, %d aren't both in same component in T_%d",
+                                            u, x, i, v, w, i, u, v, i - 1)
+                                    );
                                 }
                             }
                         }
