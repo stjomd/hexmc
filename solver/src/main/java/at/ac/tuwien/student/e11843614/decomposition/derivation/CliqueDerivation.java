@@ -4,6 +4,7 @@ import at.ac.tuwien.student.e11843614.Logger;
 import at.ac.tuwien.student.e11843614.sat.SATEncoding;
 import at.ac.tuwien.student.e11843614.sat.Variable;
 import at.ac.tuwien.student.e11843614.struct.Partition;
+import at.ac.tuwien.student.e11843614.struct.graph.Graph;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -103,6 +104,34 @@ public class CliqueDerivation {
         }
         Logger.debug("Constructed a derivation for clique-width of length " + (size() - 1));
         // TODO: does not meet the conditions
+    }
+
+    public boolean fulfilsConditions(Graph<Integer> graph) {
+        // D1
+        int t = templates.size() - 1;
+        if (graph.getVertices().size() != getComponents(0).size()
+            || graph.getVertices().size() != getGroups(0).size() || 1 != getComponents(t).size()) {
+            return false;
+        }
+        // D2
+        for (int i = 0; i < templates.size(); i++) {
+            if (!getGroups(i).isRefinementOf(getComponents(i))) {
+                return false;
+            }
+        }
+        // D3
+        for (int i = 1; i < templates.size(); i++) {
+            if (!getComponents(i - 1).isRefinementOf(getComponents(i))) {
+                return false;
+            }
+        }
+        // D4
+        for (int i = 1; i < templates.size(); i++) {
+            if (!getGroups(i - 1).isRefinementOf(getGroups(i))) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override
