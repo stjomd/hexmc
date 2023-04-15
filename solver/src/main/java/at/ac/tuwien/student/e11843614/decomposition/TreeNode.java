@@ -92,7 +92,7 @@ public class TreeNode<T> {
         builder.append(currentPrefix).append(object).append('\n');
         Iterator<TreeNode<T>> iterator = children.iterator();
         while (iterator.hasNext()) {
-            TreeNode child = iterator.next();
+            TreeNode<T> child = iterator.next();
             if (iterator.hasNext()) {
                 child.buildString(builder, nextPrefix + "├── ", nextPrefix + "│   ");
             } else {
