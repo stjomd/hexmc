@@ -1,7 +1,6 @@
 package at.ac.tuwien.student.e11843614;
 
 import at.ac.tuwien.student.e11843614.decomposition.BranchDecompositionFactory;
-import at.ac.tuwien.student.e11843614.decomposition.BranchDecompositionHeuristic;
 
 import at.ac.tuwien.student.e11843614.decomposition.derivation.BranchDerivation;
 import at.ac.tuwien.student.e11843614.sat.SATEncoding;
@@ -41,7 +40,6 @@ public class BranchDecompositionTest {
         Set<Variable> assignment = SATSolver.getSatisfyingAssignment(sat);
         BranchDerivation derivation = new BranchDerivation(assignment, sat);
         exact = BranchDecompositionFactory.from(derivation);
-        System.out.println(exact);
     }
 
     @AfterEach
@@ -58,7 +56,7 @@ public class BranchDecompositionTest {
     }
 
     @Test
-    @DisplayName("Branch derivation to valid decomposition")
+    @DisplayName("Derivation to valid decomposition")
     public void exact() {
         checkIfValidBranchDecomposition(exact, graph);
     }
