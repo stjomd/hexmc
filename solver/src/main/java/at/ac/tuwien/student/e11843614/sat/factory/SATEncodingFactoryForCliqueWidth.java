@@ -134,22 +134,24 @@ public abstract class SATEncodingFactoryForCliqueWidth {
     private static void clause5(SATEncoding sat, Graph<Integer> graph, int t) {
         for (Integer u : sat.vertexMap().destinationSet()) {
             for (Integer v : sat.vertexMap().destinationSet()) {
-                for (Integer w : sat.vertexMap().destinationSet()) {
-                    for (Integer x : sat.vertexMap().destinationSet()) {
-                        // Unmap u, v, w to check edges
-                        Integer uVertex = sat.vertexMap().getFromDomain(u);
-                        Integer vVertex = sat.vertexMap().getFromDomain(v);
-                        Integer wVertex = sat.vertexMap().getFromDomain(w);
-                        Integer xVertex = sat.vertexMap().getFromDomain(x);
-                        if (graph.hasEdgeWithEndpoints(uVertex, vVertex) && graph.hasEdgeWithEndpoints(uVertex, wVertex)
-                            && graph.hasEdgeWithEndpoints(vVertex, xVertex) && !graph.hasEdgeWithEndpoints(wVertex, xVertex)) {
-                            for (int i = 1; i <= t; i++) {
-                                int[] var = new int[]{
-                                    sat.encodeVariable(Variable.component(u, v, i - 1)),
-                                    sat.encodeVariable(Variable.group(Math.min(u, x), Math.max(u, x), i)),
-                                    sat.encodeVariable(Variable.group(Math.min(v, w), Math.max(v, w), i))
-                                };
-                                sat.getFormula().addClause(var[0], -var[1], -var[2]);
+                if (u < v) {
+                    for (Integer w : sat.vertexMap().destinationSet()) {
+                        for (Integer x : sat.vertexMap().destinationSet()) {
+                            // Unmap u, v, w to check edges
+                            Integer uVertex = sat.vertexMap().getFromDomain(u);
+                            Integer vVertex = sat.vertexMap().getFromDomain(v);
+                            Integer wVertex = sat.vertexMap().getFromDomain(w);
+                            Integer xVertex = sat.vertexMap().getFromDomain(x);
+                            if (graph.hasEdgeWithEndpoints(uVertex, vVertex) && graph.hasEdgeWithEndpoints(uVertex, wVertex)
+                                && graph.hasEdgeWithEndpoints(vVertex, xVertex) && !graph.hasEdgeWithEndpoints(wVertex, xVertex)) {
+                                for (int i = 1; i <= t; i++) {
+                                    int[] var = new int[]{
+                                        sat.encodeVariable(Variable.component(u, v, i - 1)),
+                                        sat.encodeVariable(Variable.group(Math.min(u, x), Math.max(u, x), i)),
+                                        sat.encodeVariable(Variable.group(Math.min(v, w), Math.max(v, w), i))
+                                    };
+                                    sat.getFormula().addClause(var[0], -var[1], -var[2]);
+                                }
                             }
                         }
                     }
