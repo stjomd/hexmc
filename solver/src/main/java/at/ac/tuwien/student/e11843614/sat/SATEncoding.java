@@ -17,9 +17,9 @@ public class SATEncoding {
     private final Bijection<Variable, Integer> variableMap = new Bijection<>();
 
     private final Bijection<Integer, Integer> vertexMap = new Bijection<>();
-    private final Bijection<Edge<Integer>, Integer> edgeMap = new Bijection<>();
+    private final Bijection<Edge, Integer> edgeMap = new Bijection<>();
 
-    public SATEncoding(Graph<Integer> graph) {
+    public SATEncoding(Graph graph) {
         encodeGraph(graph);
     }
 
@@ -53,7 +53,7 @@ public class SATEncoding {
      * Returns the bijection between the edges and their integer representations.
      * @return a bijection between edges and integers.
      */
-    public Bijection<Edge<Integer>, Integer> edgeMap() {
+    public Bijection<Edge, Integer> edgeMap() {
         return edgeMap;
     }
 
@@ -77,14 +77,14 @@ public class SATEncoding {
      * Maps the graph's vertices and edges to integers, beginning with 1 in each case.
      * @param graph the graph to encode vertices and edges of.
      */
-    private void encodeGraph(Graph<Integer> graph) {
+    private void encodeGraph(Graph graph) {
         int i = 1;
         for (Integer vertex : graph.getVertices()) {
             vertexMap.put(vertex, i);
             i++;
         }
         i = 1;
-        for (Edge<Integer> edge : graph.getEdges()) {
+        for (Edge edge : graph.getEdges()) {
             edgeMap.put(edge, i);
             i++;
         }

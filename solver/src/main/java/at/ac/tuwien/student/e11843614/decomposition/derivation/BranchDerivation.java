@@ -16,7 +16,7 @@ import java.util.Set;
  */
 public class BranchDerivation {
 
-    List<Partition<Edge<Integer>>> derivation = new ArrayList<>();
+    List<Partition<Edge>> derivation = new ArrayList<>();
 
     /**
      * Constructs a derivation from the set and leader variables of the assignment.
@@ -31,7 +31,7 @@ public class BranchDerivation {
      * @param level the level, a number between one and the size.
      * @return the partition at the specified level.
      */
-    public Partition<Edge<Integer>> getLevel(int level) {
+    public Partition<Edge> getLevel(int level) {
         return derivation.get(level - 1);
     }
 
@@ -62,15 +62,15 @@ public class BranchDerivation {
         // Go through leader and set variables
         for (Variable variable : assignment) {
             if (variable.getType() == Variable.Type.LEADER) {
-                Edge<Integer> edge = sat.edgeMap().getFromDomain(variable.getArgs().get(0));
+                Edge edge = sat.edgeMap().getFromDomain(variable.getArgs().get(0));
                 int level = variable.getArgs().get(1);
-                Partition<Edge<Integer>> partition = getLevel(level);
+                Partition<Edge> partition = getLevel(level);
                 partition.add(edge);
             } else if (variable.getType() == Variable.Type.SET) {
-                Edge<Integer> edge1 = sat.edgeMap().getFromDomain(variable.getArgs().get(0));
-                Edge<Integer> edge2 = sat.edgeMap().getFromDomain(variable.getArgs().get(1));
+                Edge edge1 = sat.edgeMap().getFromDomain(variable.getArgs().get(0));
+                Edge edge2 = sat.edgeMap().getFromDomain(variable.getArgs().get(1));
                 int level = variable.getArgs().get(2);
-                Partition<Edge<Integer>> partition = getLevel(level);
+                Partition<Edge> partition = getLevel(level);
                 partition.add(edge1, edge2);
             }
         }
@@ -82,14 +82,14 @@ public class BranchDerivation {
      * @param graph the graph associated with this derivation.
      * @return true, if all conditions are satisfied, and false otherwise.
      */
-    public boolean fulfilsConditions(Graph<Integer> graph) {
+    public boolean fulfilsConditions(Graph graph) {
         int l = derivation.size();
         // D1
         // P_1 has |E(G)| equivalence classes, each consisting of one element
         if (getLevel(1).size() != graph.getEdges().size()) {
             return false;
         }
-        for (Set<Edge<Integer>> ec : getLevel(1).getEquivalenceClasses()) {
+        for (Set<Edge> ec : getLevel(1).getEquivalenceClasses()) {
             if (ec.size() != 1) {
                 return false;
             }
@@ -118,7 +118,7 @@ public class BranchDerivation {
     public String toString() {
         StringBuilder builder = new StringBuilder();
         for (int i = 0; i < derivation.size(); i++) {
-            Partition<Edge<Integer>> partition = derivation.get(i);
+            Partition<Edge> partition = derivation.get(i);
             builder.append(i + 1).append(": ").append(partition).append("\n");
         }
         return builder.toString();

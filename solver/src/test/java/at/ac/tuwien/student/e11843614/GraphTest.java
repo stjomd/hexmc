@@ -17,9 +17,9 @@ public class GraphTest {
     @Test
     @DisplayName("Contraction modifies the graph correctly")
     public void contraction() {
-        Graph<Integer> graph = new Graph<>();
-        Edge<Integer> contractedEdge = new Edge<>(3, 4);
-        Edge<Integer> redirectedEdge = new Edge<>(2, 3);
+        Graph graph = new Graph();
+        Edge contractedEdge = new Edge(3, 4);
+        Edge redirectedEdge = new Edge(2, 3);
         graph.addEdge(1, 2);
         graph.addEdge(redirectedEdge);
         graph.addEdge(contractedEdge);

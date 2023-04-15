@@ -23,12 +23,12 @@ public abstract class BranchDecompositionHeuristic {
      * @param graph the graph to construct a branch decomposition of.
      * @return the root node of the branch decomposition.
      */
-    public static TreeNode<Edge<Integer>> of(Graph<Integer> graph) {
+    public static TreeNode<Edge> of(Graph graph) {
         Logger.debug("Computing a branch decomposition using a heuristic");
         Logger.debug("Performing initial split");
-        TreeNode<Edge<Integer>> bd = initialPartialDecomposition(graph);
+        TreeNode<Edge> bd = initialPartialDecomposition(graph);
         Logger.debug("Performing subsequent splits");
-        TreeNode<Edge<Integer>> internalNode = getNodeWithDegreeLargerThan(3, bd);
+        TreeNode<Edge> internalNode = getNodeWithDegreeLargerThan(3, bd);
         while (internalNode != null) {
             Logger.debug("\nObtained an internal node with degree > 3, performing split");
             split(internalNode, graph);
@@ -43,58 +43,58 @@ public abstract class BranchDecompositionHeuristic {
      * @param graph the graph.
      * @return a partial branch decomposition, or null, if a branch decomposition doesn't exist.
      */
-    private static TreeNode<Edge<Integer>> initialPartialDecomposition(Graph<Integer> graph) {
+    private static TreeNode<Edge> initialPartialDecomposition(Graph graph) {
         // Special cases
         int size = graph.getEdges().size();
         if (size == 0) {
             return null;
         } else if (size == 1) {
-            Edge<Integer> edge = graph.getEdges().iterator().next();
+            Edge edge = graph.getEdges().iterator().next();
             return new TreeNode<>(edge);
         } else if (size == 2) {
-            Iterator<Edge<Integer>> iterator = graph.getEdges().iterator();
-            TreeNode<Edge<Integer>> node = new TreeNode<>(iterator.next());
+            Iterator<Edge> iterator = graph.getEdges().iterator();
+            TreeNode<Edge> node = new TreeNode<>(iterator.next());
             node.addChild(new TreeNode<>(iterator.next()));
         } else if (size == 3) {
-            TreeNode<Edge<Integer>> node = new TreeNode<>();
-            for (Edge<Integer> edge : graph.getEdges()) {
+            TreeNode<Edge> node = new TreeNode<>();
+            for (Edge edge : graph.getEdges()) {
                 node.addChild(new TreeNode<>(edge));
             }
             return node;
         }
         // Create a star
-        TreeNode<Edge<Integer>> root = new TreeNode<>();
-        for (Edge<Integer> edge : graph.getEdges()) {
+        TreeNode<Edge> root = new TreeNode<>();
+        for (Edge edge : graph.getEdges()) {
             root.addChild(new TreeNode<>(edge));
         }
         // Initial separation
         // Separate nodes and store one part. Remove those nodes from the star.
         // Create another star with those nodes, and join the two stars.
-        List<Graph<Integer>> separation = separation(graph, graph, graph.getVertices());
-        List<Set<Edge<Integer>>> edgeSets = prepareEdgeSets(root, separation);
+        List<Graph> separation = separation(graph, graph, graph.getVertices());
+        List<Set<Edge>> edgeSets = prepareEdgeSets(root, separation);
         if (edgeSets.get(0).size() < 2) {
             Logger.warn("E(A) has < 2 edges; moved one over from E(B)");
-            Edge<Integer> edge = edgeSets.get(1).iterator().next();
+            Edge edge = edgeSets.get(1).iterator().next();
             edgeSets.get(0).add(edge);
             edgeSets.get(1).remove(edge);
         } else if (edgeSets.get(1).size() < 2) {
             Logger.warn("E(B) has < 2 edges; moved one over from E(A)");
-            Edge<Integer> edge = edgeSets.get(0).iterator().next();
+            Edge edge = edgeSets.get(0).iterator().next();
             edgeSets.get(1).add(edge);
             edgeSets.get(0).remove(edge);
         }
         // Create a new star with children corresponding to edges in E(B); store children in a set to remove them later
         // from root
-        TreeNode<Edge<Integer>> newStar = new TreeNode<>();
-        Set<TreeNode<Edge<Integer>>> newChildren = new HashSet<>();
-        for (TreeNode<Edge<Integer>> child : root.getChildren()) {
+        TreeNode<Edge> newStar = new TreeNode<>();
+        Set<TreeNode<Edge>> newChildren = new HashSet<>();
+        for (TreeNode<Edge> child : root.getChildren()) {
             if (edgeSets.get(1).contains(child.getObject())) {
                 newStar.addChild(new TreeNode<>(child.getObject()));
                 newChildren.add(child);
             }
         }
         // Now remove nodes with edges in E(B) from root. As such root will only contain edges in E(A)
-        for (TreeNode<Edge<Integer>> node : newChildren) {
+        for (TreeNode<Edge> node : newChildren) {
             root.removeChild(node);
         }
         // At this point we have to stars, root with E(A) and newStar with E(B). Join the two.
@@ -107,10 +107,10 @@ public abstract class BranchDecompositionHeuristic {
      * @param a an internal node of degree larger than 3.
      * @param graph the graph for which a branch decomposition is being computed.
      */
-    private static void split(TreeNode<Edge<Integer>> a, Graph<Integer> graph) {
+    private static void split(TreeNode<Edge> a, Graph graph) {
         // By construction, a has exactly one neighbor that is not a leaf (deg > 1). We call the neighbor 'b'.
-        TreeNode<Edge<Integer>> b = null;
-        for (TreeNode<Edge<Integer>> child : a.getChildren()) {
+        TreeNode<Edge> b = null;
+        for (TreeNode<Edge> child : a.getChildren()) {
             if (child.getDegree() > 1) {
                 b = child;
             }
@@ -122,14 +122,14 @@ public abstract class BranchDecompositionHeuristic {
         // The edge e is <a, b>. e separates the graph's edges. One separation is a's children, the other is b's,
         // evtl. minus a and b themselves. We need the endpoints of the edges in both partitions.
         Set<Integer> separationA = new HashSet<>(), separationB = new HashSet<>();
-        for (TreeNode<Edge<Integer>> child : a.getChildren()) {
+        for (TreeNode<Edge> child : a.getChildren()) {
             if (child.getDegree() == 1) {
                 List<Integer> endpoints = child.getObject().getEndpoints();
                 separationA.add(endpoints.get(0));
                 separationA.add(endpoints.get(1));
             }
         }
-        for (TreeNode<Edge<Integer>> child : b.getChildren()) {
+        for (TreeNode<Edge> child : b.getChildren()) {
             if (child.getDegree() == 1) {
                 List<Integer> endpoints = child.getObject().getEndpoints();
                 separationB.add(endpoints.get(0));
@@ -141,8 +141,8 @@ public abstract class BranchDecompositionHeuristic {
         mid.retainAll(separationB);
         // associatedGraph (G_a). We obtain it by selecting the children of a that are leaves, and adding
         // their edges to the associatedGraph.
-        Graph<Integer> associatedGraph = new Graph<>();
-        for (TreeNode<Edge<Integer>> child : a.getChildren()) {
+        Graph associatedGraph = new Graph();
+        for (TreeNode<Edge> child : a.getChildren()) {
             if (child.getDegree() == 1) {
                 List<Integer> endpoints = child.getObject().getEndpoints();
                 associatedGraph.addEdge(endpoints.get(0), endpoints.get(1)); // creates new Edge instances
@@ -150,10 +150,10 @@ public abstract class BranchDecompositionHeuristic {
         }
         Logger.debug("Associated graph: " + associatedGraph);
         // Now we need to find a separation (X,Y) of associatedGraph.
-        List<Graph<Integer>> sep = separation(graph, associatedGraph, mid);
+        List<Graph> sep = separation(graph, associatedGraph, mid);
         Logger.debug("Best X = " + sep.get(0));
         Logger.debug("Best Y = " + sep.get(1));
-        List<Set<Edge<Integer>>> edgeSets = prepareEdgeSets(a, sep);
+        List<Set<Edge>> edgeSets = prepareEdgeSets(a, sep);
         Logger.debug("E(X) = " + edgeSets.get(0));
         Logger.debug("E(Y) = " + edgeSets.get(1));
         // Now eX and eY are a partition of the edges in the associated graph.
@@ -166,17 +166,17 @@ public abstract class BranchDecompositionHeuristic {
      * @param separation a separation of the associated graph.
      * @return a list of two disjoint sets, eX and eY.
      */
-    private static List<Set<Edge<Integer>>> prepareEdgeSets(TreeNode<Edge<Integer>> a, List<Graph<Integer>> separation) {
+    private static List<Set<Edge>> prepareEdgeSets(TreeNode<Edge> a, List<Graph> separation) {
         // X and Y are subgraphs which overlap in separation nodes.
-        Set<Edge<Integer>> edgesInA = new HashSet<>();
-        for (TreeNode<Edge<Integer>> node : a.getChildren()) {
+        Set<Edge> edgesInA = new HashSet<>();
+        for (TreeNode<Edge> node : a.getChildren()) {
             if (node.getDegree() == 1) {
                 edgesInA.add(node.getObject());
             }
         }
-        Set<Edge<Integer>> eX = new HashSet<>();
-        Set<Edge<Integer>> eY = new HashSet<>();
-        for (Edge<Integer> edge : edgesInA) {
+        Set<Edge> eX = new HashSet<>();
+        Set<Edge> eY = new HashSet<>();
+        for (Edge edge : edgesInA) {
             Integer u = edge.getEndpoints().get(0);
             Integer v = edge.getEndpoints().get(1);
             if (separation.get(0).hasEdgeWithEndpoints(u, v)) {
@@ -188,18 +188,18 @@ public abstract class BranchDecompositionHeuristic {
         // If one of eX or eY is empty, move one edge over.
         if (eX.isEmpty()) {
             Logger.warn("E(X) was empty; moved one edge over from E(Y)");
-            Edge<Integer> edge = eY.iterator().next();
+            Edge edge = eY.iterator().next();
             eX.add(edge);
             eY.remove(edge);
         } else if (eY.isEmpty()) {
             Logger.warn("E(Y) was empty; moved one edge over from E(X)");
-            Edge<Integer> edge = eX.iterator().next();
+            Edge edge = eX.iterator().next();
             eY.add(edge);
             eX.remove(edge);
         }
         // Let |eX| <= |eY|.
         if (eX.size() > eY.size()) {
-            Set<Edge<Integer>> temp = eX;
+            Set<Edge> temp = eX;
             //noinspection ReassignedVariable,SuspiciousNameCombination
             eX = eY;
             eY = temp;
@@ -213,10 +213,10 @@ public abstract class BranchDecompositionHeuristic {
      * @param eX a set of edges.
      * @param eY a set of edges.
      */
-    private static void distributeLeaves(TreeNode<Edge<Integer>> a, Set<Edge<Integer>> eX, Set<Edge<Integer>> eY) {
+    private static void distributeLeaves(TreeNode<Edge> a, Set<Edge> eX, Set<Edge> eY) {
         // Store a's leaves.
-        Set<TreeNode<Edge<Integer>>> leaves = new HashSet<>();
-        for (TreeNode<Edge<Integer>> node : a.getChildren()) {
+        Set<TreeNode<Edge>> leaves = new HashSet<>();
+        for (TreeNode<Edge> node : a.getChildren()) {
             if (node.getDegree() == 1) {
                 leaves.add(node);
             }
@@ -224,14 +224,14 @@ public abstract class BranchDecompositionHeuristic {
         if (eX.size() == 1) {
             // Right now, node a has leaves eX U eY. After the split, a has two children.
             // One child is a leaf x with the edge in eX. Other child is an internal node y with edges in eY.
-            TreeNode<Edge<Integer>> x = new TreeNode<>(eX.iterator().next());
-            TreeNode<Edge<Integer>> y = new TreeNode<>();
+            TreeNode<Edge> x = new TreeNode<>(eX.iterator().next());
+            TreeNode<Edge> y = new TreeNode<>();
             // Add children to y.
-            for (Edge<Integer> edge : eY) {
+            for (Edge edge : eY) {
                 y.addChild(new TreeNode<>(edge));
             }
             // Remove a's leaves.
-            for (TreeNode<Edge<Integer>> leaf : leaves) {
+            for (TreeNode<Edge> leaf : leaves) {
                 a.removeChild(leaf);
             }
             // Add x, y.
@@ -240,11 +240,11 @@ public abstract class BranchDecompositionHeuristic {
         } else {
             // Right now, node a has leaves eX U eY. After the split, a has two children.
             // Both are internal nodes x,y. Each has edges from the corresponding set.
-            TreeNode<Edge<Integer>> x = new TreeNode<>();
-            TreeNode<Edge<Integer>> y = new TreeNode<>();
+            TreeNode<Edge> x = new TreeNode<>();
+            TreeNode<Edge> y = new TreeNode<>();
             // Add children to the internal nodes.
-            for (TreeNode<Edge<Integer>> leaf : leaves) {
-                Edge<Integer> edge = leaf.getObject();
+            for (TreeNode<Edge> leaf : leaves) {
+                Edge edge = leaf.getObject();
                 if (eX.contains(edge)) {
                     x.addChild(new TreeNode<>(edge));
                 } else if (eY.contains(edge)) {
@@ -252,7 +252,7 @@ public abstract class BranchDecompositionHeuristic {
                 }
             }
             // Remove a's leaves.
-            for (TreeNode<Edge<Integer>> leaf : leaves) {
+            for (TreeNode<Edge> leaf : leaves) {
                 a.removeChild(leaf);
             }
             // Add x, y.
@@ -268,7 +268,7 @@ public abstract class BranchDecompositionHeuristic {
      * @param mid the load vertices set of e.
      * @return A separation (list of two elements), (X, Y), where |X| <= |Y|.
      */
-    private static List<Graph<Integer>> separation(Graph<Integer> graph, Graph<Integer> associatedGraph, Set<Integer> mid) {
+    private static List<Graph> separation(Graph graph, Graph associatedGraph, Set<Integer> mid) {
         // Linking nodes are vertices of associatedGraph that are also in mid.
         Set<Integer> linkingNodes = new HashSet<>(associatedGraph.getVertices());
         linkingNodes.retainAll(mid);
@@ -283,8 +283,8 @@ public abstract class BranchDecompositionHeuristic {
         // Iterate over source nodes and alphas, determine work/play pairs.
         int owork = Integer.MAX_VALUE;
         int oplay = Integer.MIN_VALUE;
-        Graph<Integer> oSepX = null;
-        Graph<Integer> oSepY = null;
+        Graph oSepX = null;
+        Graph oSepY = null;
         for (Integer chosenSourceNode : sourceNodes) {
             for (double alpha = 0.01; alpha < 1; alpha += 1.0/ALPHA_STEPS) {
                 // Choose a source node. Sort vertices of associatedGraph in non-decreasing order acc. to their distance to it.
@@ -307,7 +307,7 @@ public abstract class BranchDecompositionHeuristic {
                     setB.add(sortedVertices.get(size - 1 - i));
                 }
                 // Compute the minor of G with setA identified to v_A, setB identified to v_B.
-                Graph<Integer> minor = minor(graph, setA, setB);
+                Graph minor = minor(graph, setA, setB);
                 // v_A, v_B are named in 'minor' after some vertex from setA or setB respectively.
                 Integer vA = null, vB = null;
                 for (Integer v : minor.getVertices()) {
@@ -321,14 +321,14 @@ public abstract class BranchDecompositionHeuristic {
                     }
                 }
                 // Minor might have edges between vA, vB. Which makes the minimum vertex cut undefined. => delete
-                Set<Edge<Integer>> minorEdgesToRemove = new HashSet<>();
-                for (Edge<Integer> edge : minor.getEdges()) {
+                Set<Edge> minorEdgesToRemove = new HashSet<>();
+                for (Edge edge : minor.getEdges()) {
                     if (edge.getEndpoints().contains(vA) && edge.getEndpoints().contains(vB)) {
                         minorEdgesToRemove.add(edge);
                     }
                 }
                 if (!minorEdgesToRemove.isEmpty()) {
-                    for (Edge<Integer> edge : minorEdgesToRemove) {
+                    for (Edge edge : minorEdgesToRemove) {
                         minor.removeEdge(edge);
                     }
                 }
@@ -340,15 +340,15 @@ public abstract class BranchDecompositionHeuristic {
                 shareNodes.retainAll(linkingNodes);
                 // (X, Y) is a separation of G_a. X, Y are subgraphs of G_a.
                 // First remove separation nodes.
-                Graph<Integer> separatedGraph = associatedGraph.duplicate();
+                Graph separatedGraph = associatedGraph.duplicate();
                 for (Integer vertex : separationNodes) {
                     separatedGraph.removeVertex(vertex);
                 }
-                List<Graph<Integer>> components = separatedGraph.components();
+                List<Graph> components = separatedGraph.components();
                 // Determine the components X and Y.
-                Graph<Integer> componentX = null; // component that contains vA
-                Graph<Integer> componentY = null; // component that contains vB
-                for (Graph<Integer> cmp : components) {
+                Graph componentX = null; // component that contains vA
+                Graph componentY = null; // component that contains vB
+                for (Graph cmp : components) {
                     if (cmp.getVertices().contains(vA)) {
                         componentX = cmp;
                     } else if (cmp.getVertices().contains(vB)) {
@@ -358,7 +358,7 @@ public abstract class BranchDecompositionHeuristic {
                 // Bug fix for case when an edge gets "lost". Suppose separatedGraph has 2 components, and X has both
                 // vA, vB and Y has other vertices/edges. Then Y is null and the component without vA, vB is forgotten.
                 if (components.size() == 2 && componentY == null) {
-                    for (Graph<Integer> cmp : components) {
+                    for (Graph cmp : components) {
                         if (!cmp.getVertices().contains(vA) && !cmp.getVertices().contains(vB)) {
                             componentY = cmp;
                         }
@@ -366,13 +366,13 @@ public abstract class BranchDecompositionHeuristic {
                 }
                 // If one is null, create an empty one.
                 if (componentX == null) {
-                    componentX = new Graph<>();
+                    componentX = new Graph();
                     for (Integer sepNode : separationNodes) {
                         componentX.addVertex(sepNode);
                     }
                 }
                 if (componentY == null) {
-                    componentY = new Graph<>();
+                    componentY = new Graph();
                     for (Integer sepNode : separationNodes) {
                         componentY.addVertex(sepNode);
                     }
@@ -381,16 +381,16 @@ public abstract class BranchDecompositionHeuristic {
                 boolean mergedComponents = false;
                 if (components.size() > 2) {
                     mergedComponents = true;
-                    Graph<Integer> smallest = (componentX.getVertices().size() < componentY.getVertices().size())
+                    Graph smallest = (componentX.getVertices().size() < componentY.getVertices().size())
                         ? componentX : componentY;
-                    for (Graph<Integer> cmp : components) {
+                    for (Graph cmp : components) {
                         if (cmp != componentX && cmp != componentY) {
                             // Add vertices...
                             for (Integer vertex : cmp.getVertices()) {
                                 smallest.addVertex(vertex);
                             }
                             // and edges.
-                            for (Edge<Integer> edge : cmp.getEdges()) {
+                            for (Edge edge : cmp.getEdges()) {
                                 smallest.addEdge(edge);
                             }
                         }
@@ -401,7 +401,7 @@ public abstract class BranchDecompositionHeuristic {
                     componentX.addVertex(separationNode);
                     componentY.addVertex(separationNode);
                 }
-                for (Edge<Integer> edge : associatedGraph.getEdges()) {
+                for (Edge edge : associatedGraph.getEdges()) {
                     Integer u = edge.getEndpoints().get(0);
                     Integer v = edge.getEndpoints().get(1);
                     // Add edges between separation nodes
@@ -490,14 +490,14 @@ public abstract class BranchDecompositionHeuristic {
      * @param setB a set of vertices.
      * @return the minor of the graph, with both partitions identified to some two vertices.
      */
-    private static Graph<Integer> minor(Graph<Integer> graph, Set<Integer> setA, Set<Integer> setB) {
-        Graph<Integer> minor = graph.duplicate();
+    private static Graph minor(Graph graph, Set<Integer> setA, Set<Integer> setB) {
+        Graph minor = graph.duplicate();
         boolean minorable = true;
         while (minorable) {
             minorable = false;
             // Among edges, look for possibilities to contract edges/merge vertices from one partition together.
-            Set<Edge<Integer>> edges = minor.getEdges();
-            for (Edge<Integer> edge : edges) {
+            Set<Edge> edges = minor.getEdges();
+            for (Edge edge : edges) {
                 List<Integer> endpoints = edge.getEndpoints();
                 // Avoid loops
                 if (endpoints.get(0).equals(endpoints.get(1))) {
@@ -522,7 +522,7 @@ public abstract class BranchDecompositionHeuristic {
      * @param t a vertex.
      * @return the minimum vertex s-t-cut.
      */
-    private static Set<Integer> minimumVertexCut(Graph<Integer> graph, Integer s, Integer t) {
+    private static Set<Integer> minimumVertexCut(Graph graph, Integer s, Integer t) {
         if (graph.hasEdgeWithEndpoints(s, t)) {
             return Set.of();
         }
@@ -542,17 +542,17 @@ public abstract class BranchDecompositionHeuristic {
         int inclusionSum = Integer.MAX_VALUE;
         while (inclusionSum > 0) {
             // Get subset
-            Graph<Integer> graphWithRemovedVertices = graph.duplicate();
+            Graph graphWithRemovedVertices = graph.duplicate();
             Set<Integer> includedVertices = getSubset(vertices, inclusion);
             for (Integer vertex : includedVertices) {
                 graphWithRemovedVertices.removeVertex(vertex);
             }
             // Check if the subset is a vertex cut.
-            List<Graph<Integer>> components = graphWithRemovedVertices.components();
+            List<Graph> components = graphWithRemovedVertices.components();
             if (components.size() > 1) {
                 // s, t must lie in different components.
-                Graph<Integer> componentWithS = null, componentWithT = null;
-                for (Graph<Integer> component : components) {
+                Graph componentWithS = null, componentWithT = null;
+                for (Graph component : components) {
                     if (component.getVertices().contains(s) && !component.getVertices().contains(t)) {
                         componentWithS = component;
                     } else if (component.getVertices().contains(t) && !component.getVertices().contains(s)) {
@@ -613,11 +613,11 @@ public abstract class BranchDecompositionHeuristic {
      * @param root the root node.
      * @return the node with degree larger than specified degree.
      */
-    private static TreeNode<Edge<Integer>> getNodeWithDegreeLargerThan(int degree, TreeNode<Edge<Integer>> root) {
-        Queue<TreeNode<Edge<Integer>>> queue = new LinkedList<>();
+    private static TreeNode<Edge> getNodeWithDegreeLargerThan(int degree, TreeNode<Edge> root) {
+        Queue<TreeNode<Edge>> queue = new LinkedList<>();
         queue.add(root);
         while (!queue.isEmpty()) {
-            TreeNode<Edge<Integer>> node = queue.remove();
+            TreeNode<Edge> node = queue.remove();
             if (node.getDegree() > degree) {
                 return node;
             }

@@ -14,7 +14,7 @@ public abstract class SATEncodingFactoryForCliqueWidth {
      * @param k the target clique-width.
      * @return a SAT encoding for this graph that contains a formula which is satisfiable if cw(graph) <= k.
      */
-    public static SATEncoding of(Graph<Integer> graph, int k) {
+    public static SATEncoding of(Graph graph, int k) {
         int t = graph.getVertices().size() - k + 1;
         Logger.debug("Constructing a SAT encoding for clique-width, k = " + k + ", t = " + t);
         SATEncoding sat = new SATEncoding(graph);
@@ -88,7 +88,7 @@ public abstract class SATEncodingFactoryForCliqueWidth {
         }
     }
 
-    private static void clause3(SATEncoding sat, Graph<Integer> graph, int t) {
+    private static void clause3(SATEncoding sat, Graph graph, int t) {
         for (Integer u : sat.vertexMap().destinationSet()) {
             for (Integer v : sat.vertexMap().destinationSet()) {
                 if (u < v) {
@@ -109,7 +109,7 @@ public abstract class SATEncodingFactoryForCliqueWidth {
         }
     }
 
-    private static void clause4(SATEncoding sat, Graph<Integer> graph, int t) {
+    private static void clause4(SATEncoding sat, Graph graph, int t) {
         for (Integer u : sat.vertexMap().destinationSet()) {
             for (Integer v : sat.vertexMap().destinationSet()) {
                 for (Integer w : sat.vertexMap().destinationSet()) {
@@ -131,7 +131,7 @@ public abstract class SATEncodingFactoryForCliqueWidth {
         }
     }
 
-    private static void clause5(SATEncoding sat, Graph<Integer> graph, int t) {
+    private static void clause5(SATEncoding sat, Graph graph, int t) {
         for (Integer u : sat.vertexMap().destinationSet()) {
             for (Integer v : sat.vertexMap().destinationSet()) {
                 if (u < v) {

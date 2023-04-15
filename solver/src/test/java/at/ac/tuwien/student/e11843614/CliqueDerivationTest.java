@@ -23,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class CliqueDerivationTest {
 
-    private Graph<Integer> graph;
+    private Graph graph;
     private CliqueDerivation derivation;
 
     @BeforeEach
@@ -88,7 +88,7 @@ public class CliqueDerivationTest {
     @DisplayName("Edge Property")
     public void edgeProperty() {
         for (int i = 1; i < derivation.size(); i++) {
-            for (Edge<Integer> edge : graph.getEdges()) {
+            for (Edge edge : graph.getEdges()) {
                 List<Integer> endpoints = edge.getEndpoints();
                 boolean inSameGroup = false;
                 for (Set<Integer> group : derivation.getGroups(i).getEquivalenceClasses()) {
