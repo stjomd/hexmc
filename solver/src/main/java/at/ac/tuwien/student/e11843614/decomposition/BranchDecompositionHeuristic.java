@@ -1,6 +1,7 @@
 package at.ac.tuwien.student.e11843614.decomposition;
 
 import at.ac.tuwien.student.e11843614.Logger;
+import at.ac.tuwien.student.e11843614.struct.tree.TreeNode;
 import at.ac.tuwien.student.e11843614.struct.graph.Edge;
 import at.ac.tuwien.student.e11843614.struct.graph.Graph;
 

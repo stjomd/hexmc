@@ -1,13 +1,14 @@
 package at.ac.tuwien.student.e11843614.struct;
 
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 /**
  * An object that represents a partition, i.e. a set of disjoint sets called equivalence classes.
  * @param <T> the class of the objects stored in the equivalence classes.
  */
-public class Partition<T> {
+public class Partition<T> implements Iterable<Set<T>> {
 
     private final Set<Set<T>> equivalenceClasses = new HashSet<>();
 
@@ -219,6 +220,11 @@ public class Partition<T> {
     @Override
     public String toString() {
         return equivalenceClasses.toString();
+    }
+
+    @Override
+    public Iterator<Set<T>> iterator() {
+        return equivalenceClasses.iterator();
     }
 
 }
