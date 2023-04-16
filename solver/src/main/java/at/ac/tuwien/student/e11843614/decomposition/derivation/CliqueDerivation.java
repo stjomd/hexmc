@@ -18,12 +18,13 @@ public class CliqueDerivation {
     List<Template> templates = new ArrayList<>();
 
     /**
-     * Constructs a derivation from the component and group variables of the assignment.
+     * Constructs a strict derivation from the component and group variables of the assignment.
      * @param assignment a set of variables set to true by the SAT solver.
      * @param sat the SAT encoding for the graph.
      */
     public CliqueDerivation(Set<Variable> assignment, SATEncoding sat) {
         construct(assignment, sat);
+        makeStrict();
     }
 
     /**
@@ -103,7 +104,26 @@ public class CliqueDerivation {
                 getComponents(level).add(v);
             }
         }
-        Logger.debug("Constructed a derivation for clique-width of length " + (size() - 1));
+        Logger.debug("Constructed a derivation for clique-width with t = " + (size() - 1));
+    }
+
+    /**
+     * Makes this derivation strict, i.e. such that |cmp(T_{i-1})| > |cmp(T_i)| for all 1 <= i <= t is fulfilled.
+     */
+    private void makeStrict() {
+        boolean strictifiable = true;
+        while (strictifiable) {
+            strictifiable = false;
+            for (int i = 1; i < templates.size(); i++) {
+                // strict if |cmp(T_{i-1})| > |cmp(T_i)| for all 1 <= i <= t.
+                if (getComponents(i - 1).size() <= getComponents(i).size()) {
+                    strictifiable = true;
+                    templates.remove(i);
+                    break;
+                }
+            }
+        }
+        Logger.debug("Made derivation strict; t = " + (size() - 1));
     }
 
     /**
