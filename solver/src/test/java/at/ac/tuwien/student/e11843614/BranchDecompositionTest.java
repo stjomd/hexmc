@@ -2,7 +2,7 @@ package at.ac.tuwien.student.e11843614;
 
 import at.ac.tuwien.student.e11843614.decomposition.BranchDecompositionFactory;
 
-import at.ac.tuwien.student.e11843614.decomposition.derivation.BranchDerivation;
+import at.ac.tuwien.student.e11843614.decomposition.branch.BranchDerivation;
 import at.ac.tuwien.student.e11843614.sat.SATEncoding;
 import at.ac.tuwien.student.e11843614.sat.SATSolver;
 import at.ac.tuwien.student.e11843614.sat.Variable;

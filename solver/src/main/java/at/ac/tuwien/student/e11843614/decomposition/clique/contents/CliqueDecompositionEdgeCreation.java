@@ -1,4 +1,4 @@
-package at.ac.tuwien.student.e11843614.decomposition.clique;
+package at.ac.tuwien.student.e11843614.decomposition.clique.contents;
 
 /**
  * Contents of a node that represents edge creation.

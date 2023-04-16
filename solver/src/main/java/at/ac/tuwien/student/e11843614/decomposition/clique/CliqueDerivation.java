@@ -1,4 +1,4 @@
-package at.ac.tuwien.student.e11843614.decomposition.derivation;
+package at.ac.tuwien.student.e11843614.decomposition.clique;
 
 import at.ac.tuwien.student.e11843614.Logger;
 import at.ac.tuwien.student.e11843614.sat.SATEncoding;
