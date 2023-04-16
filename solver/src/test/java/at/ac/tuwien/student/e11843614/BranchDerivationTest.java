@@ -1,6 +1,6 @@
 package at.ac.tuwien.student.e11843614;
 
-import at.ac.tuwien.student.e11843614.decomposition.derivation.BranchDerivation;
+import at.ac.tuwien.student.e11843614.decomposition.branch.BranchDerivation;
 import at.ac.tuwien.student.e11843614.example.GraphExamples;
 import at.ac.tuwien.student.e11843614.struct.graph.Edge;
 import at.ac.tuwien.student.e11843614.struct.graph.Graph;
