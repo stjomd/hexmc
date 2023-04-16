@@ -5,7 +5,7 @@ import java.util.Set;
 /**
  * Contents of a node that represents a singleton.
  */
-class CliqueDecompositionLeaf implements CliqueDecompositionContents {
+public class CliqueDecompositionLeaf implements CliqueDecompositionContents {
 
     private final Set<Integer> component;
     private final int level;
