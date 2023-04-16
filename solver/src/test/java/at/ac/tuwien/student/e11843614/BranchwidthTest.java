@@ -2,11 +2,8 @@ package at.ac.tuwien.student.e11843614;
 
 import at.ac.tuwien.student.e11843614.decomposition.DecompositionFactory;
 import at.ac.tuwien.student.e11843614.decomposition.branch.BranchDerivation;
+import at.ac.tuwien.student.e11843614.decomposition.branch.BranchDerivationFactory;
 import at.ac.tuwien.student.e11843614.example.GraphExamples;
-import at.ac.tuwien.student.e11843614.sat.SATEncoding;
-import at.ac.tuwien.student.e11843614.sat.SATSolver;
-import at.ac.tuwien.student.e11843614.sat.Variable;
-import at.ac.tuwien.student.e11843614.sat.factory.SATEncodingFactory;
 import at.ac.tuwien.student.e11843614.struct.graph.Edge;
 import at.ac.tuwien.student.e11843614.struct.graph.Graph;
 import at.ac.tuwien.student.e11843614.struct.tree.TreeNode;
@@ -37,10 +34,11 @@ public class BranchwidthTest {
 
         @BeforeEach
         public void beforeEach() throws TimeoutException {
-            graph = GraphExamples.petersen();
-            SATEncoding encoding = SATEncodingFactory.forBranchWidth(graph, 4);
-            Set<Variable> model = SATSolver.getSatisfyingAssignment(encoding);
-            derivation = new BranchDerivation(model, encoding);
+            derivation = BranchDerivationFactory.branch(4, () -> {
+                Graph petersen = GraphExamples.petersen();
+                graph = petersen;
+                return petersen;
+            });
         }
 
         @AfterEach
@@ -89,26 +87,28 @@ public class BranchwidthTest {
     public class BranchDecompositionTest {
 
         private Graph graph;
-        private TreeNode<Edge> heuristic;
         private TreeNode<Edge> exact;
+        private TreeNode<Edge> heuristic;
 
         @BeforeEach
         public void beforeEach() throws TimeoutException {
-            graph = GraphExamples.example();
+            // Exact
+            BranchDerivation derivation = BranchDerivationFactory.branch(4, () -> {
+                Graph example = GraphExamples.example();
+                graph = example;
+                return example;
+            });
+            assert derivation != null;
+            exact = DecompositionFactory.branch(derivation);
             // Heuristic
             heuristic = DecompositionFactory.branchHeuristic(graph);
-            // Exact
-            SATEncoding sat = SATEncodingFactory.forBranchWidth(graph, 4);
-            Set<Variable> assignment = SATSolver.getSatisfyingAssignment(sat);
-            BranchDerivation derivation = new BranchDerivation(assignment, sat);
-            exact = DecompositionFactory.branch(derivation);
         }
 
         @AfterEach
         public void afterEach() {
             graph = null;
-            heuristic = null;
             exact = null;
+            heuristic = null;
         }
 
         @Test
