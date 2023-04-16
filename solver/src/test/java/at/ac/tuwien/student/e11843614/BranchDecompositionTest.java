@@ -1,6 +1,6 @@
 package at.ac.tuwien.student.e11843614;
 
-import at.ac.tuwien.student.e11843614.decomposition.BranchDecompositionFactory;
+import at.ac.tuwien.student.e11843614.decomposition.DecompositionFactory;
 
 import at.ac.tuwien.student.e11843614.decomposition.branch.BranchDerivation;
 import at.ac.tuwien.student.e11843614.sat.SATEncoding;
@@ -34,12 +34,12 @@ public class BranchDecompositionTest {
     public void beforeEach() throws TimeoutException {
         graph = GraphExamples.example();
         // Heuristic
-        heuristic = BranchDecompositionFactory.heuristic(graph);
+        heuristic = DecompositionFactory.branchHeuristic(graph);
         // Exact
         SATEncoding sat = SATEncodingFactory.forBranchWidth(graph, 4);
         Set<Variable> assignment = SATSolver.getSatisfyingAssignment(sat);
         BranchDerivation derivation = new BranchDerivation(assignment, sat);
-        exact = BranchDecompositionFactory.from(derivation);
+        exact = DecompositionFactory.branch(derivation);
     }
 
     @AfterEach
