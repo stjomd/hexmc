@@ -1,4 +1,4 @@
-package at.ac.tuwien.student.e11843614.decomposition;
+package at.ac.tuwien.student.e11843614.decomposition.branch;
 
 import at.ac.tuwien.student.e11843614.Logger;
 import at.ac.tuwien.student.e11843614.struct.tree.TreeNode;

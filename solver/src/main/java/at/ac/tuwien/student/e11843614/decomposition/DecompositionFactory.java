@@ -1,5 +1,6 @@
 package at.ac.tuwien.student.e11843614.decomposition;
 
+import at.ac.tuwien.student.e11843614.decomposition.branch.BranchDecompositionHeuristic;
 import at.ac.tuwien.student.e11843614.decomposition.branch.BranchDerivation;
 import at.ac.tuwien.student.e11843614.struct.tree.TreeNode;
 import at.ac.tuwien.student.e11843614.struct.graph.Edge;
@@ -8,14 +9,14 @@ import at.ac.tuwien.student.e11843614.struct.graph.Graph;
 import java.util.HashSet;
 import java.util.Set;
 
-public class BranchDecompositionFactory {
+public class DecompositionFactory {
 
     /**
      * Constructs a branch decomposition using a heuristic.
      * @param graph the graph.
      * @return a branch decomposition.
      */
-    public static TreeNode<Edge> heuristic(Graph graph) {
+    public static TreeNode<Edge> branchHeuristic(Graph graph) {
         return BranchDecompositionHeuristic.of(graph);
     }
 
@@ -24,7 +25,7 @@ public class BranchDecompositionFactory {
      * @param derivation the derivation.
      * @return a branch decomposition.
      */
-    public static TreeNode<Edge> from(BranchDerivation derivation) {
+    public static TreeNode<Edge> branch(BranchDerivation derivation) {
         // First create a tree that stores the corresponding eq. classes.
         Set<Edge> firstEC = derivation.getLevel(derivation.size()).iterator().next();
         TreeNode<Set<Edge>> helper = new TreeNode<>(firstEC);
