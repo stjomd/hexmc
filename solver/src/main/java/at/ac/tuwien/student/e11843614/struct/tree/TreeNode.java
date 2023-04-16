@@ -59,8 +59,10 @@ public class TreeNode<T> implements Iterable<TreeNode<T>> {
      * Detaches this node from its parent: this node loses its parent, the parent node loses this child.
      */
     public void detach() {
-        parent.children.remove(this);
-        this.parent = null;
+        if (parent != null) {
+            parent.children.remove(this);
+            this.parent = null;
+        }
     }
 
     /**
