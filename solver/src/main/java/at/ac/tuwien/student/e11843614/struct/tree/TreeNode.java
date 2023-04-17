@@ -111,9 +111,17 @@ public class TreeNode<T> implements Iterable<TreeNode<T>> {
         }
     }
 
-    @Override
+    public Iterator<TreeNode<T>> breadthIterator() {
+        return new TreeNodeBreadthIterator<>(this);
+    }
+
+    public Iterator<TreeNode<T>> depthIterator() {
+        return new TreeNodeDepthIterator<>(this);
+    }
+
+    @Override // standard iterator is breadth
     public Iterator<TreeNode<T>> iterator() {
-        return new TreeNodeIterator<>(this);
+        return breadthIterator();
     }
 
 }

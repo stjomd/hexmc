@@ -9,11 +9,11 @@ import java.util.Queue;
  * An iterator that traverses the tree in breadth first order, and returns subtrees.
  * @param <T> the type of elements in the tree.
  */
-public class TreeNodeIterator<T> implements Iterator<TreeNode<T>> {
+public class TreeNodeBreadthIterator<T> implements Iterator<TreeNode<T>> {
 
     private final Queue<TreeNode<T>> queue = new LinkedList<>();
 
-    public TreeNodeIterator(TreeNode<T> node) {
+    public TreeNodeBreadthIterator(TreeNode<T> node) {
         queue.add(node);
     }
 
