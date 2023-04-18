@@ -22,6 +22,6 @@ public class CliqueDecompositionRecoloring implements CliqueDecompositionContent
 
     @Override
     public String toString() {
-        return String.format("recolor(%d, %d)", from, to);
+        return String.format("recolor(%d -> %d)", from, to);
     }
 }

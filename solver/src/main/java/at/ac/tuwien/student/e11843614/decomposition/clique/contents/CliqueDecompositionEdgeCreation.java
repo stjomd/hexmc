@@ -22,7 +22,7 @@ public class CliqueDecompositionEdgeCreation implements CliqueDecompositionConte
 
     @Override
     public String toString() {
-        return String.format("edges(%d, %d)", from, to);
+        return String.format("edges(%d -> %d)", from, to);
     }
 
 }
