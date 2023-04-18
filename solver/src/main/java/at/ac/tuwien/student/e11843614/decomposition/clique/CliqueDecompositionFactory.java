@@ -72,7 +72,6 @@ public abstract class CliqueDecompositionFactory {
     }
 
     private static void addRecoloringNodes(TreeNode<CliqueDecompositionContents> root, CliqueDerivation derivation) {
-        int added = 0;
         int width = derivation.width();
         Iterator<TreeNode<CliqueDecompositionContents>> iterator = root.depthIterator();
         while (iterator.hasNext()) {
@@ -103,10 +102,6 @@ public abstract class CliqueDecompositionFactory {
                                 // Revert: remove the recoloring node, and try another color
                                 recoloringNode.contract();
                             } else {
-                                added++;
-//                                if (added >= width) {
-//                                    return;
-//                                }
                                 break childLoop; // not sure
                             }
                         }
