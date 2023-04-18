@@ -5,12 +5,12 @@ import java.util.Set;
 /**
  * Contents of a node that represents a disjoint union.
  */
-public class CliqueDecompositionUnion implements CliqueDecompositionContents {
+public class CliqueUnion implements CliqueOperation {
 
     private final Set<Integer> component;
     private final int level;
 
-    public CliqueDecompositionUnion(Set<Integer> component, int level) {
+    public CliqueUnion(Set<Integer> component, int level) {
         this.component = component;
         this.level = level;
     }

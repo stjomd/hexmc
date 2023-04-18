@@ -4,7 +4,7 @@ import at.ac.tuwien.student.e11843614.decomposition.branch.BranchDecompositionHe
 import at.ac.tuwien.student.e11843614.decomposition.branch.BranchDerivation;
 import at.ac.tuwien.student.e11843614.decomposition.clique.CliqueDecompositionFactory;
 import at.ac.tuwien.student.e11843614.decomposition.clique.CliqueDerivation;
-import at.ac.tuwien.student.e11843614.decomposition.clique.contents.CliqueDecompositionContents;
+import at.ac.tuwien.student.e11843614.decomposition.clique.contents.CliqueOperation;
 import at.ac.tuwien.student.e11843614.struct.tree.TreeNode;
 import at.ac.tuwien.student.e11843614.struct.graph.Edge;
 import at.ac.tuwien.student.e11843614.struct.graph.Graph;
@@ -67,7 +67,7 @@ public class DecompositionFactory {
      * @param derivation the derivation.
      * @return a clique decomposition.
      */
-    public static TreeNode<CliqueDecompositionContents> clique(CliqueDerivation derivation, Graph graph) {
+    public static TreeNode<CliqueOperation> clique(CliqueDerivation derivation, Graph graph) {
         return CliqueDecompositionFactory.from(derivation, graph);
     }
 
