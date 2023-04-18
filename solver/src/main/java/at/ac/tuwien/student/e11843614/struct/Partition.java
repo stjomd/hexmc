@@ -2,6 +2,7 @@ package at.ac.tuwien.student.e11843614.struct;
 
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -220,6 +221,19 @@ public class Partition<T> implements Iterable<Set<T>> {
     @Override
     public String toString() {
         return equivalenceClasses.toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Partition<?> other = (Partition<?>) o;
+        return this.equivalenceClasses.equals(other.equivalenceClasses);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(equivalenceClasses);
     }
 
     @Override
