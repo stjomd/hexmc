@@ -1,15 +1,17 @@
 package at.ac.tuwien.student.e11843614.struct.tree;
 
-import java.util.HashSet;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import java.util.Set;
-import java.util.Stack;
 
+/**
+ * An iterator that traverses a tree in post-order fashion.
+ * @param <T> the type of objects stored in the tree.
+ */
 public class TreeNodeDepthIterator<T> implements Iterator<TreeNode<T>> {
 
-    private final Stack<TreeNode<T>> stack = new Stack<>();
-    private final Set<TreeNode<T>> visited = new HashSet<>();
+    private final Deque<TreeNode<T>> deque = new ArrayDeque<>();
 
     public TreeNodeDepthIterator(TreeNode<T> node) {
         dive(node);
@@ -17,36 +19,24 @@ public class TreeNodeDepthIterator<T> implements Iterator<TreeNode<T>> {
 
     @Override
     public boolean hasNext() {
-        return !stack.isEmpty();
+        return !deque.isEmpty();
     }
 
     @Override
     public TreeNode<T> next() {
         if (hasNext()) {
-            TreeNode<T> node = stack.pop();
-            if (!node.getChildren().isEmpty()) {
-                for (TreeNode<T> child : node.getChildren()) {
-                    dive(child);
-                }
-            }
-            return node;
+            return deque.pop();
         }
         throw new NoSuchElementException("Tree contains no more nodes.");
     }
 
     private void dive(TreeNode<T> node) {
-        TreeNode<T> current = node;
-        while (current != null) {
-            if (!visited.contains(current)) {
-                stack.push(current);
-                visited.add(current);
-            }
-            Iterator<TreeNode<T>> iterator = current.getChildren().iterator();
-            if (iterator.hasNext()) {
-                current = iterator.next();
-            } else {
-                current = null;
-            }
+        if (node == null) {
+            return;
+        }
+        deque.push(node);
+        for (TreeNode<T> child : node.getChildren()) {
+            dive(child);
         }
     }
 
