@@ -66,6 +66,40 @@ public class TreeNode<T> implements Iterable<TreeNode<T>> {
     }
 
     /**
+     * Inserts a node with the specified object above this node.
+     * @param object the object to be inserted above.
+     * @return the inserted node.
+     */
+    public TreeNode<T> insertAbove(T object) {
+        TreeNode<T> node = new TreeNode<>(object);
+        if (this.parent == null) {
+            node.children.add(this);
+            this.parent = node;
+        } else {
+            // this.parent --- this   =>   this.parent --- Node(object) --- this
+            this.parent.children.remove(this);
+            this.parent.children.add(node);
+            node.parent = this.parent;
+            node.children.add(this);
+            this.parent = node;
+        }
+        return node;
+    }
+
+    /**
+     * Contracts a node with degree <= 2 (reduces a path). Does nothing if this node is not in a path.
+     */
+    public void contract() {
+        if (children.size() == 1 && parent != null) {
+            // this.parent --- this --- child   ==>   this.parent --- child
+            TreeNode<T> child = this.children.iterator().next();
+            this.parent.children.remove(this);
+            this.parent.children.add(child);
+            child.parent = this.parent;
+        }
+    }
+
+    /**
      * Returns the parent of this node.
      * @return the parent of this node.
      */

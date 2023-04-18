@@ -27,6 +27,13 @@ public class CliqueDerivation {
         makeStrict();
     }
 
+    // TODO: remove, needed for debugging rn
+    public CliqueDerivation(int k) {
+        for (int i = 0; i <= k; i++) {
+            templates.add(new Template());
+        }
+    }
+
     /**
      * Returns the template at the specified level.
      * @param level the level.
@@ -60,6 +67,28 @@ public class CliqueDerivation {
      */
     public int size() {
         return templates.size();
+    }
+
+
+    public int width() {
+        // width of a component c is number of groups in same template s.t. (g subset of c)
+        // width of a template is max width over all its components
+        // width of a derivation is max width over all its templates
+        int derivationWidth = 0;
+        for (Template template : templates) {
+            int templateWidth = 0;
+            for (Set<Integer> component : template.getComponents()) {
+                int componentWidth = 0;
+                for (Set<Integer> group : template.getGroups()) {
+                    if (component.containsAll(group)) {
+                        componentWidth++;
+                    }
+                }
+                templateWidth = Math.max(templateWidth, componentWidth);
+            }
+            derivationWidth = Math.max(derivationWidth, templateWidth);
+        }
+        return derivationWidth;
     }
 
     /**

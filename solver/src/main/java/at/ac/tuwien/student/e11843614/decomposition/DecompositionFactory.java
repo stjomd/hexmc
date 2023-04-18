@@ -2,10 +2,9 @@ package at.ac.tuwien.student.e11843614.decomposition;
 
 import at.ac.tuwien.student.e11843614.decomposition.branch.BranchDecompositionHeuristic;
 import at.ac.tuwien.student.e11843614.decomposition.branch.BranchDerivation;
+import at.ac.tuwien.student.e11843614.decomposition.clique.CliqueDecompositionFactory;
 import at.ac.tuwien.student.e11843614.decomposition.clique.CliqueDerivation;
 import at.ac.tuwien.student.e11843614.decomposition.clique.contents.CliqueDecompositionContents;
-import at.ac.tuwien.student.e11843614.decomposition.clique.contents.CliqueDecompositionLeaf;
-import at.ac.tuwien.student.e11843614.decomposition.clique.contents.CliqueDecompositionUnion;
 import at.ac.tuwien.student.e11843614.struct.tree.TreeNode;
 import at.ac.tuwien.student.e11843614.struct.graph.Edge;
 import at.ac.tuwien.student.e11843614.struct.graph.Graph;
@@ -68,45 +67,8 @@ public class DecompositionFactory {
      * @param derivation the derivation.
      * @return a clique decomposition.
      */
-    public static TreeNode<CliqueDecompositionContents> clique(CliqueDerivation derivation) {
-        // At the root node we store cmp(T_t)
-        int t = derivation.size() - 1;
-        Set<Integer> rootCmp = derivation.getComponents(t).iterator().next();
-        CliqueDecompositionContents rootContents = new CliqueDecompositionUnion(rootCmp, t);
-        TreeNode<CliqueDecompositionContents> root = new TreeNode<>(rootContents);
-        // Each component corresponds to either a union or a leaf node.
-        Set<Set<Integer>> added = new HashSet<>();
-        added.add(rootCmp);
-        for (int i = t - 1; i >= 0; i--) {
-            for (Set<Integer> cmp : derivation.getComponents(i)) {
-                // Look for the union node in the current tree that contains the smallest, strict superset of cmp.
-                // Traverse in breadth first order, then the smallest superset will be the last superset.
-                TreeNode<CliqueDecompositionContents> target = null;
-                for (TreeNode<CliqueDecompositionContents> node : root) {
-                    if (node.getObject() instanceof CliqueDecompositionUnion) {
-                        CliqueDecompositionUnion contents = (CliqueDecompositionUnion) node.getObject();
-                        if (contents.getComponent().containsAll(cmp) && contents.getComponent().size() > cmp.size()) {
-                            target = node;
-                        }
-                    }
-                }
-                if (target != null && !added.contains(cmp)) {
-                    // Add child to target. If |cmp|=1, we add a leaf, otherwise a union node.
-                    CliqueDecompositionContents contents;
-                    if (cmp.size() == 1) {
-                        int vertex = cmp.iterator().next();
-                        contents = new CliqueDecompositionLeaf(cmp, i, vertex, 1);
-                    } else {
-                        contents = new CliqueDecompositionUnion(cmp, i);
-                    }
-                    target.addChild(new TreeNode<>(contents));
-                    added.add(cmp);
-                }
-            }
-        }
-        // At this point we have a tree with leaf and union nodes.
-        // TODO: add recoloring and edge creation nodes.
-        return root;
+    public static TreeNode<CliqueDecompositionContents> clique(CliqueDerivation derivation, Graph graph) {
+        return CliqueDecompositionFactory.from(derivation, graph);
     }
 
     /**
