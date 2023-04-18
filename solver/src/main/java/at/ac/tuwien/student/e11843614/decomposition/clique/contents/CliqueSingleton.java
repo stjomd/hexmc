@@ -5,14 +5,14 @@ import java.util.Set;
 /**
  * Contents of a node that represents a singleton.
  */
-public class CliqueDecompositionLeaf implements CliqueDecompositionContents {
+public class CliqueSingleton implements CliqueOperation {
 
     private final Set<Integer> component;
     private final int level;
     private final int vertex;
     private final int color;
 
-    public CliqueDecompositionLeaf(Set<Integer> component, int level, int vertex, int color) {
+    public CliqueSingleton(Set<Integer> component, int level, int vertex, int color) {
         this.component = component;
         this.level = level;
         this.vertex = vertex;
