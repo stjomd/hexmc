@@ -23,9 +23,6 @@ public abstract class SATEncodingFactoryForCliqueWidth {
         clause3(sat, graph, t);
         clause4(sat, graph, t);
         clause5(sat, graph, t);
-//        clause6Direct(sat, t, k);
-//        clause7Direct(sat, t, k);
-//        clause8Direct(sat, t, k);
         clause6(sat, t);
         clause7(sat, t, k);
         Logger.debug("Constructed a SAT encoding for clique-width; formula has " + sat.variableMap().size()
@@ -203,60 +200,6 @@ public abstract class SATEncodingFactoryForCliqueWidth {
                             int o1 = sat.encodeVariable(Variable.order(u, a, i));
                             int o2 = sat.encodeVariable(Variable.order(v, a + 1, i));
                             sat.getFormula().addClause(-var[0], -var[1], -var[2], -o1, o2);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    // Direct encoding
-
-    private static void clause6Direct(SATEncoding sat, int t, int k) {
-        for (Integer v : sat.vertexMap().destinationSet()) {
-            for (int i = 0; i <= t; i++) {
-                Clause clause = new Clause();
-                for (int a = 1; a <= k; a++) {
-                    clause.addLiteral(sat.encodeVariable(Variable.number(v, a, i)));
-                }
-                sat.getFormula().addClause(clause);
-            }
-        }
-    }
-
-    private static void clause7Direct(SATEncoding sat, int t, int k) {
-        for (Integer v : sat.vertexMap().destinationSet()) {
-            for (int a = 1; a <= k; a++) {
-                for (int b = 1; b <= k; b++) {
-                    if (a < b) {
-                        for (int i = 0; i <= t; i++) {
-                            int[] var = new int[]{
-                                sat.encodeVariable(Variable.number(v, a, i)),
-                                sat.encodeVariable(Variable.number(v, b, i))
-                            };
-                            sat.getFormula().addClause(-var[0], -var[1]);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private static void clause8Direct(SATEncoding sat, int t, int k) {
-        for (Integer u : sat.vertexMap().destinationSet()) {
-            for (Integer v : sat.vertexMap().destinationSet()) {
-                if (u < v) {
-                    for (int a = 1; a <= k; a++) {
-                        for (int i = 0; i <= t; i++) {
-                            int[] var = new int[]{
-                                sat.encodeVariable(Variable.number(u, a, i)),
-                                sat.encodeVariable(Variable.number(v, a, i)),
-                                sat.encodeVariable(Variable.component(u, v, i)),
-                                sat.encodeVariable(Variable.group(u, v, i))
-                            };
-                            sat.getFormula().addClause(-var[0], -var[1], -var[2], var[3]);
-                            sat.getFormula().addClause(-var[0], var[1], -var[3]);
-                            sat.getFormula().addClause(var[0], -var[1], -var[3]);
                         }
                     }
                 }
