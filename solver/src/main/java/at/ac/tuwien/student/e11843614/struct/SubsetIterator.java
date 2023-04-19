@@ -1,7 +1,6 @@
 package at.ac.tuwien.student.e11843614.struct;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -10,19 +9,23 @@ import java.util.Set;
  * An iterator that iterates over subsets of a set.
  * @param <T> the type of elements in the set.
  */
-public class SubsetIterator<T> implements Iterator<Set<T>> {
+public class SubsetIterator<T> implements Iterator<List<T>> {
 
     private final List<T> list;
     private final List<Boolean> inclusion;
 
     private boolean returnedEmptySubset = false;
 
-    public SubsetIterator(Set<T> set) {
-        this.list = new ArrayList<>(set);
+    public SubsetIterator(List<T> list) {
+        this.list = list;
         this.inclusion = new ArrayList<>();
         for (int i = 0; i < list.size(); i++) {
             inclusion.add(false);
         }
+    }
+
+    public SubsetIterator(Set<T> set) {
+        this(new ArrayList<>(set));
     }
 
     @Override
@@ -42,8 +45,8 @@ public class SubsetIterator<T> implements Iterator<Set<T>> {
     }
 
     @Override
-    public Set<T> next() {
-        Set<T> subset = new HashSet<>();
+    public List<T> next() {
+        List<T> subset = new ArrayList<>();
         for (int i = 0; i < list.size(); i++) {
             if (inclusion.get(i).equals(true)) {
                 subset.add(list.get(i));
