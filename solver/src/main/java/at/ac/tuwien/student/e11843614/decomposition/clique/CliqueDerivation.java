@@ -125,12 +125,6 @@ public class CliqueDerivation {
                 int level = variable.getArgs().get(1);
                 getGroups(level).add(u);
                 getComponents(level).add(u);
-            } else if (variable.getType() == Variable.Type.NUMBER) {
-                // TODO: direct encoding, decide if needed
-                int v = sat.vertexMap().getFromDomain(variable.getArgs().get(0));
-                int level = variable.getArgs().get(2);
-                getGroups(level).add(v);
-                getComponents(level).add(v);
             }
         }
         Logger.debug("Constructed a derivation for clique-width with t = " + (size() - 1));

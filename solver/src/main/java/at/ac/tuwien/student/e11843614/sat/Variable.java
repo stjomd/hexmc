@@ -13,7 +13,7 @@ public class Variable {
      */
     public enum Type {
         SET, LEADER, LOAD, COUNTER,
-        COMPONENT, GROUP, REPRESENTATIVE, ORDER, NUMBER
+        COMPONENT, GROUP, REPRESENTATIVE, ORDER
     }
 
     private Type type;
@@ -132,14 +132,6 @@ public class Variable {
     public static Variable order(int v, int a, int i) {
         Variable var = new Variable();
         var.type = Type.ORDER;
-        var.args = List.of(v, a, i);
-        return var;
-    }
-
-    // TODO: decide if direct encoding needed
-    public static Variable number(int v, int a, int i) {
-        Variable var = new Variable();
-        var.type = Type.NUMBER;
         var.args = List.of(v, a, i);
         return var;
     }
