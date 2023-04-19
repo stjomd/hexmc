@@ -51,32 +51,30 @@ public abstract class CliqueDecompositionFactory {
         CliqueOperation rootContents = new CliqueUnion(rootCmp, t);
         TreeNode<CliqueOperation> root = new TreeNode<>(rootContents);
         // Each component corresponds to either a union or a leaf node.
-        Set<Set<Integer>> added = new HashSet<>();
-        added.add(rootCmp);
         for (int i = t - 1; i >= 0; i--) {
             for (Set<Integer> cmp : derivation.getComponents(i)) {
-                // Look for the union node in the current tree that contains the smallest, strict superset of cmp.
+                // Look for the union node in the current tree that contains the smallest superset of cmp.
                 // Traverse in breadth first order, then the smallest superset will be the last superset.
                 TreeNode<CliqueOperation> target = null;
                 for (TreeNode<CliqueOperation> node : root) {
                     if (node.getObject() instanceof CliqueUnion) {
                         CliqueUnion contents = (CliqueUnion) node.getObject();
-                        if (contents.getComponent().containsAll(cmp) && contents.getComponent().size() > cmp.size()) {
+                        if (contents.getComponent().containsAll(cmp)) {
                             target = node;
                         }
                     }
                 }
-                if (target != null && !added.contains(cmp)) {
-                    // Add child to target. If |cmp|=1, we add a leaf, otherwise a union node.
+                if (target != null) {
+                    int level = ((CliqueUnion) target.getObject()).getLevel();
+                    // Add child to target. If target.level = 1, we add a leaf, otherwise a union node.
                     CliqueOperation contents;
-                    if (cmp.size() == 1) {
+                    if (level == 1) {
                         int vertex = cmp.iterator().next();
                         contents = new CliqueSingleton(cmp, i, vertex, 1);
                     } else {
                         contents = new CliqueUnion(cmp, i);
                     }
                     target.addChild(new TreeNode<>(contents));
-                    added.add(cmp);
                 }
             }
         }
