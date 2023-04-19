@@ -131,10 +131,10 @@ public class BranchwidthTest {
                 TreeNode<Edge> node = queue.remove();
                 if (node.getObject() == null) {
                     // Internal nodes have no edge, and have degree 3.
-                    assertEquals(3, node.getDegree(), "Internal node has degree " + node.getDegree());
+                    assertEquals(3, node.degree(), "Internal node has degree " + node.degree());
                 } else {
                     // Leaves must have an edge, and have degree 1.
-                    assertEquals(1, node.getDegree(), "Leaf has degree " + node.getDegree());
+                    assertEquals(1, node.degree(), "Leaf has degree " + node.degree());
                     edges.add(node.getObject());
                 }
                 queue.addAll(node.getChildren());
