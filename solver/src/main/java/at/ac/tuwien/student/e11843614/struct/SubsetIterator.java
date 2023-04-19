@@ -3,6 +3,7 @@ package at.ac.tuwien.student.e11843614.struct;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 /**
@@ -46,15 +47,18 @@ public class SubsetIterator<T> implements Iterator<List<T>> {
 
     @Override
     public List<T> next() {
-        List<T> subset = new ArrayList<>();
-        for (int i = 0; i < list.size(); i++) {
-            if (inclusion.get(i).equals(true)) {
-                subset.add(list.get(i));
+        if (hasNext()) {
+            List<T> subset = new ArrayList<>();
+            for (int i = 0; i < list.size(); i++) {
+                if (inclusion.get(i).equals(true)) {
+                    subset.add(list.get(i));
+                }
             }
+            increment();
+            returnedEmptySubset = true;
+            return subset;
         }
-        increment();
-        returnedEmptySubset = true;
-        return subset;
+        throw new NoSuchElementException("There are no subsets anymore");
     }
 
     /**
