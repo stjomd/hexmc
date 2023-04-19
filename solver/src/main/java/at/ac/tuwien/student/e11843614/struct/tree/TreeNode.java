@@ -20,6 +20,16 @@ public class TreeNode<T> implements Iterable<TreeNode<T>> {
         this.object = object;
     }
 
+    // ----- Getters / Setters -----------------------------------------------------------------------------------------
+
+    /**
+     * Returns the object associated with this node.
+     * @return the object.
+     */
+    public T getObject() {
+        return object;
+    }
+
     /**
      * Sets the object stored in this node.
      * @param object the object to be stored.
@@ -29,12 +39,31 @@ public class TreeNode<T> implements Iterable<TreeNode<T>> {
     }
 
     /**
-     * Returns the object associated with this node.
-     * @return the object.
+     * Returns the parent of this node.
+     * @return the parent of this node.
      */
-    public T getObject() {
-        return object;
+    public TreeNode<T> getParent() {
+        return parent;
     }
+
+    /**
+     * Returns the set of this node's children.
+     * @return the set of children.
+     */
+    public Set<TreeNode<T>> getChildren() {
+        return children;
+    }
+
+    /**
+     * Returns the degree of this node, i.e. the amount of nodes it is adjacent to.
+     * @return the degree.
+     */
+    public int degree() {
+        int parentDegree = (parent == null) ? 0 : 1;
+        return parentDegree + children.size();
+    }
+
+    // ----- Mutators --------------------------------------------------------------------------------------------------
 
     /**
      * Adds a child to this node.
@@ -99,30 +128,30 @@ public class TreeNode<T> implements Iterable<TreeNode<T>> {
         }
     }
 
+    // ----- Iterators -------------------------------------------------------------------------------------------------
+
     /**
-     * Returns the parent of this node.
-     * @return the parent of this node.
+     * An iterator that traverses this tree in breadth-first fashion.
+     * @return an iterator over subtrees.
      */
-    public TreeNode<T> getParent() {
-        return parent;
+    public Iterator<TreeNode<T>> breadthIterator() {
+        return new TreeNodeBreadthIterator<>(this);
     }
 
     /**
-     * Returns the set of this node's children.
-     * @return the set of children.
+     * An iterator that traverses this tree in depth-first, post-order-like fashion.
+     * @return an iterator over subtrees.
      */
-    public Set<TreeNode<T>> getChildren() {
-        return children;
+    public Iterator<TreeNode<T>> depthIterator() {
+        return new TreeNodeDepthIterator<>(this);
     }
 
-    /**
-     * Returns the degree of this node, i.e. the amount of nodes it is adjacent to.
-     * @return the degree.
-     */
-    public int getDegree() {
-        int parentDegree = (parent == null) ? 0 : 1;
-        return parentDegree + children.size();
+    @Override // standard iterator is breadth
+    public Iterator<TreeNode<T>> iterator() {
+        return breadthIterator();
     }
+
+    // ----- Miscellaneous ---------------------------------------------------------------------------------------------
 
     @Override
     public String toString() {
@@ -143,19 +172,6 @@ public class TreeNode<T> implements Iterable<TreeNode<T>> {
                 child.buildString(builder, nextPrefix + "└── ", nextPrefix + "    ");
             }
         }
-    }
-
-    public Iterator<TreeNode<T>> breadthIterator() {
-        return new TreeNodeBreadthIterator<>(this);
-    }
-
-    public Iterator<TreeNode<T>> depthIterator() {
-        return new TreeNodeDepthIterator<>(this);
-    }
-
-    @Override // standard iterator is breadth
-    public Iterator<TreeNode<T>> iterator() {
-        return breadthIterator();
     }
 
 }

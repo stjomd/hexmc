@@ -112,7 +112,7 @@ public abstract class BranchDecompositionHeuristic {
         // By construction, a has exactly one neighbor that is not a leaf (deg > 1). We call the neighbor 'b'.
         TreeNode<Edge> b = null;
         for (TreeNode<Edge> child : a.getChildren()) {
-            if (child.getDegree() > 1) {
+            if (child.degree() > 1) {
                 b = child;
             }
         }
@@ -124,14 +124,14 @@ public abstract class BranchDecompositionHeuristic {
         // evtl. minus a and b themselves. We need the endpoints of the edges in both partitions.
         Set<Integer> separationA = new HashSet<>(), separationB = new HashSet<>();
         for (TreeNode<Edge> child : a.getChildren()) {
-            if (child.getDegree() == 1) {
+            if (child.degree() == 1) {
                 List<Integer> endpoints = child.getObject().getEndpoints();
                 separationA.add(endpoints.get(0));
                 separationA.add(endpoints.get(1));
             }
         }
         for (TreeNode<Edge> child : b.getChildren()) {
-            if (child.getDegree() == 1) {
+            if (child.degree() == 1) {
                 List<Integer> endpoints = child.getObject().getEndpoints();
                 separationB.add(endpoints.get(0));
                 separationB.add(endpoints.get(1));
@@ -144,7 +144,7 @@ public abstract class BranchDecompositionHeuristic {
         // their edges to the associatedGraph.
         Graph associatedGraph = new Graph();
         for (TreeNode<Edge> child : a.getChildren()) {
-            if (child.getDegree() == 1) {
+            if (child.degree() == 1) {
                 List<Integer> endpoints = child.getObject().getEndpoints();
                 associatedGraph.addEdge(endpoints.get(0), endpoints.get(1)); // creates new Edge instances
             }
@@ -171,7 +171,7 @@ public abstract class BranchDecompositionHeuristic {
         // X and Y are subgraphs which overlap in separation nodes.
         Set<Edge> edgesInA = new HashSet<>();
         for (TreeNode<Edge> node : a.getChildren()) {
-            if (node.getDegree() == 1) {
+            if (node.degree() == 1) {
                 edgesInA.add(node.getObject());
             }
         }
@@ -218,7 +218,7 @@ public abstract class BranchDecompositionHeuristic {
         // Store a's leaves.
         Set<TreeNode<Edge>> leaves = new HashSet<>();
         for (TreeNode<Edge> node : a.getChildren()) {
-            if (node.getDegree() == 1) {
+            if (node.degree() == 1) {
                 leaves.add(node);
             }
         }
@@ -619,7 +619,7 @@ public abstract class BranchDecompositionHeuristic {
         queue.add(root);
         while (!queue.isEmpty()) {
             TreeNode<Edge> node = queue.remove();
-            if (node.getDegree() > degree) {
+            if (node.degree() > degree) {
                 return node;
             }
             queue.addAll(node.getChildren());
