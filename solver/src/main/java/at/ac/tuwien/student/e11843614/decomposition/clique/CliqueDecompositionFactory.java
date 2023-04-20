@@ -5,7 +5,9 @@ import at.ac.tuwien.student.e11843614.decomposition.clique.contents.CliqueEdgeCr
 import at.ac.tuwien.student.e11843614.decomposition.clique.contents.CliqueSingleton;
 import at.ac.tuwien.student.e11843614.decomposition.clique.contents.CliqueRecoloring;
 import at.ac.tuwien.student.e11843614.decomposition.clique.contents.CliqueUnion;
+import at.ac.tuwien.student.e11843614.decomposition.clique.recoloring.RecoloringPossibilityIterator;
 import at.ac.tuwien.student.e11843614.struct.Partition;
+import at.ac.tuwien.student.e11843614.struct.SubsetIterator;
 import at.ac.tuwien.student.e11843614.struct.graph.Edge;
 import at.ac.tuwien.student.e11843614.struct.graph.Graph;
 import at.ac.tuwien.student.e11843614.struct.tree.TreeNode;
@@ -94,53 +96,47 @@ public abstract class CliqueDecompositionFactory {
             if (node.getObject() instanceof CliqueUnion) {
                 // At union node right now
                 CliqueUnion nodeOperation = (CliqueUnion) node.getObject();
-                // Make sure we go through all children of the union node (mutations invalidate iterator of node.getChildren())
-                Set<TreeNode<CliqueOperation>> visited = new HashSet<>();
-                while (!visited.containsAll(node.getChildren())) {
-                    for (TreeNode<CliqueOperation> child : node.getChildren()) {
-                        if (visited.contains(child)) {
-                            continue;
-                        }
-                        visited.add(child);
-                        // ^^ Workaround for invalidating iterator
-                        boolean childIsLeaf = false;
-                        if (child.getObject() instanceof CliqueRecoloring) {
-                            continue;
-                        } else if (child.getObject() instanceof CliqueSingleton) {
-                            childIsLeaf = true;
-                        }
-                        // Try possible color combinations. If this child is a leaf, it only stores a vertex with color
-                        // assigned to 1. Therefore, we can save some loop iterations.
-                        int fromColorBound = (childIsLeaf) ? 1 : width;
-                        colors: for (int fromColor = 1; fromColor <= fromColorBound; fromColor++) {
-                            for (int toColor = 1; toColor <= width; toColor++) {
-                                if (fromColor == toColor) {
-                                    continue;
+                // We insert some recoloring nodes between this union node and its children (at most k=width recoloring
+                // nodes). Try all possible combinations until the condition is satisfied.
+                Iterator<List<TreeNode<CliqueOperation>>> childSubsetIterator = new SubsetIterator<>(node.getChildren());
+                subsetLoop: while (childSubsetIterator.hasNext()) {
+                    // FIXME: O(2^|children|) !!!
+                    List<TreeNode<CliqueOperation>> childSubset = childSubsetIterator.next();
+                    if (childSubset.size() <= width) {
+                        // childSubset contains <= k children above which we add recoloring nodes.
+                        // for each recoloring node, we also have to try all possible (i -> j) pairs.
+                        Iterator<List<CliqueRecoloring>> recoloringIterator = new RecoloringPossibilityIterator(childSubset.size(), width);
+                        while (recoloringIterator.hasNext()) {
+                            // FIXME: O((k^2)^|children|) !!!
+                            List<CliqueRecoloring> recolorings = recoloringIterator.next();
+                            Partition<Integer> grpBefore = grp(node);
+                            // Insert the nodes, store in a set to remove later if needed.
+                            Set<TreeNode<CliqueOperation>> addedNodes = new HashSet<>();
+                            for (int i = 0; i < childSubset.size(); i++) {
+                                TreeNode<CliqueOperation> newNode = childSubset.get(i).insertAbove(recolorings.get(i));
+                                addedNodes.add(newNode);
+                            }
+                            Partition<Integer> grpAfter = grp(node);
+                            // TODO: study here, does grp need excluding groups not in component or something?
+                            // In 'node' is currently a union node under which we've just added a recoloring node.
+                            // Consider the graph associated with 'node'. grp is a partition of its vertices s.t.
+                            // two vertices are in same group/eq.class if they share the same color.
+                            // We check two conditions. Firstly that the recoloring node changes anything, otherwise
+                            // there is no point in adding it. Secondly, after adding the recoloring node, we check
+                            // that grp is a subset of grp(T_i) where i is the level of 'node'.
+                            boolean recoloringWithoutEffect = grpBefore.equals(grpAfter);
+                            boolean fulfilsCondition = derivation.getGroups(nodeOperation.getLevel())
+                                .getEquivalenceClasses().containsAll(grpAfter.getEquivalenceClasses());
+                            // If any of these conditions fails, we remove the added nodes, and try again.
+                            if (recoloringWithoutEffect || !fulfilsCondition) {
+                                for (TreeNode<CliqueOperation> addedNode : addedNodes) {
+                                    addedNode.contract();
                                 }
-                                Partition<Integer> grpBefore = grp(node);
-                                TreeNode<CliqueOperation> recoloringNode = child.insertAbove(
-                                    new CliqueRecoloring(fromColor, toColor)
-                                );
-                                Partition<Integer> grpAfter = grp(node);
-                                // In 'node' is currently a union node under which we've just added a recoloring node.
-                                // Consider the graph associated with 'node'. grp is a partition of its vertices s.t.
-                                // two vertices are in same group/eq.class if they share the same color.
-                                // We check two conditions. Firstly that the recoloring node changes anything, otherwise
-                                // there is no point in adding it. Secondly, after adding the recoloring node, we check
-                                // that grp is a subset of grp(T_i) where i is the level of 'node'.
-                                boolean recoloringWithoutEffect = grpBefore.equals(grpAfter);
-                                boolean fulfilsCondition = derivation.getGroups(nodeOperation.getLevel())
-                                    .getEquivalenceClasses().containsAll(grpAfter.getEquivalenceClasses());
-                                // If any of these conditions fails, we remove the node, and try another color pair.
-                                if (recoloringWithoutEffect || !fulfilsCondition) {
-                                    recoloringNode.contract();
-                                } else {
-                                    break colors;
-                                }
+                            } else {
+                                // Found a satisfying recoloring, stop.
+                                break subsetLoop;
                             }
                         }
-                        // node.getChildren iterator invalid at this point.
-                        break;
                     }
                 }
             }
