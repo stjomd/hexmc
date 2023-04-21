@@ -3,14 +3,16 @@ package at.ac.tuwien.student.e11843614.decomposition.clique.recoloring;
 import at.ac.tuwien.student.e11843614.decomposition.clique.contents.CliqueRecoloring;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
 /**
  * An iterator that iterates over recoloring possibilities of specified length (applicable to one edge in the tree).
  */
-public class RecoloringPossibilityIterator implements Iterator<List<CliqueRecoloring>> {
+public class EdgeRecoloringIterator implements Iterator<List<CliqueRecoloring>> {
 
     // Each recoloring is a pair (i, j) with 1 <= i,j <= k; i != j.
     // Assign to each pair (i, j) a number k(i-1) + j, then we can iterate over these numbers to obtain a pair.
@@ -20,14 +22,19 @@ public class RecoloringPossibilityIterator implements Iterator<List<CliqueRecolo
 
     private final long k;
     private final List<Long> list;
-
     private boolean started = false;
 
-    public RecoloringPossibilityIterator(int n, int k) {
+    public EdgeRecoloringIterator(int n, int k) {
         this.k = k;
         this.list = new ArrayList<>();
         for (int i = 0; i < n; i++) {
-            list.add(1L);
+            list.add(2L);
+        }
+        while (hasDuplicates()) {
+            increment(list.size() - 1);
+            if (!hasNext()) {
+                break;
+            }
         }
     }
 
@@ -37,7 +44,7 @@ public class RecoloringPossibilityIterator implements Iterator<List<CliqueRecolo
             return true;
         } else {
             for (Long value : list) {
-                if (value != 1) {
+                if (value != 2) {
                     return true;
                 }
             }
@@ -56,9 +63,27 @@ public class RecoloringPossibilityIterator implements Iterator<List<CliqueRecolo
                 recolorings.add(new CliqueRecoloring(from, to));
             }
             increment(list.size() - 1);
+            while (hasDuplicates()) {
+                increment(list.size() - 1);
+                if (!hasNext()) {
+                    break;
+                }
+            }
             return recolorings;
         }
         throw new NoSuchElementException("There are no more possibilities");
+    }
+
+    private boolean hasDuplicates() {
+        Set<Long> set = new HashSet<>();
+        for (Long value : list) {
+            if (set.contains(value)) {
+                return true;
+            } else {
+                set.add(value);
+            }
+        }
+        return false;
     }
 
     private void increment(int index) {
@@ -76,8 +101,8 @@ public class RecoloringPossibilityIterator implements Iterator<List<CliqueRecolo
                 increment(index);
             }
         } else {
-            // otherwise we set it back to 1...
-            list.set(index, 1L);
+            // otherwise we set it back to 2... (if 1, i=j=1)
+            list.set(index, 2L);
             // and increment the previous digit.
             increment(index - 1);
         }
