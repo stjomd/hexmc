@@ -208,6 +208,7 @@ public abstract class CliqueDecompositionFactory {
      * @param width the width of this derivation.
      * @return true, if recoloring nodes were added, and false otherwise.
      */
+    @SuppressWarnings("UnusedReturnValue")
     private static boolean bruteforceRecolorings(TreeNode<CliqueOperation> node, CliqueDerivation derivation, int width) {
         Iterator<List<TreeNode<CliqueOperation>>> childSubsetIterator = new SubsetIterator<>(node.getChildren());
         while (childSubsetIterator.hasNext()) {
@@ -330,6 +331,9 @@ public abstract class CliqueDecompositionFactory {
         // Singletons always have color set to 1, and if required have a recoloring node above. We can spare a few
         // recoloring nodes if we change the color of the singleton.
         colorSingletons(root);
+        // Union nodes might have more than two children. In that case, transform the subtree into an equivalent one
+        // that has two children.
+        binarizeUnionNodes(root);
     }
 
     /**
@@ -364,8 +368,7 @@ public abstract class CliqueDecompositionFactory {
     }
 
     /**
-     * Checks if there are recoloring nodes above singletons, and in that case, moves the color information into
-     * singleton.
+     * Checks if there are recoloring nodes above singletons and moves the color information into singletons.
      * @param root the root of the tree.
      */
     private static void colorSingletons(TreeNode<CliqueOperation> root) {
@@ -384,6 +387,36 @@ public abstract class CliqueDecompositionFactory {
                 CliqueRecoloring recoloring = (CliqueRecoloring) parent.getObject();
                 singleton.setColor(recoloring.getTo());
                 parent.contract();
+            }
+        }
+    }
+
+    /**
+     * Checks if there are union nodes with more than two children and transforms the tree into an equivalent one where
+     * union nodes have exactly two children.
+     * @param root the root of the tree.
+     */
+    private static void binarizeUnionNodes(TreeNode<CliqueOperation> root) {
+        // Go through union nodes that have > 2 children
+        Iterator<TreeNode<CliqueOperation>> iterator = root.depthIterator();
+        while (iterator.hasNext()) {
+            TreeNode<CliqueOperation> node = iterator.next();
+            if (!(node.getObject() instanceof CliqueUnion) || node.getChildren().size() <= 2) {
+                continue;
+            }
+            // While this node has more than two children, proceed as follows. Pick two children, say a, b, and detach
+            // them from this node. Create a new union node c, add a, b to its children. Then add c as a child to node.
+            while (node.getChildren().size() > 2) {
+                Iterator<TreeNode<CliqueOperation>> childIterator = node.getChildren().iterator();
+                TreeNode<CliqueOperation> a = childIterator.next();
+                TreeNode<CliqueOperation> b = childIterator.next();
+                a.detach();
+                b.detach();
+                CliqueUnion operation = new CliqueUnion(Set.of(), -1);
+                TreeNode<CliqueOperation> c = new TreeNode<>(operation);
+                c.addChild(a);
+                c.addChild(b);
+                node.addChild(c);
             }
         }
     }
