@@ -25,7 +25,7 @@ public class CliqueUnion implements CliqueOperation {
 
     @Override
     public String toString() {
-        return "union";
+        return "union(" + component + ", level=" + level + ")";
     }
 
 }

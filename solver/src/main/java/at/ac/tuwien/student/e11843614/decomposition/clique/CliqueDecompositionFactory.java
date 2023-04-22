@@ -1,11 +1,13 @@
 package at.ac.tuwien.student.e11843614.decomposition.clique;
 
+import at.ac.tuwien.student.e11843614.Logger;
 import at.ac.tuwien.student.e11843614.decomposition.clique.contents.CliqueOperation;
 import at.ac.tuwien.student.e11843614.decomposition.clique.contents.CliqueEdgeCreation;
 import at.ac.tuwien.student.e11843614.decomposition.clique.contents.CliqueSingleton;
 import at.ac.tuwien.student.e11843614.decomposition.clique.contents.CliqueRecoloring;
 import at.ac.tuwien.student.e11843614.decomposition.clique.contents.CliqueUnion;
-import at.ac.tuwien.student.e11843614.decomposition.clique.recoloring.RecoloringPossibilityIterator;
+import at.ac.tuwien.student.e11843614.decomposition.clique.recoloring.ChildrenRecoloringIterator;
+import at.ac.tuwien.student.e11843614.decomposition.clique.recoloring.EdgeRecoloringIterator;
 import at.ac.tuwien.student.e11843614.struct.Partition;
 import at.ac.tuwien.student.e11843614.struct.SubsetIterator;
 import at.ac.tuwien.student.e11843614.struct.graph.Edge;
@@ -94,53 +96,141 @@ public abstract class CliqueDecompositionFactory {
         while (iterator.hasNext()) {
             TreeNode<CliqueOperation> node = iterator.next();
             if (node.getObject() instanceof CliqueUnion) {
-                // At union node right now
-                CliqueUnion nodeOperation = (CliqueUnion) node.getObject();
-                // We insert some recoloring nodes between this union node and its children (at most k=width recoloring
-                // nodes). Try all possible combinations until the condition is satisfied.
-                Iterator<List<TreeNode<CliqueOperation>>> childSubsetIterator = new SubsetIterator<>(node.getChildren());
-                subsetLoop: while (childSubsetIterator.hasNext()) {
-                    // FIXME: O(2^|children|) !!!
-                    List<TreeNode<CliqueOperation>> childSubset = childSubsetIterator.next();
-                    if (childSubset.size() <= width) {
-                        // childSubset contains <= k children above which we add recoloring nodes.
-                        // for each recoloring node, we also have to try all possible (i -> j) pairs.
-                        Iterator<List<CliqueRecoloring>> recoloringIterator = new RecoloringPossibilityIterator(childSubset.size(), width);
-                        while (recoloringIterator.hasNext()) {
-                            // FIXME: O((k^2)^|children|) !!!
-                            List<CliqueRecoloring> recolorings = recoloringIterator.next();
-                            Partition<Integer> grpBefore = grp(node);
-                            // Insert the nodes, store in a set to remove later if needed.
-                            Set<TreeNode<CliqueOperation>> addedNodes = new HashSet<>();
-                            for (int i = 0; i < childSubset.size(); i++) {
-                                TreeNode<CliqueOperation> newNode = childSubset.get(i).insertAbove(recolorings.get(i));
-                                addedNodes.add(newNode);
-                            }
-                            Partition<Integer> grpAfter = grp(node);
-                            // TODO: study here, does grp need excluding groups not in component or something?
-                            // In 'node' is currently a union node under which we've just added a recoloring node.
-                            // Consider the graph associated with 'node'. grp is a partition of its vertices s.t.
-                            // two vertices are in same group/eq.class if they share the same color.
-                            // We check two conditions. Firstly that the recoloring node changes anything, otherwise
-                            // there is no point in adding it. Secondly, after adding the recoloring node, we check
-                            // that grp is a subset of grp(T_i) where i is the level of 'node'.
-                            boolean recoloringWithoutEffect = grpBefore.equals(grpAfter);
-                            boolean fulfilsCondition = derivation.getGroups(nodeOperation.getLevel())
-                                .getEquivalenceClasses().containsAll(grpAfter.getEquivalenceClasses());
-                            // If any of these conditions fails, we remove the added nodes, and try again.
-                            if (recoloringWithoutEffect || !fulfilsCondition) {
-                                for (TreeNode<CliqueOperation> addedNode : addedNodes) {
-                                    addedNode.contract();
-                                }
-                            } else {
-                                // Found a satisfying recoloring, stop.
-                                break subsetLoop;
-                            }
+                // If the conditions are already fulfilled, we don't have to insert anything.
+                if (fulfilsColorConditions(node, derivation)) {
+                    Logger.debug(node.getObject() + " fulfils color conditions, skip");
+                    continue;
+                }
+                // If not, we try to paint the nodes.
+                boolean painted;
+                // Optimization: it's possible that, if this is a union node at level 1, that all singletons just have
+                // to be painted different colors. Attempt this first. If this satisfies all conditions, we can move on
+                // to other nodes.
+                painted = attemptFirstLevelRecolorings(node, derivation);
+                if (painted) {
+                    Logger.debug(node.getObject() + " had its children painted different colors");
+                    continue;
+                }
+                // Another optimization: often it's enough to only insert recoloring nodes above one of the children.
+                // Attempt that and if that fails, move on to full brute forcing.
+                Logger.debug(node.getObject() + " is being recolored using one-child-brute-force");
+                painted = attemptEdgeRecolorings(node, derivation, width);
+                if (painted) {
+                    Logger.debug(node.getObject() + " had recoloring nodes inserted above one child");
+                    continue;
+                }
+                // As a last resort, brute force.
+                Logger.debug(node.getObject() + " requires full brute force");
+                bruteforceRecolorings(node, derivation, width);
+                Logger.debug(node.getObject() + " has been repainted using full brute force");
+            }
+        }
+    }
+
+    /**
+     * Attempts to recolor the children of a union node at level 1 such that all singletons have different color.
+     * If this does not fulfil the conditions, does nothing.
+     * @param node a union node at level 1.
+     * @param derivation the derivation.
+     * @return true, if the recoloring nodes were added, and false otherwise.
+     */
+    private static boolean attemptFirstLevelRecolorings(TreeNode<CliqueOperation> node, CliqueDerivation derivation) {
+        CliqueUnion nodeOperation = (CliqueUnion) node.getObject();
+        if (nodeOperation.getLevel() != 1) {
+            return false;
+        }
+        // Try to paint singletons different colors
+        int i = 1;
+        Set<TreeNode<CliqueOperation>> addedRecoloringNodes = new HashSet<>();
+        Set<TreeNode<CliqueOperation>> children = new HashSet<>(node.getChildren());
+        for (TreeNode<CliqueOperation> child : children) {
+            if (i == 1) {
+                i++;
+                continue;
+            }
+            TreeNode<CliqueOperation> rec = child.insertAbove(new CliqueRecoloring(1, i));
+            addedRecoloringNodes.add(rec);
+            i++;
+        }
+        // Check conditions and revert if they fail
+        if (fulfilsColorConditions(node, derivation)) {
+            return true;
+        } else {
+            for (TreeNode<CliqueOperation> addedNode : addedRecoloringNodes) {
+                addedNode.contract();
+            }
+            return false;
+        }
+    }
+
+    /**
+     * Attempts to insert recoloring nodes above one child of this node (for each child). If this does not fulfil
+     * the conditions, does nothing.
+     * @param node a union node.
+     * @param derivation the derivation.
+     * @return true, if the recoloring nodes were added, and false otherwise.
+     */
+    private static boolean attemptEdgeRecolorings(TreeNode<CliqueOperation> node, CliqueDerivation derivation, int width) {
+        Set<TreeNode<CliqueOperation>> children = new HashSet<>(node.getChildren());
+        for (TreeNode<CliqueOperation> child : children) {
+            // Attempt to insert nodes above this child. We can insert from 1 to k nodes.
+            for (int amount = 1; amount <= width; amount++) {
+                Iterator<List<CliqueRecoloring>> recoloringIterator = new EdgeRecoloringIterator(amount, width);
+                while (recoloringIterator.hasNext()) {
+                    List<CliqueRecoloring> recolorings = recoloringIterator.next();
+                    Set<TreeNode<CliqueOperation>> addedRecoloringNodes = new HashSet<>();
+                    for (CliqueRecoloring recoloring : recolorings) {
+                        TreeNode<CliqueOperation> newNode = child.insertAbove(recoloring);
+                        addedRecoloringNodes.add(newNode);
+                    }
+                    // Check if conditions are fulfilled, and if necessary, revert
+                    if (fulfilsColorConditions(node, derivation)) {
+                        return true;
+                    } else {
+                        for (TreeNode<CliqueOperation> addedNode : addedRecoloringNodes) {
+                            addedNode.contract();
                         }
                     }
                 }
             }
         }
+        return false;
+    }
+
+    /**
+     * Tries all possible combinations of recoloring nodes over all possible subsets of the union node's children and
+     * inserts them above the node's children, such that the conditions are fulfilled. Very inefficient.
+     * @param node a union node, above whose children recoloring nodes will be inserted.
+     * @param derivation the respective derivation.
+     * @param width the width of this derivation.
+     * @return true, if recoloring nodes were added, and false otherwise.
+     */
+    private static boolean bruteforceRecolorings(TreeNode<CliqueOperation> node, CliqueDerivation derivation, int width) {
+        Iterator<List<TreeNode<CliqueOperation>>> childSubsetIterator = new SubsetIterator<>(node.getChildren());
+        while (childSubsetIterator.hasNext()) {
+            List<TreeNode<CliqueOperation>> childSubset = childSubsetIterator.next();
+            Iterator<List<List<CliqueRecoloring>>> recoloringIterator = new ChildrenRecoloringIterator(childSubset.size(), width);
+            while (recoloringIterator.hasNext()) {
+                List<List<CliqueRecoloring>> recolorings = recoloringIterator.next();
+                // Add recoloring nodes specified in 'recolorings'
+                Set<TreeNode<CliqueOperation>> addedRecoloringNodes = new HashSet<>();
+                for (int i = 0; i < childSubset.size(); i++) {
+                    for (CliqueRecoloring recoloring : recolorings.get(i)) {
+                        TreeNode<CliqueOperation> newNode = childSubset.get(i).insertAbove(recoloring);
+                        addedRecoloringNodes.add(newNode);
+                    }
+                }
+                // Check conditions, and if they fail, revert
+                if (fulfilsColorConditions(node, derivation)) {
+                    return true;
+                } else {
+                    for (TreeNode<CliqueOperation> addedNode : addedRecoloringNodes) {
+                        addedNode.contract();
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     /**
@@ -159,10 +249,6 @@ public abstract class CliqueDecompositionFactory {
         Map<Integer, List<CliqueSingleton>> targetColorMap = null;
         for (TreeNode<CliqueOperation> node : root) {
             if (node.getObject() instanceof CliqueUnion) {
-                // TODO: avoids creating an edge node below an already existing edge node. Probably wrong
-                if (node.getParent() != null && node.getParent().getObject() instanceof CliqueEdgeCreation) {
-                    continue;
-                }
                 CliqueUnion operation = ((CliqueUnion) node.getObject());
                 Map<Integer, List<CliqueSingleton>> colorMap = colorMap(node);
                 // The target vertex must have min level, and contain both u and v.
@@ -208,6 +294,21 @@ public abstract class CliqueDecompositionFactory {
                 target.insertAbove(new CliqueEdgeCreation(colorU, colorV));
             }
         }
+    }
+
+    // ----- Helpers ---------------------------------------------------------------------------------------------------
+
+    /**
+     * Checks if this union node satisfies the color conditions.
+     * @param node a union node.
+     * @param derivation the derivation.
+     * @return true, if the conditions are satisfied, and false otherwise.
+     */
+    private static boolean fulfilsColorConditions(TreeNode<CliqueOperation> node, CliqueDerivation derivation) {
+        CliqueUnion nodeOperation = (CliqueUnion) node.getObject();
+        Partition<Integer> grp = grp(node);
+        return derivation.getGroups(nodeOperation.getLevel()).getEquivalenceClasses()
+            .containsAll(grp.getEquivalenceClasses());
     }
 
     /**
