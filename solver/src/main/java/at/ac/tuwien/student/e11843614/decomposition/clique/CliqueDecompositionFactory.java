@@ -291,6 +291,25 @@ public abstract class CliqueDecompositionFactory {
             }
             // If u and v have different colors, add the edge creation node
             if (colorU != 0 && colorV != 0 && colorU != colorV) {
+                // We don't have to insert edges(i -> j) if there is already a node edges(i -> j) or edges(j -> i) above.
+                // Go up from target until recoloring/union node or null is reached. Look at edge creation nodes on the way.
+                TreeNode<CliqueOperation> current = target;
+                current = current.getParent();
+                while (current != null) {
+                    if (current.getObject() instanceof CliqueRecoloring) {
+                        break;
+                    } else if (current.getObject() instanceof CliqueUnion) {
+                        break;
+                    } else if (current.getObject() instanceof CliqueEdgeCreation) {
+                        CliqueEdgeCreation operation = (CliqueEdgeCreation) current.getObject();
+                        if ((operation.getFrom() == colorU && operation.getTo() == colorV)
+                            || (operation.getFrom() == colorV && operation.getTo() == colorU)) {
+                            // A node that adds this edge to the graph is already in
+                            return;
+                        }
+                    }
+                    current = current.getParent();
+                }
                 target.insertAbove(new CliqueEdgeCreation(colorU, colorV));
             }
         }
