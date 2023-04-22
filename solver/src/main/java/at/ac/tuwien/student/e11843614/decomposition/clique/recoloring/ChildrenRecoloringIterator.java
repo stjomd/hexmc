@@ -1,6 +1,6 @@
 package at.ac.tuwien.student.e11843614.decomposition.clique.recoloring;
 
-import at.ac.tuwien.student.e11843614.decomposition.clique.contents.CliqueRecoloring;
+import at.ac.tuwien.student.e11843614.decomposition.clique.operation.CliqueRecoloring;
 
 import java.util.ArrayList;
 import java.util.HashSet;

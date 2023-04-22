@@ -1,30 +1,16 @@
-package at.ac.tuwien.student.e11843614.decomposition.clique.contents;
-
-import java.util.Set;
+package at.ac.tuwien.student.e11843614.decomposition.clique.operation;
 
 /**
  * Contents of a node that represents a singleton.
  */
 public class CliqueSingleton implements CliqueOperation {
 
-    private final Set<Integer> component;
-    private final int level;
     private final int vertex;
     private int color;
 
-    public CliqueSingleton(Set<Integer> component, int level, int vertex, int color) {
-        this.component = component;
-        this.level = level;
+    public CliqueSingleton(int vertex, int color) {
         this.vertex = vertex;
         this.color = color;
-    }
-
-    public Set<Integer> getComponent() {
-        return component;
-    }
-
-    public int getLevel() {
-        return level;
     }
 
     public int getVertex() {

@@ -1,11 +1,11 @@
 package at.ac.tuwien.student.e11843614.decomposition.clique;
 
 import at.ac.tuwien.student.e11843614.Logger;
-import at.ac.tuwien.student.e11843614.decomposition.clique.contents.CliqueOperation;
-import at.ac.tuwien.student.e11843614.decomposition.clique.contents.CliqueEdgeCreation;
-import at.ac.tuwien.student.e11843614.decomposition.clique.contents.CliqueSingleton;
-import at.ac.tuwien.student.e11843614.decomposition.clique.contents.CliqueRecoloring;
-import at.ac.tuwien.student.e11843614.decomposition.clique.contents.CliqueUnion;
+import at.ac.tuwien.student.e11843614.decomposition.clique.operation.CliqueOperation;
+import at.ac.tuwien.student.e11843614.decomposition.clique.operation.CliqueEdgeCreation;
+import at.ac.tuwien.student.e11843614.decomposition.clique.operation.CliqueSingleton;
+import at.ac.tuwien.student.e11843614.decomposition.clique.operation.CliqueRecoloring;
+import at.ac.tuwien.student.e11843614.decomposition.clique.operation.CliqueUnion;
 import at.ac.tuwien.student.e11843614.decomposition.clique.recoloring.ChildrenRecoloringIterator;
 import at.ac.tuwien.student.e11843614.decomposition.clique.recoloring.EdgeRecoloringIterator;
 import at.ac.tuwien.student.e11843614.struct.Partition;
@@ -77,7 +77,7 @@ public abstract class CliqueDecompositionFactory {
                     CliqueOperation contents;
                     if (level == 1) {
                         int vertex = cmp.iterator().next();
-                        contents = new CliqueSingleton(cmp, i, vertex, 1);
+                        contents = new CliqueSingleton(vertex, 1);
                     } else {
                         contents = new CliqueUnion(cmp, i);
                     }
