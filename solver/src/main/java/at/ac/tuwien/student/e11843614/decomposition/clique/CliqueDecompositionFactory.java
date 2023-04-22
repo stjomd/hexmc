@@ -40,8 +40,11 @@ public abstract class CliqueDecompositionFactory {
                 root = root.getParent();
             }
         }
+        normalize(root);
         return root;
     }
+
+    // ----- Node Insertion --------------------------------------------------------------------------------------------
 
     /**
      * Creates an initial parse tree, containing leaf/singleton and union nodes.
@@ -311,6 +314,76 @@ public abstract class CliqueDecompositionFactory {
                     current = current.getParent();
                 }
                 target.insertAbove(new CliqueEdgeCreation(colorU, colorV));
+            }
+        }
+    }
+
+    // ----- Normalization ---------------------------------------------------------------------------------------------
+
+    /**
+     * Normalizes the clique decomposition, i.e. transforms it into a tree without redundant nodes.
+     * @param root the root of the tree.
+     */
+    private static void normalize(TreeNode<CliqueOperation> root) {
+        // Firstly, we can reduce union paths. If there is a path = (... - union - union - ...), a union is redundant.
+        reduceUnionPaths(root);
+        // Singletons always have color set to 1, and if required have a recoloring node above. We can spare a few
+        // recoloring nodes if we change the color of the singleton.
+        colorSingletons(root);
+    }
+
+    /**
+     * Checks if there are union paths (... - union - union - ...) and reduces those.
+     * @param root the root of the tree.
+     */
+    private static void reduceUnionPaths(TreeNode<CliqueOperation> root) {
+        boolean reducable = true;
+        while (reducable) {
+            reducable = false;
+            for (TreeNode<CliqueOperation> node : root) {
+                if (!(node.getObject() instanceof CliqueUnion)) {
+                    continue;
+                }
+                Set<TreeNode<CliqueOperation>> children = new HashSet<>(node.getChildren());
+                for (TreeNode<CliqueOperation> child : children) {
+                    if (!(child.getObject() instanceof CliqueUnion)) {
+                        continue;
+                    }
+                    // union --- union --- someNode
+                    if (child.getChildren().size() == 1) {
+                        child.contract();
+                        reducable = true;
+                    }
+                }
+                // To avoid errors due to concurrent iteration and mutation
+                if (reducable) {
+                    break;
+                }
+            }
+        }
+    }
+
+    /**
+     * Checks if there are recoloring nodes above singletons, and in that case, moves the color information into
+     * singleton.
+     * @param root the root of the tree.
+     */
+    private static void colorSingletons(TreeNode<CliqueOperation> root) {
+        for (TreeNode<CliqueOperation> node : root) {
+            if (!(node.getObject() instanceof CliqueSingleton)) {
+                continue;
+            }
+            CliqueSingleton singleton = (CliqueSingleton) node.getObject();
+            // Check if the parent of this singleton is a recoloring node. If so, color the singleton, and remove the
+            // recoloring node.
+            if (node.getParent() != null) {
+                TreeNode<CliqueOperation> parent = node.getParent();
+                if (!(parent.getObject() instanceof CliqueRecoloring)) {
+                    continue;
+                }
+                CliqueRecoloring recoloring = (CliqueRecoloring) parent.getObject();
+                singleton.setColor(recoloring.getTo());
+                parent.contract();
             }
         }
     }
