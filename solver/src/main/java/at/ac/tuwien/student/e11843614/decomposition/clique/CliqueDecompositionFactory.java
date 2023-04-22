@@ -348,16 +348,10 @@ public abstract class CliqueDecompositionFactory {
                 if (!(node.getObject() instanceof CliqueUnion)) {
                     continue;
                 }
-                Set<TreeNode<CliqueOperation>> children = new HashSet<>(node.getChildren());
-                for (TreeNode<CliqueOperation> child : children) {
-                    if (!(child.getObject() instanceof CliqueUnion)) {
-                        continue;
-                    }
-                    // union --- union --- someNode
-                    if (child.getChildren().size() == 1) {
-                        child.contract();
-                        reducable = true;
-                    }
+                // If a union node only has one child, it is unnecessary
+                if (node.getChildren().size() == 1) {
+                    node.contract();
+                    reducable = true;
                 }
                 // To avoid errors due to concurrent iteration and mutation
                 if (reducable) {
