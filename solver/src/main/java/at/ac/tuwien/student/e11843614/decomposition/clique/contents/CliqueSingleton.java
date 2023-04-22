@@ -10,7 +10,7 @@ public class CliqueSingleton implements CliqueOperation {
     private final Set<Integer> component;
     private final int level;
     private final int vertex;
-    private final int color;
+    private int color;
 
     public CliqueSingleton(Set<Integer> component, int level, int vertex, int color) {
         this.component = component;
@@ -33,6 +33,10 @@ public class CliqueSingleton implements CliqueOperation {
 
     public int getColor() {
         return color;
+    }
+
+    public void setColor(int color) {
+        this.color = color;
     }
 
     @Override
