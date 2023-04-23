@@ -45,9 +45,9 @@ public class CliqueDerivationTest {
     public void d1() {
         int t = derivation.size() - 1;
         assertAll(
-            () -> assertEquals(graph.vertices().size(), derivation.getComponents(0).size(), "|cmp(T_0)| is not |V|"),
-            () -> assertEquals(graph.vertices().size(), derivation.getGroups(0).size(), "|grp(T_0)| is not |V|"),
-            () -> assertEquals(1, derivation.getComponents(t).size(), "|cmp(T_t)| is not 1")
+            () -> assertEquals(graph.vertices().size(), derivation.cmp(0).size(), "|cmp(T_0)| is not |V|"),
+            () -> assertEquals(graph.vertices().size(), derivation.grp(0).size(), "|grp(T_0)| is not |V|"),
+            () -> assertEquals(1, derivation.cmp(t).size(), "|cmp(T_t)| is not 1")
         );
     }
 
@@ -56,7 +56,7 @@ public class CliqueDerivationTest {
     public void d2() {
         for (int i = 0; i < derivation.size(); i++) {
             assertTrue(
-                derivation.getGroups(i).isRefinementOf(derivation.getComponents(i)),
+                derivation.grp(i).isRefinementOf(derivation.cmp(i)),
                 "grp(T_" + i + ") is not a refinement of cmp(T_" + i + ")"
             );
         }
@@ -67,7 +67,7 @@ public class CliqueDerivationTest {
     public void d3() {
         for (int i = 1; i < derivation.size(); i++) {
             assertTrue(
-                derivation.getComponents(i - 1).isRefinementOf(derivation.getComponents(i)),
+                derivation.cmp(i - 1).isRefinementOf(derivation.cmp(i)),
                 "cmp(T_" + (i-1) + ") is not a refinement of cmp(T_" + i + ")"
             );
         }
@@ -78,7 +78,7 @@ public class CliqueDerivationTest {
     public void d4() {
         for (int i = 1; i < derivation.size(); i++) {
             assertTrue(
-                derivation.getGroups(i - 1).isRefinementOf(derivation.getGroups(i)),
+                derivation.grp(i - 1).isRefinementOf(derivation.grp(i)),
                 "grp(T_" + (i-1) + ") is not a refinement of grp(T_" + i + ")"
             );
         }
@@ -89,9 +89,9 @@ public class CliqueDerivationTest {
     public void edgeProperty() {
         for (int i = 1; i < derivation.size(); i++) {
             for (Edge edge : graph.edges()) {
-                List<Integer> endpoints = edge.getEndpoints();
+                List<Integer> endpoints = edge.endpoints();
                 boolean inSameGroup = false;
-                for (Set<Integer> group : derivation.getGroups(i).getEquivalenceClasses()) {
+                for (Set<Integer> group : derivation.grp(i).equivalenceClasses()) {
                     if (group.containsAll(endpoints)) {
                         inSameGroup = true;
                         break;
@@ -99,7 +99,7 @@ public class CliqueDerivationTest {
                 }
                 if (inSameGroup) {
                     boolean inSameComponent = false;
-                    for (Set<Integer> component : derivation.getComponents(i - 1).getEquivalenceClasses()) {
+                    for (Set<Integer> component : derivation.cmp(i - 1).equivalenceClasses()) {
                         if (component.containsAll(endpoints)) {
                             inSameComponent = true;
                             break;
@@ -124,7 +124,7 @@ public class CliqueDerivationTest {
                     for (Integer w : graph.vertices()) {
                         if (graph.hasEdgeWithEndpoints(u, v) && !graph.hasEdgeWithEndpoints(u, w)) {
                             boolean inSameGroup = false;
-                            for (Set<Integer> group : derivation.getGroups(i).getEquivalenceClasses()) {
+                            for (Set<Integer> group : derivation.grp(i).equivalenceClasses()) {
                                 if (group.contains(v) && group.contains(w)) {
                                     inSameGroup = true;
                                     break;
@@ -132,7 +132,7 @@ public class CliqueDerivationTest {
                             }
                             if (inSameGroup) {
                                 boolean inSameComponent = false;
-                                for (Set<Integer> component : derivation.getComponents(i - 1).getEquivalenceClasses()) {
+                                for (Set<Integer> component : derivation.cmp(i - 1).equivalenceClasses()) {
                                     if (component.contains(u) && component.contains(v)) {
                                         inSameComponent = true;
                                         break;
@@ -163,7 +163,7 @@ public class CliqueDerivationTest {
                                 && graph.hasEdgeWithEndpoints(v, x) && !graph.hasEdgeWithEndpoints(w, x)) {
                                 boolean uxInSameGroup = false;
                                 boolean vwInSameGroup = false;
-                                for (Set<Integer> group : derivation.getGroups(i).getEquivalenceClasses()) {
+                                for (Set<Integer> group : derivation.grp(i).equivalenceClasses()) {
                                     if (group.contains(u) && group.contains(x))
                                         uxInSameGroup = true;
                                     if (group.contains(v) && group.contains(w))
@@ -173,7 +173,7 @@ public class CliqueDerivationTest {
                                 }
                                 if (uxInSameGroup && vwInSameGroup) {
                                     boolean uvInSameComponent = false;
-                                    for (Set<Integer> component : derivation.getComponents(i - 1).getEquivalenceClasses()) {
+                                    for (Set<Integer> component : derivation.cmp(i - 1).equivalenceClasses()) {
                                         if (component.contains(u) && component.contains(v)) {
                                             uvInSameComponent = true;
                                             break;

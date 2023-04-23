@@ -13,9 +13,9 @@ public class PartitionTest {
     public void addWithTwoArgs_shouldAddElemToExistingEC_ifOtherElemPresent() {
         Partition<Integer> partition = new Partition<>();
         partition.add(1);
-        assertEquals(1, partition.getEquivalenceClasses().size());
+        assertEquals(1, partition.equivalenceClasses().size());
         partition.add(1, 2);
-        assertEquals(1, partition.getEquivalenceClasses().size());
+        assertEquals(1, partition.equivalenceClasses().size());
     }
 
     @Test
@@ -23,11 +23,11 @@ public class PartitionTest {
     public void shouldMergeEC_ifHasECWithDuplicateElems() {
         Partition<Integer> partition = new Partition<>();
         partition.add(1, 2);
-        assertEquals(1, partition.getEquivalenceClasses().size());
+        assertEquals(1, partition.equivalenceClasses().size());
         partition.add(3, 4);
-        assertEquals(2, partition.getEquivalenceClasses().size());
+        assertEquals(2, partition.equivalenceClasses().size());
         partition.add(2, 3);
-        assertEquals(1, partition.getEquivalenceClasses().size());
+        assertEquals(1, partition.equivalenceClasses().size());
     }
 
 }

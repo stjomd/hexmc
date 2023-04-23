@@ -13,8 +13,8 @@ public abstract class GraphFactory {
     public static Graph incidenceGraph(Formula formula) {
         // Encode as follows: variable vertices end with 1, clause vertices end with 2
         Graph graph = new Graph();
-        for (int i = 1; i <= formula.getClauses().size(); i++) {
-            for (Integer literal : formula.getClauses().get(i - 1).getLiterals()) {
+        for (int i = 1; i <= formula.clauses().size(); i++) {
+            for (Integer literal : formula.clauses().get(i - 1).literals()) {
                 int variableVertex = 10*Math.abs(literal) + 1;
                 int clauseVertex = 10*i + 2;
                 graph.addEdge(variableVertex, clauseVertex);

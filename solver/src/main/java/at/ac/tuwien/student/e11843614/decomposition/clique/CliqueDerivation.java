@@ -39,7 +39,7 @@ public class CliqueDerivation {
      * @param level the level.
      * @return a Template.
      */
-    public Template getTemplate(int level) {
+    public Template template(int level) {
         return templates.get(level);
     }
 
@@ -48,8 +48,8 @@ public class CliqueDerivation {
      * @param level the level.
      * @return the components (a Partition).
      */
-    public Partition<Integer> getComponents(int level) {
-        return getTemplate(level).getComponents();
+    public Partition<Integer> cmp(int level) {
+        return template(level).getComponents();
     }
 
     /**
@@ -57,8 +57,8 @@ public class CliqueDerivation {
      * @param level the level.
      * @return the groups (a Partition).
      */
-    public Partition<Integer> getGroups(int level) {
-        return getTemplate(level).getGroups();
+    public Partition<Integer> grp(int level) {
+        return template(level).getGroups();
     }
 
     /**
@@ -69,8 +69,11 @@ public class CliqueDerivation {
         return templates.size();
     }
 
-
-    public int width() {
+    /**
+     * Computes the width of this derivation.
+     * @return the width.
+     */
+    public int getWidth() {
         // width of a component c is number of groups in same template s.t. (g subset of c)
         // width of a template is max width over all its components
         // width of a derivation is max width over all its templates
@@ -100,8 +103,8 @@ public class CliqueDerivation {
         // Create enough templates. Look at component/group variables and their levels.
         int levels = 0;
         for (Variable variable : assignment) {
-            if (variable.getType() == Variable.Type.COMPONENT || variable.getType() == Variable.Type.GROUP) {
-                int level = variable.getArgs().get(2);
+            if (variable.type() == Variable.Type.COMPONENT || variable.type() == Variable.Type.GROUP) {
+                int level = variable.args().get(2);
                 levels = Math.max(levels, level);
             }
         }
@@ -111,20 +114,20 @@ public class CliqueDerivation {
         }
         // Look at component and group variables and fill the derivation.
         for (Variable variable : assignment) {
-            if (variable.getType() == Variable.Type.COMPONENT || variable.getType() == Variable.Type.GROUP) {
-                int u = sat.vertexMap().getFromDomain(variable.getArgs().get(0));
-                int v = sat.vertexMap().getFromDomain(variable.getArgs().get(1));
-                int level = variable.getArgs().get(2);
-                if (variable.getType() == Variable.Type.COMPONENT) {
-                    getComponents(level).add(u, v);
-                } else if (variable.getType() == Variable.Type.GROUP) {
-                    getGroups(level).add(u, v);
+            if (variable.type() == Variable.Type.COMPONENT || variable.type() == Variable.Type.GROUP) {
+                int u = sat.vertexMap().getFromDomain(variable.args().get(0));
+                int v = sat.vertexMap().getFromDomain(variable.args().get(1));
+                int level = variable.args().get(2);
+                if (variable.type() == Variable.Type.COMPONENT) {
+                    cmp(level).add(u, v);
+                } else if (variable.type() == Variable.Type.GROUP) {
+                    grp(level).add(u, v);
                 }
-            } else if (variable.getType() == Variable.Type.REPRESENTATIVE) {
-                int u = sat.vertexMap().getFromDomain(variable.getArgs().get(0));
-                int level = variable.getArgs().get(1);
-                getGroups(level).add(u);
-                getComponents(level).add(u);
+            } else if (variable.type() == Variable.Type.REPRESENTATIVE) {
+                int u = sat.vertexMap().getFromDomain(variable.args().get(0));
+                int level = variable.args().get(1);
+                grp(level).add(u);
+                cmp(level).add(u);
             }
         }
         Logger.debug("Constructed a derivation for clique-width with t = " + (size() - 1));
@@ -139,7 +142,7 @@ public class CliqueDerivation {
             strictifiable = false;
             for (int i = 1; i < templates.size(); i++) {
                 // strict if |cmp(T_{i-1})| > |cmp(T_i)| for all 1 <= i <= t.
-                if (getComponents(i - 1).size() <= getComponents(i).size()) {
+                if (cmp(i - 1).size() <= cmp(i).size()) {
                     strictifiable = true;
                     templates.remove(i);
                     break;
@@ -157,25 +160,25 @@ public class CliqueDerivation {
     public boolean fulfilsConditions(Graph graph) {
         // D1
         int t = templates.size() - 1;
-        if (graph.vertices().size() != getComponents(0).size()
-            || graph.vertices().size() != getGroups(0).size() || 1 != getComponents(t).size()) {
+        if (graph.vertices().size() != cmp(0).size()
+            || graph.vertices().size() != grp(0).size() || 1 != cmp(t).size()) {
             return false;
         }
         // D2
         for (int i = 0; i < templates.size(); i++) {
-            if (!getGroups(i).isRefinementOf(getComponents(i))) {
+            if (!grp(i).isRefinementOf(cmp(i))) {
                 return false;
             }
         }
         // D3
         for (int i = 1; i < templates.size(); i++) {
-            if (!getComponents(i - 1).isRefinementOf(getComponents(i))) {
+            if (!cmp(i - 1).isRefinementOf(cmp(i))) {
                 return false;
             }
         }
         // D4
         for (int i = 1; i < templates.size(); i++) {
-            if (!getGroups(i - 1).isRefinementOf(getGroups(i))) {
+            if (!grp(i - 1).isRefinementOf(grp(i))) {
                 return false;
             }
         }

@@ -36,10 +36,10 @@ public class Graph {
     public Set<Integer> getNeighbors(int vertex) {
         Set<Integer> neighbors = new HashSet<>();
         for (Edge edge : edges) {
-            if (edge.getEndpoints().get(0) == vertex) {
-                neighbors.add(edge.getEndpoints().get(1));
-            } else if (edge.getEndpoints().get(1) == vertex) {
-                neighbors.add(edge.getEndpoints().get(0));
+            if (edge.endpoints().get(0) == vertex) {
+                neighbors.add(edge.endpoints().get(1));
+            } else if (edge.endpoints().get(1) == vertex) {
+                neighbors.add(edge.endpoints().get(0));
             }
         }
         return neighbors;
@@ -59,8 +59,8 @@ public class Graph {
      */
     public void addEdge(Edge edge) {
         edges.add(edge);
-        vertices.add(edge.getEndpoints().get(0));
-        vertices.add(edge.getEndpoints().get(1));
+        vertices.add(edge.endpoints().get(0));
+        vertices.add(edge.endpoints().get(1));
     }
 
     /**
@@ -80,7 +80,7 @@ public class Graph {
      */
     public boolean hasEdgeWithEndpoints(int u, int v) {
         for (Edge edge : edges) {
-            List<Integer> endpoints = edge.getEndpoints();
+            List<Integer> endpoints = edge.endpoints();
             if (endpoints.contains(u) && endpoints.contains(v)) {
                 return true;
             }

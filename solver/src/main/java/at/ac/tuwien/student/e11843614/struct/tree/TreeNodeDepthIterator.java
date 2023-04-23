@@ -35,7 +35,7 @@ public class TreeNodeDepthIterator<T> implements Iterator<TreeNode<T>> {
             return;
         }
         deque.push(node);
-        for (TreeNode<T> child : node.getChildren()) {
+        for (TreeNode<T> child : node.children()) {
             dive(child);
         }
     }

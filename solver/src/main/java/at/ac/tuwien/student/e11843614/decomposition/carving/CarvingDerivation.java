@@ -50,8 +50,8 @@ public class CarvingDerivation {
     private void construct(Set<Variable> assignment, SATEncoding sat) {
         int levels = 0;
         for (Variable variable : assignment) {
-            if (variable.getType() == Variable.Type.LEADER) {
-                levels = Math.max(levels, variable.getArgs().get(1));
+            if (variable.type() == Variable.Type.LEADER) {
+                levels = Math.max(levels, variable.args().get(1));
             }
         }
         // Create a partition for each level.
@@ -60,15 +60,15 @@ public class CarvingDerivation {
         }
         // Go through leader and set variables
         for (Variable variable : assignment) {
-            if (variable.getType() == Variable.Type.LEADER) {
-                Integer vertex = sat.vertexMap().getFromDomain(variable.getArgs().get(0));
-                int level = variable.getArgs().get(1);
+            if (variable.type() == Variable.Type.LEADER) {
+                Integer vertex = sat.vertexMap().getFromDomain(variable.args().get(0));
+                int level = variable.args().get(1);
                 Partition<Integer> partition = getLevel(level);
                 partition.add(vertex);
-            } else if (variable.getType() == Variable.Type.SET) {
-                Integer vertex1 = sat.vertexMap().getFromDomain(variable.getArgs().get(0));
-                Integer vertex2 = sat.vertexMap().getFromDomain(variable.getArgs().get(1));
-                int level = variable.getArgs().get(2);
+            } else if (variable.type() == Variable.Type.SET) {
+                Integer vertex1 = sat.vertexMap().getFromDomain(variable.args().get(0));
+                Integer vertex2 = sat.vertexMap().getFromDomain(variable.args().get(1));
+                int level = variable.args().get(2);
                 Partition<Integer> partition = getLevel(level);
                 partition.add(vertex1, vertex2);
             }
@@ -88,7 +88,7 @@ public class CarvingDerivation {
         if (getLevel(1).size() != graph.vertices().size()) {
             return false;
         }
-        for (Set<Integer> ec : getLevel(1).getEquivalenceClasses()) {
+        for (Set<Integer> ec : getLevel(1).equivalenceClasses()) {
             if (ec.size() != 1) {
                 return false;
             }
@@ -97,7 +97,7 @@ public class CarvingDerivation {
         if (getLevel(l).size() != 1) {
             return false;
         }
-        if (!getLevel(l).getEquivalenceClasses().iterator().next().containsAll(graph.vertices())) {
+        if (!getLevel(l).equivalenceClasses().iterator().next().containsAll(graph.vertices())) {
             return false;
         }
         // D2

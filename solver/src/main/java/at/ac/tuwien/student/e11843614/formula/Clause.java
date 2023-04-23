@@ -24,7 +24,7 @@ public class Clause {
      * Retrieves the list of literals in the clause.
      * @return the list of literals.
      */
-    public List<Integer> getLiterals() {
+    public List<Integer> literals() {
         return literals;
     }
 

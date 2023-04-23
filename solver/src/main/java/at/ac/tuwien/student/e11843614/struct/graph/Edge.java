@@ -16,7 +16,7 @@ public class Edge {
         this.endpoints.add(v);
     }
 
-    public List<Integer> getEndpoints() {
+    public List<Integer> endpoints() {
         return endpoints;
     }
 

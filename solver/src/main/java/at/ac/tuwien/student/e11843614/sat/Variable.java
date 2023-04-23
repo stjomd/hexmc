@@ -142,7 +142,7 @@ public class Variable {
      * Returns the type of this variable.
      * @return a value of Type.
      */
-    public Type getType() {
+    public Type type() {
         return type;
     }
 
@@ -150,7 +150,7 @@ public class Variable {
      * Returns the arguments of this variable. The contents depend on the type of this variable.
      * @return a list of arguments (integers) of this variable.
      */
-    public List<Integer> getArgs() {
+    public List<Integer> args() {
         return args;
     }
 

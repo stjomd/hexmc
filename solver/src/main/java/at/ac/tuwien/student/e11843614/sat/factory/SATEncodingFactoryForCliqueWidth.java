@@ -26,7 +26,7 @@ public abstract class SATEncodingFactoryForCliqueWidth {
         clause6(sat, t);
         clause7(sat, t, k);
         Logger.debug("Constructed a SAT encoding for clique-width; formula has " + sat.variableMap().size()
-            + " variables and " + sat.getFormula().getClauses().size() + " clauses");
+            + " variables and " + sat.getFormula().clauses().size() + " clauses");
         return sat;
     }
 

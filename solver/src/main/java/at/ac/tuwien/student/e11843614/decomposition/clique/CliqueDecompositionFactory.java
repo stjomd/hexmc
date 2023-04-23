@@ -36,8 +36,8 @@ public abstract class CliqueDecompositionFactory {
         for (Edge edge : graph.edges()) {
             addEdgeCreationNode(root, edge);
             // A node might have been inserted above root
-            while (root.getParent() != null) {
-                root = root.getParent();
+            while (root.parent() != null) {
+                root = root.parent();
             }
         }
         normalize(root);
@@ -54,25 +54,25 @@ public abstract class CliqueDecompositionFactory {
     private static TreeNode<CliqueOperation> createTreeWithLeavesAndUnion(CliqueDerivation derivation) {
         // At the root node we store cmp(T_t)
         int t = derivation.size() - 1;
-        Set<Integer> rootCmp = derivation.getComponents(t).iterator().next();
+        Set<Integer> rootCmp = derivation.cmp(t).iterator().next();
         CliqueOperation rootContents = new CliqueUnion(rootCmp, t);
         TreeNode<CliqueOperation> root = new TreeNode<>(rootContents);
         // Each component corresponds to either a union or a leaf node.
         for (int i = t - 1; i >= 0; i--) {
-            for (Set<Integer> cmp : derivation.getComponents(i)) {
+            for (Set<Integer> cmp : derivation.cmp(i)) {
                 // Look for the union node in the current tree that contains the smallest superset of cmp.
                 // Traverse in breadth first order, then the smallest superset will be the last superset.
                 TreeNode<CliqueOperation> target = null;
                 for (TreeNode<CliqueOperation> node : root) {
-                    if (node.getObject() instanceof CliqueUnion) {
-                        CliqueUnion contents = (CliqueUnion) node.getObject();
+                    if (node.object() instanceof CliqueUnion) {
+                        CliqueUnion contents = (CliqueUnion) node.object();
                         if (contents.getComponent().containsAll(cmp)) {
                             target = node;
                         }
                     }
                 }
                 if (target != null) {
-                    int level = ((CliqueUnion) target.getObject()).getLevel();
+                    int level = ((CliqueUnion) target.object()).getLevel();
                     // Add child to target. If target.level = 1, we add a leaf, otherwise a union node.
                     CliqueOperation contents;
                     if (level == 1) {
@@ -94,14 +94,14 @@ public abstract class CliqueDecompositionFactory {
      * @param derivation the derivation.
      */
     private static void addRecoloringNodes(TreeNode<CliqueOperation> root, CliqueDerivation derivation) {
-        int width = derivation.width();
+        int width = derivation.getWidth();
         Iterator<TreeNode<CliqueOperation>> iterator = root.depthIterator();
         while (iterator.hasNext()) {
             TreeNode<CliqueOperation> node = iterator.next();
-            if (node.getObject() instanceof CliqueUnion) {
+            if (node.object() instanceof CliqueUnion) {
                 // If the conditions are already fulfilled, we don't have to insert anything.
                 if (fulfilsColorConditions(node, derivation)) {
-                    Logger.debug(node.getObject() + " fulfils color conditions, skip");
+                    Logger.debug(node.object() + " fulfils color conditions, skip");
                     continue;
                 }
                 // If not, we try to paint the nodes.
@@ -111,21 +111,21 @@ public abstract class CliqueDecompositionFactory {
                 // to other nodes.
                 painted = attemptFirstLevelRecolorings(node, derivation);
                 if (painted) {
-                    Logger.debug(node.getObject() + " had its children painted different colors");
+                    Logger.debug(node.object() + " had its children painted different colors");
                     continue;
                 }
                 // Another optimization: often it's enough to only insert recoloring nodes above one of the children.
                 // Attempt that and if that fails, move on to full brute forcing.
-                Logger.debug(node.getObject() + " is being recolored using one-child-brute-force");
+                Logger.debug(node.object() + " is being recolored using one-child-brute-force");
                 painted = attemptEdgeRecolorings(node, derivation, width);
                 if (painted) {
-                    Logger.debug(node.getObject() + " had recoloring nodes inserted above one child");
+                    Logger.debug(node.object() + " had recoloring nodes inserted above one child");
                     continue;
                 }
                 // As a last resort, brute force.
-                Logger.debug(node.getObject() + " requires full brute force");
+                Logger.debug(node.object() + " requires full brute force");
                 bruteforceRecolorings(node, derivation, width);
-                Logger.debug(node.getObject() + " has been repainted using full brute force");
+                Logger.debug(node.object() + " has been repainted using full brute force");
             }
         }
     }
@@ -138,14 +138,14 @@ public abstract class CliqueDecompositionFactory {
      * @return true, if the recoloring nodes were added, and false otherwise.
      */
     private static boolean attemptFirstLevelRecolorings(TreeNode<CliqueOperation> node, CliqueDerivation derivation) {
-        CliqueUnion nodeOperation = (CliqueUnion) node.getObject();
+        CliqueUnion nodeOperation = (CliqueUnion) node.object();
         if (nodeOperation.getLevel() != 1) {
             return false;
         }
         // Try to paint singletons different colors
         int i = 1;
         Set<TreeNode<CliqueOperation>> addedRecoloringNodes = new HashSet<>();
-        Set<TreeNode<CliqueOperation>> children = new HashSet<>(node.getChildren());
+        Set<TreeNode<CliqueOperation>> children = new HashSet<>(node.children());
         for (TreeNode<CliqueOperation> child : children) {
             if (i == 1) {
                 i++;
@@ -174,7 +174,7 @@ public abstract class CliqueDecompositionFactory {
      * @return true, if the recoloring nodes were added, and false otherwise.
      */
     private static boolean attemptEdgeRecolorings(TreeNode<CliqueOperation> node, CliqueDerivation derivation, int width) {
-        Set<TreeNode<CliqueOperation>> children = new HashSet<>(node.getChildren());
+        Set<TreeNode<CliqueOperation>> children = new HashSet<>(node.children());
         for (TreeNode<CliqueOperation> child : children) {
             // Attempt to insert nodes above this child. We can insert from 1 to k nodes.
             for (int amount = 1; amount <= width; amount++) {
@@ -210,7 +210,7 @@ public abstract class CliqueDecompositionFactory {
      */
     @SuppressWarnings("UnusedReturnValue")
     private static boolean bruteforceRecolorings(TreeNode<CliqueOperation> node, CliqueDerivation derivation, int width) {
-        Iterator<List<TreeNode<CliqueOperation>>> childSubsetIterator = new SubsetIterator<>(node.getChildren());
+        Iterator<List<TreeNode<CliqueOperation>>> childSubsetIterator = new SubsetIterator<>(node.children());
         while (childSubsetIterator.hasNext()) {
             List<TreeNode<CliqueOperation>> childSubset = childSubsetIterator.next();
             Iterator<List<List<CliqueRecoloring>>> recoloringIterator = new ChildrenRecoloringIterator(childSubset.size(), width);
@@ -243,8 +243,8 @@ public abstract class CliqueDecompositionFactory {
      * @param edge the edge to create a node for.
      */
     private static void addEdgeCreationNode(TreeNode<CliqueOperation> root, Edge edge) {
-        int u = edge.getEndpoints().get(0);
-        int v = edge.getEndpoints().get(1);
+        int u = edge.endpoints().get(0);
+        int v = edge.endpoints().get(1);
         // Go through the nodes in breadth-first fashion, look at union nodes with component including both u, v; store
         // the node with the smallest level. Since we're traversing in breadth-first fashion, the last passing node will
         // be the one with the smallest level. In colorMap, we store a map from colors to vertices.
@@ -252,8 +252,8 @@ public abstract class CliqueDecompositionFactory {
         TreeNode<CliqueOperation> target = null;
         Map<Integer, List<CliqueSingleton>> targetColorMap = null;
         for (TreeNode<CliqueOperation> node : root) {
-            if (node.getObject() instanceof CliqueUnion) {
-                CliqueUnion operation = ((CliqueUnion) node.getObject());
+            if (node.object() instanceof CliqueUnion) {
+                CliqueUnion operation = ((CliqueUnion) node.object());
                 Map<Integer, List<CliqueSingleton>> colorMap = colorMap(node);
                 // The target vertex must have min level, and contain both u and v.
                 boolean containsU = false, containsV = false;
@@ -298,21 +298,21 @@ public abstract class CliqueDecompositionFactory {
                 // We don't have to insert edges(i -> j) if there is already a node edges(i -> j) or edges(j -> i) above.
                 // Go up from target until recoloring/union node or null is reached. Look at edge creation nodes on the way.
                 TreeNode<CliqueOperation> current = target;
-                current = current.getParent();
+                current = current.parent();
                 while (current != null) {
-                    if (current.getObject() instanceof CliqueRecoloring) {
+                    if (current.object() instanceof CliqueRecoloring) {
                         break;
-                    } else if (current.getObject() instanceof CliqueUnion) {
+                    } else if (current.object() instanceof CliqueUnion) {
                         break;
-                    } else if (current.getObject() instanceof CliqueEdgeCreation) {
-                        CliqueEdgeCreation operation = (CliqueEdgeCreation) current.getObject();
+                    } else if (current.object() instanceof CliqueEdgeCreation) {
+                        CliqueEdgeCreation operation = (CliqueEdgeCreation) current.object();
                         if ((operation.getFrom() == colorU && operation.getTo() == colorV)
                             || (operation.getFrom() == colorV && operation.getTo() == colorU)) {
                             // A node that adds this edge to the graph is already in
                             return;
                         }
                     }
-                    current = current.getParent();
+                    current = current.parent();
                 }
                 target.insertAbove(new CliqueEdgeCreation(colorU, colorV));
             }
@@ -345,11 +345,11 @@ public abstract class CliqueDecompositionFactory {
         while (reducable) {
             reducable = false;
             for (TreeNode<CliqueOperation> node : root) {
-                if (!(node.getObject() instanceof CliqueUnion)) {
+                if (!(node.object() instanceof CliqueUnion)) {
                     continue;
                 }
                 // If a union node only has one child, it is unnecessary
-                if (node.getChildren().size() == 1) {
+                if (node.children().size() == 1) {
                     node.contract();
                     reducable = true;
                 }
@@ -367,18 +367,18 @@ public abstract class CliqueDecompositionFactory {
      */
     private static void colorSingletons(TreeNode<CliqueOperation> root) {
         for (TreeNode<CliqueOperation> node : root) {
-            if (!(node.getObject() instanceof CliqueSingleton)) {
+            if (!(node.object() instanceof CliqueSingleton)) {
                 continue;
             }
-            CliqueSingleton singleton = (CliqueSingleton) node.getObject();
+            CliqueSingleton singleton = (CliqueSingleton) node.object();
             // Check if the parent of this singleton is a recoloring node. If so, color the singleton, and remove the
             // recoloring node.
-            if (node.getParent() != null) {
-                TreeNode<CliqueOperation> parent = node.getParent();
-                if (!(parent.getObject() instanceof CliqueRecoloring)) {
+            if (node.parent() != null) {
+                TreeNode<CliqueOperation> parent = node.parent();
+                if (!(parent.object() instanceof CliqueRecoloring)) {
                     continue;
                 }
-                CliqueRecoloring recoloring = (CliqueRecoloring) parent.getObject();
+                CliqueRecoloring recoloring = (CliqueRecoloring) parent.object();
                 singleton.setColor(recoloring.getTo());
                 parent.contract();
             }
@@ -395,13 +395,13 @@ public abstract class CliqueDecompositionFactory {
         Iterator<TreeNode<CliqueOperation>> iterator = root.depthIterator();
         while (iterator.hasNext()) {
             TreeNode<CliqueOperation> node = iterator.next();
-            if (!(node.getObject() instanceof CliqueUnion) || node.getChildren().size() <= 2) {
+            if (!(node.object() instanceof CliqueUnion) || node.children().size() <= 2) {
                 continue;
             }
             // While this node has more than two children, proceed as follows. Pick two children, say a, b, and detach
             // them from this node. Create a new union node c, add a, b to its children. Then add c as a child to node.
-            while (node.getChildren().size() > 2) {
-                Iterator<TreeNode<CliqueOperation>> childIterator = node.getChildren().iterator();
+            while (node.children().size() > 2) {
+                Iterator<TreeNode<CliqueOperation>> childIterator = node.children().iterator();
                 TreeNode<CliqueOperation> a = childIterator.next();
                 TreeNode<CliqueOperation> b = childIterator.next();
                 a.detach();
@@ -424,10 +424,10 @@ public abstract class CliqueDecompositionFactory {
      * @return true, if the conditions are satisfied, and false otherwise.
      */
     private static boolean fulfilsColorConditions(TreeNode<CliqueOperation> node, CliqueDerivation derivation) {
-        CliqueUnion nodeOperation = (CliqueUnion) node.getObject();
+        CliqueUnion nodeOperation = (CliqueUnion) node.object();
         Partition<Integer> grp = grp(node);
-        return derivation.getGroups(nodeOperation.getLevel()).getEquivalenceClasses()
-            .containsAll(grp.getEquivalenceClasses());
+        return derivation.grp(nodeOperation.getLevel()).equivalenceClasses()
+            .containsAll(grp.equivalenceClasses());
     }
 
     /**
@@ -439,7 +439,7 @@ public abstract class CliqueDecompositionFactory {
         // first store all leaf nodes. Then, for each leaf, backtrack to the top node while updating the color.
         Set<TreeNode<CliqueOperation>> leaves = new HashSet<>();
         for (TreeNode<CliqueOperation> subnode : node) {
-            if (subnode.getObject() instanceof CliqueSingleton) {
+            if (subnode.object() instanceof CliqueSingleton) {
                 leaves.add(subnode);
             }
         }
@@ -447,17 +447,17 @@ public abstract class CliqueDecompositionFactory {
         Map<Integer, List<CliqueSingleton>> map = new HashMap<>();
         // For each leaf, backtrack back to node, taking recoloring nodes on the way into account.
         for (TreeNode<CliqueOperation> leaf : leaves) {
-            CliqueSingleton content = ((CliqueSingleton) leaf.getObject());
+            CliqueSingleton content = ((CliqueSingleton) leaf.object());
             int color = content.getColor();
             TreeNode<CliqueOperation> currentNode = leaf;
             while (currentNode != node) {
-                if (currentNode.getObject() instanceof CliqueRecoloring) {
-                    CliqueRecoloring op = ((CliqueRecoloring) currentNode.getObject());
+                if (currentNode.object() instanceof CliqueRecoloring) {
+                    CliqueRecoloring op = ((CliqueRecoloring) currentNode.object());
                     if (color == op.getFrom()) {
                         color = op.getTo();
                     }
                 }
-                currentNode = currentNode.getParent();
+                currentNode = currentNode.parent();
             }
             // Color is now determined; store the leaf in the map.
             if (!map.containsKey(color)) {

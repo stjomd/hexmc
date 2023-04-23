@@ -47,7 +47,7 @@ public class Formula {
      * Retrieves the list of clauses.
      * @return the list of clauses.
      */
-    public List<Clause> getClauses() {
+    public List<Clause> clauses() {
         return clauses;
     }
 
