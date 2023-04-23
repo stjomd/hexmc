@@ -47,13 +47,13 @@ public abstract class SATSolver {
             for (Clause clause : formula.clauses()) {
                 solver.addClause(asVecInt(clause));
             }
-            int[] model = solver.findModel();
-            if (model == null) {
+            if (solver.isSatisfiable()) {
+                Logger.debug("Formula is satisfiable");
+                return solver.findModel();
+            } else {
                 Logger.debug("Formula is unsatisfiable");
                 return new int[]{};
             }
-            Logger.debug("Formula is satisfiable");
-            return model;
         } catch (ContradictionException exception) {
             Logger.debug("Formula is unsatisfiable");
             return new int[]{};
