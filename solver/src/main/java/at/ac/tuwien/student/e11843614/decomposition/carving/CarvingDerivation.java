@@ -85,7 +85,7 @@ public class CarvingDerivation {
         int l = derivation.size();
         // D1
         // P_1 has |V(G)| equivalence classes, each consisting of one element
-        if (getLevel(1).size() != graph.getVertices().size()) {
+        if (getLevel(1).size() != graph.vertices().size()) {
             return false;
         }
         for (Set<Integer> ec : getLevel(1).getEquivalenceClasses()) {
@@ -97,7 +97,7 @@ public class CarvingDerivation {
         if (getLevel(l).size() != 1) {
             return false;
         }
-        if (!getLevel(l).getEquivalenceClasses().iterator().next().containsAll(graph.getVertices())) {
+        if (!getLevel(l).getEquivalenceClasses().iterator().next().containsAll(graph.vertices())) {
             return false;
         }
         // D2

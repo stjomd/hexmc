@@ -33,7 +33,7 @@ public abstract class CliqueDecompositionFactory {
     public static TreeNode<CliqueOperation> from(CliqueDerivation derivation, Graph graph) {
         TreeNode<CliqueOperation> root = createTreeWithLeavesAndUnion(derivation);
         addRecoloringNodes(root, derivation);
-        for (Edge edge : graph.getEdges()) {
+        for (Edge edge : graph.edges()) {
             addEdgeCreationNode(root, edge);
             // A node might have been inserted above root
             while (root.getParent() != null) {

@@ -45,8 +45,8 @@ public class CliqueDerivationTest {
     public void d1() {
         int t = derivation.size() - 1;
         assertAll(
-            () -> assertEquals(graph.getVertices().size(), derivation.getComponents(0).size(), "|cmp(T_0)| is not |V|"),
-            () -> assertEquals(graph.getVertices().size(), derivation.getGroups(0).size(), "|grp(T_0)| is not |V|"),
+            () -> assertEquals(graph.vertices().size(), derivation.getComponents(0).size(), "|cmp(T_0)| is not |V|"),
+            () -> assertEquals(graph.vertices().size(), derivation.getGroups(0).size(), "|grp(T_0)| is not |V|"),
             () -> assertEquals(1, derivation.getComponents(t).size(), "|cmp(T_t)| is not 1")
         );
     }
@@ -88,7 +88,7 @@ public class CliqueDerivationTest {
     @DisplayName("Edge Property")
     public void edgeProperty() {
         for (int i = 1; i < derivation.size(); i++) {
-            for (Edge edge : graph.getEdges()) {
+            for (Edge edge : graph.edges()) {
                 List<Integer> endpoints = edge.getEndpoints();
                 boolean inSameGroup = false;
                 for (Set<Integer> group : derivation.getGroups(i).getEquivalenceClasses()) {
@@ -119,9 +119,9 @@ public class CliqueDerivationTest {
     @DisplayName("Neighborhood Property")
     public void neighborhoodProperty() {
         for (int i = 1; i < derivation.size(); i++) {
-            for (Integer u : graph.getVertices()) {
-                for (Integer v : graph.getVertices()) {
-                    for (Integer w : graph.getVertices()) {
+            for (Integer u : graph.vertices()) {
+                for (Integer v : graph.vertices()) {
+                    for (Integer w : graph.vertices()) {
                         if (graph.hasEdgeWithEndpoints(u, v) && !graph.hasEdgeWithEndpoints(u, w)) {
                             boolean inSameGroup = false;
                             for (Set<Integer> group : derivation.getGroups(i).getEquivalenceClasses()) {
@@ -155,10 +155,10 @@ public class CliqueDerivationTest {
     @DisplayName("Path Property")
     public void pathProperty() {
         for (int i = 1; i < derivation.size(); i++) {
-            for (Integer u : graph.getVertices()) {
-                for (Integer v : graph.getVertices()) {
-                    for (Integer w : graph.getVertices()) {
-                        for (Integer x : graph.getVertices()) {
+            for (Integer u : graph.vertices()) {
+                for (Integer v : graph.vertices()) {
+                    for (Integer w : graph.vertices()) {
+                        for (Integer x : graph.vertices()) {
                             if (graph.hasEdgeWithEndpoints(u, v) && graph.hasEdgeWithEndpoints(u, w)
                                 && graph.hasEdgeWithEndpoints(v, x) && !graph.hasEdgeWithEndpoints(w, x)) {
                                 boolean uxInSameGroup = false;
