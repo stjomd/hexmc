@@ -1,7 +1,6 @@
 package at.ac.tuwien.student.e11843614.decomposition.branch;
 
 import at.ac.tuwien.student.e11843614.Logger;
-import at.ac.tuwien.student.e11843614.struct.graph.Edge;
 import at.ac.tuwien.student.e11843614.sat.SATEncoding;
 import at.ac.tuwien.student.e11843614.sat.Variable;
 import at.ac.tuwien.student.e11843614.struct.Partition;
@@ -12,17 +11,17 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * An object that represents a derivation for branch decompositions.
+ * An object that represents a derivation for carving decompositions.
  */
-public class BranchDerivation {
+public class CarvingDerivation {
 
-    List<Partition<Edge>> derivation = new ArrayList<>();
+    List<Partition<Integer>> derivation = new ArrayList<>();
 
     /**
      * Constructs a derivation from the set and leader variables of the assignment.
      * @param assignment a set of variables set to true by the SAT solver.
      */
-    public BranchDerivation(Set<Variable> assignment, SATEncoding sat) {
+    public CarvingDerivation(Set<Variable> assignment, SATEncoding sat) {
         construct(assignment, sat);
     }
 
@@ -31,7 +30,7 @@ public class BranchDerivation {
      * @param level the level, a number between one and the size.
      * @return the partition at the specified level.
      */
-    public Partition<Edge> getLevel(int level) {
+    public Partition<Integer> getLevel(int level) {
         return derivation.get(level - 1);
     }
 
@@ -62,19 +61,19 @@ public class BranchDerivation {
         // Go through leader and set variables
         for (Variable variable : assignment) {
             if (variable.getType() == Variable.Type.LEADER) {
-                Edge edge = sat.edgeMap().getFromDomain(variable.getArgs().get(0));
+                Integer vertex = sat.vertexMap().getFromDomain(variable.getArgs().get(0));
                 int level = variable.getArgs().get(1);
-                Partition<Edge> partition = getLevel(level);
-                partition.add(edge);
+                Partition<Integer> partition = getLevel(level);
+                partition.add(vertex);
             } else if (variable.getType() == Variable.Type.SET) {
-                Edge edge1 = sat.edgeMap().getFromDomain(variable.getArgs().get(0));
-                Edge edge2 = sat.edgeMap().getFromDomain(variable.getArgs().get(1));
+                Integer vertex1 = sat.vertexMap().getFromDomain(variable.getArgs().get(0));
+                Integer vertex2 = sat.vertexMap().getFromDomain(variable.getArgs().get(1));
                 int level = variable.getArgs().get(2);
-                Partition<Edge> partition = getLevel(level);
-                partition.add(edge1, edge2);
+                Partition<Integer> partition = getLevel(level);
+                partition.add(vertex1, vertex2);
             }
         }
-        Logger.debug("Constructed a derivation for branch-width with l = " + size());
+        Logger.debug("Constructed a derivation for carving-width with l = " + size());
     }
 
     /**
@@ -85,20 +84,20 @@ public class BranchDerivation {
     public boolean fulfilsConditions(Graph graph) {
         int l = derivation.size();
         // D1
-        // P_1 has |E(G)| equivalence classes, each consisting of one element
-        if (getLevel(1).size() != graph.getEdges().size()) {
+        // P_1 has |V(G)| equivalence classes, each consisting of one element
+        if (getLevel(1).size() != graph.getVertices().size()) {
             return false;
         }
-        for (Set<Edge> ec : getLevel(1).getEquivalenceClasses()) {
+        for (Set<Integer> ec : getLevel(1).getEquivalenceClasses()) {
             if (ec.size() != 1) {
                 return false;
             }
         }
-        // P_l has 1 equivalence class which contains all edges
+        // P_l has 1 equivalence class which contains all vertices
         if (getLevel(l).size() != 1) {
             return false;
         }
-        if (!getLevel(l).getEquivalenceClasses().iterator().next().containsAll(graph.getEdges())) {
+        if (!getLevel(l).getEquivalenceClasses().iterator().next().containsAll(graph.getVertices())) {
             return false;
         }
         // D2
@@ -118,7 +117,7 @@ public class BranchDerivation {
     public String toString() {
         StringBuilder builder = new StringBuilder();
         for (int i = 0; i < derivation.size(); i++) {
-            Partition<Edge> partition = derivation.get(i);
+            Partition<Integer> partition = derivation.get(i);
             builder.append(i + 1).append(": ").append(partition).append("\n");
         }
         return builder.toString();

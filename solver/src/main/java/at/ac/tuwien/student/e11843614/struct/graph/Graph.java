@@ -41,7 +41,7 @@ public class Graph {
      * @param vertex the vertex to find neighbors of.
      * @return the set of neighbors/adjacent vertices.
      */
-    private Set<Integer> neighborsOf(int vertex) {
+    public Set<Integer> neighborsOf(int vertex) {
         Set<Integer> neighbors = new HashSet<>();
         for (Edge edge : edges) {
             if (edge.getEndpoints().get(0) == vertex) {
