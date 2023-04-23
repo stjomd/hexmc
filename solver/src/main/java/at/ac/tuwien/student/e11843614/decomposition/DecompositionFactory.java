@@ -1,6 +1,6 @@
 package at.ac.tuwien.student.e11843614.decomposition;
 
-import at.ac.tuwien.student.e11843614.decomposition.branch.CarvingDerivation;
+import at.ac.tuwien.student.e11843614.decomposition.carving.CarvingDerivation;
 import at.ac.tuwien.student.e11843614.decomposition.clique.CliqueDecompositionFactory;
 import at.ac.tuwien.student.e11843614.decomposition.clique.CliqueDerivation;
 import at.ac.tuwien.student.e11843614.decomposition.clique.operation.CliqueOperation;
