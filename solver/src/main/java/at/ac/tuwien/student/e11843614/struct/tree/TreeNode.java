@@ -26,7 +26,7 @@ public class TreeNode<T> implements Iterable<TreeNode<T>> {
      * Returns the object associated with this node.
      * @return the object.
      */
-    public T getObject() {
+    public T object() {
         return object;
     }
 
@@ -42,7 +42,7 @@ public class TreeNode<T> implements Iterable<TreeNode<T>> {
      * Returns the parent of this node.
      * @return the parent of this node.
      */
-    public TreeNode<T> getParent() {
+    public TreeNode<T> parent() {
         return parent;
     }
 
@@ -50,7 +50,7 @@ public class TreeNode<T> implements Iterable<TreeNode<T>> {
      * Returns the set of this node's children.
      * @return the set of children.
      */
-    public Set<TreeNode<T>> getChildren() {
+    public Set<TreeNode<T>> children() {
         return children;
     }
 

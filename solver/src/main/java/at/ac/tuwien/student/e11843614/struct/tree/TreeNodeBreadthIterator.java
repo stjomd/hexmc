@@ -26,7 +26,7 @@ public class TreeNodeBreadthIterator<T> implements Iterator<TreeNode<T>> {
     public TreeNode<T> next() {
         if (hasNext()) {
             TreeNode<T> node = queue.remove();
-            queue.addAll(node.getChildren());
+            queue.addAll(node.children());
             return node;
         }
         throw new NoSuchElementException("Tree contains no more nodes.");

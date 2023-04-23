@@ -53,12 +53,12 @@ public class CarvingTests {
             int l = derivation.size();
             // P_1 has |V(G)| equivalence classes, each consisting of one element
             assertEquals(graph.vertices().size(), derivation.getLevel(1).size(), "P_1 has more than |V(G)| sets");
-            for (Set<Integer> ec : derivation.getLevel(1).getEquivalenceClasses()) {
+            for (Set<Integer> ec : derivation.getLevel(1).equivalenceClasses()) {
                 assertEquals(1, ec.size(), "An equivalence class in P_1 has more than 1 edge");
             }
             // P_l has 1 equivalence class which contains all edges
             assertEquals(1, derivation.getLevel(l).size(), "P_l does not have 1 equivalence class");
-            Set<Integer> ec = derivation.getLevel(l).getEquivalenceClasses().iterator().next();
+            Set<Integer> ec = derivation.getLevel(l).equivalenceClasses().iterator().next();
             assertTrue(ec.containsAll(graph.vertices()), "The equivalence class in P_l doesn't contain all vertices");
         }
 
@@ -119,15 +119,15 @@ public class CarvingTests {
             queue.add(decomposition);
             while (!queue.isEmpty()) {
                 TreeNode<Integer> node = queue.remove();
-                if (node.getObject() == null) {
+                if (node.object() == null) {
                     // Internal nodes have no vertex, and have degree 3.
                     assertEquals(3, node.degree(), "Internal node has degree " + node.degree());
                 } else {
                     // Leaves must have a vertex stored, and have degree 1.
                     assertEquals(1, node.degree(), "Leaf has degree " + node.degree());
-                    vertices.add(node.getObject());
+                    vertices.add(node.object());
                 }
-                queue.addAll(node.getChildren());
+                queue.addAll(node.children());
             }
             // Branch decomposition must contain exactly all vertices of the graph.
             assertEquals(graph.vertices(), vertices, "Branch decomposition does not contain all vertices of the graph");

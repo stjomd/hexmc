@@ -42,9 +42,9 @@ public abstract class SATSolver {
      */
     public static int[] getModel(Formula formula) throws TimeoutException {
         ISolver solver = SolverFactory.newDefault();
-        solver.setExpectedNumberOfClauses(formula.getClauses().size());
+        solver.setExpectedNumberOfClauses(formula.clauses().size());
         try {
-            for (Clause clause : formula.getClauses()) {
+            for (Clause clause : formula.clauses()) {
                 solver.addClause(asVecInt(clause));
             }
             int[] model = solver.findModel();
@@ -66,9 +66,9 @@ public abstract class SATSolver {
      * @return a VecInt equivalent to clause.
      */
     private static VecInt asVecInt(Clause clause) {
-        int[] array = new int[clause.getLiterals().size()];
+        int[] array = new int[clause.literals().size()];
         for (int i = 0; i < array.length; i++) {
-            array[i] = clause.getLiterals().get(i);
+            array[i] = clause.literals().get(i);
         }
         return new VecInt(array);
     }

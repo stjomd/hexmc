@@ -30,7 +30,7 @@ public class DecompositionFactory {
                 // Traverse in breadth first order, then the smallest superset will be the last superset.
                 TreeNode<Set<Integer>> target = null;
                 for (TreeNode<Set<Integer>> node : helper) {
-                    if (node.getObject().containsAll(ec) && node.getObject().size() > ec.size()) {
+                    if (node.object().containsAll(ec) && node.object().size() > ec.size()) {
                         target = node;
                     }
                 }
@@ -46,7 +46,7 @@ public class DecompositionFactory {
         TreeNode<Integer> root = new TreeNode<>();
         transformHelperTree(helper, root);
         // The branch decomposition is the child of the resulting tree.
-        root = root.getChildren().iterator().next();
+        root = root.children().iterator().next();
         root.detach();
         return root;
     }
@@ -71,11 +71,11 @@ public class DecompositionFactory {
             return;
         }
         TreeNode<Integer> decompositionNode = new TreeNode<>();
-        if (helper.getObject().size() == 1) {
-            decompositionNode.setObject(helper.getObject().iterator().next());
+        if (helper.object().size() == 1) {
+            decompositionNode.setObject(helper.object().iterator().next());
         }
         decomposition.addChild(decompositionNode);
-        for (TreeNode<Set<Integer>> child : helper.getChildren()) {
+        for (TreeNode<Set<Integer>> child : helper.children()) {
             transformHelperTree(child, decompositionNode);
         }
     }

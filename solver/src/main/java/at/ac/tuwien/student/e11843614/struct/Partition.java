@@ -67,7 +67,7 @@ public class Partition<T> implements Iterable<Set<T>> {
      * Returns the set of equivalence classes in this partition.
      * @return the set of equivalence classes.
      */
-    public Set<Set<T>> getEquivalenceClasses() {
+    public Set<Set<T>> equivalenceClasses() {
         return equivalenceClasses;
     }
 

@@ -34,7 +34,7 @@ public abstract class SATEncodingFactoryForCarvingWidth {
         clause10(sat, d, w);
         clause11(sat, d);
         Logger.debug("Constructed a SAT encoding for carving-width; formula has " + sat.variableMap().size()
-            + " variables and " + sat.getFormula().getClauses().size() + " clauses");
+            + " variables and " + sat.getFormula().clauses().size() + " clauses");
         return sat;
     }
 
@@ -175,7 +175,7 @@ public abstract class SATEncodingFactoryForCarvingWidth {
                         for (Integer u : sat.edgeMap().destinationSet()) {
                             // Unmap u to check edge endpoints
                             Edge uEdge = sat.edgeMap().getFromDomain(u);
-                            if (uEdge.getEndpoints().contains(fVertex) && uEdge.getEndpoints().contains(gVertex)) {
+                            if (uEdge.endpoints().contains(fVertex) && uEdge.endpoints().contains(gVertex)) {
                                 for (int i = 1; i <= d; i++) {
                                     int[] var = new int[]{
                                         sat.encodeVariable(Variable.leader(e, i)),
@@ -202,7 +202,7 @@ public abstract class SATEncodingFactoryForCarvingWidth {
                     for (Integer u : sat.edgeMap().destinationSet()) {
                         // Unmap u to check edge endpoints
                         Edge uEdge = sat.edgeMap().getFromDomain(u);
-                        if (uEdge.getEndpoints().contains(eVertex) && uEdge.getEndpoints().contains(fVertex)) {
+                        if (uEdge.endpoints().contains(eVertex) && uEdge.endpoints().contains(fVertex)) {
                             for (int i = 1; i <= d; i++) {
                                 int[] var = new int[]{
                                     sat.encodeVariable(Variable.leader(e, i)),
