@@ -24,4 +24,5 @@ public class CliqueRecoloring implements CliqueOperation {
     public String toString() {
         return String.format("recolor(%d -> %d)", from, to);
     }
+
 }
