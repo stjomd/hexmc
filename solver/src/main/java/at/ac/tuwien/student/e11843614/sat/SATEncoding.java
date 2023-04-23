@@ -79,12 +79,12 @@ public class SATEncoding {
      */
     private void encodeGraph(Graph graph) {
         int i = 1;
-        for (Integer vertex : graph.getVertices()) {
+        for (Integer vertex : graph.vertices()) {
             vertexMap.put(vertex, i);
             i++;
         }
         i = 1;
-        for (Edge edge : graph.getEdges()) {
+        for (Edge edge : graph.edges()) {
             edgeMap.put(edge, i);
             i++;
         }

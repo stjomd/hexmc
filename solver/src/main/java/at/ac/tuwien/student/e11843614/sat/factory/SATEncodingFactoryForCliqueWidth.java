@@ -15,7 +15,7 @@ public abstract class SATEncodingFactoryForCliqueWidth {
      * @return a SAT encoding for this graph that contains a formula which is satisfiable if cw(graph) <= k.
      */
     public static SATEncoding of(Graph graph, int k) {
-        int t = graph.getVertices().size() - k + 1;
+        int t = graph.vertices().size() - k + 1;
         Logger.debug("Constructing a SAT encoding for clique-width, k = " + k + ", t = " + t);
         SATEncoding sat = new SATEncoding(graph);
         clause1(sat, t);

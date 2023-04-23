@@ -157,8 +157,8 @@ public class CliqueDerivation {
     public boolean fulfilsConditions(Graph graph) {
         // D1
         int t = templates.size() - 1;
-        if (graph.getVertices().size() != getComponents(0).size()
-            || graph.getVertices().size() != getGroups(0).size() || 1 != getComponents(t).size()) {
+        if (graph.vertices().size() != getComponents(0).size()
+            || graph.vertices().size() != getGroups(0).size() || 1 != getComponents(t).size()) {
             return false;
         }
         // D2

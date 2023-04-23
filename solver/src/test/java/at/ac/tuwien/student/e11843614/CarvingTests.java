@@ -52,14 +52,14 @@ public class CarvingTests {
         public void d1() {
             int l = derivation.size();
             // P_1 has |V(G)| equivalence classes, each consisting of one element
-            assertEquals(graph.getVertices().size(), derivation.getLevel(1).size(), "P_1 has more than |V(G)| sets");
+            assertEquals(graph.vertices().size(), derivation.getLevel(1).size(), "P_1 has more than |V(G)| sets");
             for (Set<Integer> ec : derivation.getLevel(1).getEquivalenceClasses()) {
                 assertEquals(1, ec.size(), "An equivalence class in P_1 has more than 1 edge");
             }
             // P_l has 1 equivalence class which contains all edges
             assertEquals(1, derivation.getLevel(l).size(), "P_l does not have 1 equivalence class");
             Set<Integer> ec = derivation.getLevel(l).getEquivalenceClasses().iterator().next();
-            assertTrue(ec.containsAll(graph.getVertices()), "The equivalence class in P_l doesn't contain all vertices");
+            assertTrue(ec.containsAll(graph.vertices()), "The equivalence class in P_l doesn't contain all vertices");
         }
 
         @Test
@@ -130,7 +130,7 @@ public class CarvingTests {
                 queue.addAll(node.getChildren());
             }
             // Branch decomposition must contain exactly all vertices of the graph.
-            assertEquals(graph.getVertices(), vertices, "Branch decomposition does not contain all vertices of the graph");
+            assertEquals(graph.vertices(), vertices, "Branch decomposition does not contain all vertices of the graph");
         }
 
     }

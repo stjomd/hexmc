@@ -17,7 +17,7 @@ public abstract class SATEncodingFactoryForCarvingWidth {
      */
     public static SATEncoding of(Graph graph, int w) {
         double deg = maximumDegree(graph);
-        int d = (int) Math.floor(graph.getVertices().size() / 2.0)
+        int d = (int) Math.floor(graph.vertices().size() / 2.0)
             - (int) Math.ceil(w / deg)
             + (int) Math.max(0, Math.ceil(Math.log(Math.floor(w / deg)) / Math.log(2))); // prevent overflow
         Logger.debug("Constructing a SAT encoding for carving-width, w = " + w + ", d = " + d);
@@ -40,8 +40,8 @@ public abstract class SATEncodingFactoryForCarvingWidth {
 
     private static int maximumDegree(Graph graph) {
         int degree = 0;
-        for (int vertex : graph.getVertices()) {
-            degree = Math.max(degree, graph.neighborsOf(vertex).size());
+        for (int vertex : graph.vertices()) {
+            degree = Math.max(degree, graph.getNeighbors(vertex).size());
         }
         return degree;
     }
