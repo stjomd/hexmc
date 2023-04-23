@@ -1,27 +1,16 @@
 package at.ac.tuwien.student.e11843614.decomposition;
 
-import at.ac.tuwien.student.e11843614.decomposition.branch.BranchDecompositionHeuristic;
 import at.ac.tuwien.student.e11843614.decomposition.branch.CarvingDerivation;
 import at.ac.tuwien.student.e11843614.decomposition.clique.CliqueDecompositionFactory;
 import at.ac.tuwien.student.e11843614.decomposition.clique.CliqueDerivation;
 import at.ac.tuwien.student.e11843614.decomposition.clique.operation.CliqueOperation;
 import at.ac.tuwien.student.e11843614.struct.tree.TreeNode;
-import at.ac.tuwien.student.e11843614.struct.graph.Edge;
 import at.ac.tuwien.student.e11843614.struct.graph.Graph;
 
 import java.util.HashSet;
 import java.util.Set;
 
 public class DecompositionFactory {
-
-    /**
-     * Constructs a branch decomposition using a heuristic.
-     * @param graph the graph.
-     * @return a branch decomposition.
-     */
-    public static TreeNode<Edge> branchHeuristic(Graph graph) {
-        return BranchDecompositionHeuristic.of(graph);
-    }
 
     /**
      * Constructs a carving decomposition from a derivation.
