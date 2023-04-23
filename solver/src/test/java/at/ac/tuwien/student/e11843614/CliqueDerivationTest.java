@@ -27,7 +27,7 @@ public class CliqueDerivationTest {
     private CliqueDerivation derivation;
 
     @BeforeEach
-    public void beforeEach() throws TimeoutException {
+    public void beforeAll() throws TimeoutException {
         graph = GraphExamples.example();
         SATEncoding encoding = SATEncodingFactory.forCliqueWidth(graph, 5);
         Set<Variable> model = SATSolver.getSatisfyingAssignment(encoding);
@@ -35,7 +35,7 @@ public class CliqueDerivationTest {
     }
 
     @AfterEach
-    public void afterEach() {
+    public void afterAll() {
         graph = null;
         derivation = null;
     }
