@@ -34,7 +34,7 @@ public abstract class SATEncodingFactoryForCarvingWidth {
         clause10(sat, d, w);
         clause11(sat, d);
         Logger.debug("Constructed a SAT encoding for carving-width; formula has " + sat.variableMap().size()
-            + " variables and " + sat.getFormula().clauses().size() + " clauses");
+            + " variables and " + sat.formula().clauses().size() + " clauses");
         return sat;
     }
 
@@ -57,9 +57,9 @@ public abstract class SATEncodingFactoryForCarvingWidth {
                             sat.encodeVariable(Variable.set(e, f, i)),
                             sat.encodeVariable(Variable.set(e, f, i + 1))
                         };
-                        sat.getFormula().addClause(-var[0]);
-                        sat.getFormula().addClause(var[1]);
-                        sat.getFormula().addClause(-var[2], var[3]);
+                        sat.formula().addClause(-var[0]);
+                        sat.formula().addClause(var[1]);
+                        sat.formula().addClause(-var[2], var[3]);
                     }
                 }
             }
@@ -77,9 +77,9 @@ public abstract class SATEncodingFactoryForCarvingWidth {
                                 sat.encodeVariable(Variable.set(e, g, i)),
                                 sat.encodeVariable(Variable.set(f, g, i))
                             };
-                            sat.getFormula().addClause(-var[0], -var[1], var[2]);
-                            sat.getFormula().addClause(-var[0], -var[2], var[1]);
-                            sat.getFormula().addClause(-var[1], -var[2], var[0]);
+                            sat.formula().addClause(-var[0], -var[1], var[2]);
+                            sat.formula().addClause(-var[0], -var[2], var[1]);
+                            sat.formula().addClause(-var[1], -var[2], var[0]);
                         }
                     }
                 }
@@ -100,12 +100,12 @@ public abstract class SATEncodingFactoryForCarvingWidth {
                         clause.addLiteral(var2);
                     }
                 }
-                sat.getFormula().addClause(clause);
+                sat.formula().addClause(clause);
                 // Part B
                 for (Integer f : sat.vertexMap().destinationSet()) {
                     if (f < e) {
                         int var2 = sat.encodeVariable(Variable.set(f, e, i));
-                        sat.getFormula().addClause(-var1, -var2);
+                        sat.formula().addClause(-var1, -var2);
                     }
                 }
             }
@@ -124,7 +124,7 @@ public abstract class SATEncodingFactoryForCarvingWidth {
                             sat.encodeVariable(Variable.leader(e, i + 1)),
                             sat.encodeVariable(Variable.leader(f, i + 1))
                         };
-                        sat.getFormula().addClause(-var[0], -var[1], -var[2], var[3], var[4]);
+                        sat.formula().addClause(-var[0], -var[1], -var[2], var[3], var[4]);
                     }
                 }
             }
@@ -146,7 +146,7 @@ public abstract class SATEncodingFactoryForCarvingWidth {
                             sat.encodeVariable(Variable.leader(f, d)),
                             sat.encodeVariable(Variable.leader(g, d))
                         };
-                        sat.getFormula().addClause(-var[0], -var[1], -var[2], -var[3], -var[4], var[5], var[6], var[7]);
+                        sat.formula().addClause(-var[0], -var[1], -var[2], -var[3], -var[4], var[5], var[6], var[7]);
                     }
                 }
             }
@@ -160,7 +160,7 @@ public abstract class SATEncodingFactoryForCarvingWidth {
                     sat.encodeVariable(Variable.leader(e, i)),
                     sat.encodeVariable(Variable.leader(e, i + 1))
                 };
-                sat.getFormula().addClause(var[0], -var[1]);
+                sat.formula().addClause(var[0], -var[1]);
             }
         }
     }
@@ -183,7 +183,7 @@ public abstract class SATEncodingFactoryForCarvingWidth {
                                         sat.encodeVariable(Variable.set(Math.min(e, f), Math.max(e, f), i)),
                                         sat.encodeVariable(Variable.set(Math.min(e, g), Math.max(e, g), i))
                                     };
-                                    sat.getFormula().addClause(-var[0], var[1], var[2], -var[3]);
+                                    sat.formula().addClause(-var[0], var[1], var[2], -var[3]);
                                 }
                             }
                         }
@@ -209,7 +209,7 @@ public abstract class SATEncodingFactoryForCarvingWidth {
                                     sat.encodeVariable(Variable.set(Math.min(e, f), Math.max(e, f), i)),
                                     sat.encodeVariable(Variable.load(e, u, i))
                                 };
-                                sat.getFormula().addClause(-var[0], var[1], var[2]);
+                                sat.formula().addClause(-var[0], var[1], var[2]);
                             }
                         }
                     }
@@ -230,7 +230,7 @@ public abstract class SATEncodingFactoryForCarvingWidth {
                         sat.encodeVariable(Variable.load(e, u, i + 2)),
                         sat.encodeVariable(Variable.load(e, u, i + 1))
                     };
-                    sat.getFormula().addClause(-var[0], -var[1], -var[2], -var[3], -var[4], var[5]);
+                    sat.formula().addClause(-var[0], -var[1], -var[2], -var[3], -var[4], var[5]);
                 }
             }
         }
@@ -250,9 +250,9 @@ public abstract class SATEncodingFactoryForCarvingWidth {
                             sat.encodeVariable(Variable.load(e, u, i)),
                             sat.encodeVariable(Variable.counter(e, u - 1, i, w))
                         };
-                        sat.getFormula().addClause(-var[0], var[1]);
-                        sat.getFormula().addClause(-var[2], -var[3], var[4]);
-                        sat.getFormula().addClause(-var[5], -var[6]);
+                        sat.formula().addClause(-var[0], var[1]);
+                        sat.formula().addClause(-var[2], -var[3], var[4]);
+                        sat.formula().addClause(-var[5], -var[6]);
                     }
                 }
             }
@@ -267,7 +267,7 @@ public abstract class SATEncodingFactoryForCarvingWidth {
                         sat.encodeVariable(Variable.load(e, u, i)),
                         sat.encodeVariable(Variable.counter(e, u, i, 1))
                     };
-                    sat.getFormula().addClause(-var[0], var[1]);
+                    sat.formula().addClause(-var[0], var[1]);
                 }
             }
         }

@@ -26,7 +26,7 @@ public abstract class SATEncodingFactoryForCliqueWidth {
         clause6(sat, t);
         clause7(sat, t, k);
         Logger.debug("Constructed a SAT encoding for clique-width; formula has " + sat.variableMap().size()
-            + " variables and " + sat.getFormula().clauses().size() + " clauses");
+            + " variables and " + sat.formula().clauses().size() + " clauses");
         return sat;
     }
 
@@ -45,11 +45,11 @@ public abstract class SATEncodingFactoryForCliqueWidth {
                             sat.encodeVariable(Variable.group(u, v, i - 1)),
                             sat.encodeVariable(Variable.group(u, v, i))
                         };
-                        sat.getFormula().addClause(-var[0]);
-                        sat.getFormula().addClause(var[1]);
-                        sat.getFormula().addClause(var[2], -var[3]);
-                        sat.getFormula().addClause(-var[4], var[5]);
-                        sat.getFormula().addClause(-var[6], var[7]);
+                        sat.formula().addClause(-var[0]);
+                        sat.formula().addClause(var[1]);
+                        sat.formula().addClause(var[2], -var[3]);
+                        sat.formula().addClause(-var[4], var[5]);
+                        sat.formula().addClause(-var[6], var[7]);
                     }
                 }
             }
@@ -67,17 +67,17 @@ public abstract class SATEncodingFactoryForCliqueWidth {
                                 sat.encodeVariable(Variable.component(v, w, i)),
                                 sat.encodeVariable(Variable.component(u, w, i)),
                             };
-                            sat.getFormula().addClause(-varc[0], -varc[1], varc[2]);
-                            sat.getFormula().addClause(-varc[0], -varc[2], varc[1]);
-                            sat.getFormula().addClause(-varc[2], -varc[1], varc[0]);
+                            sat.formula().addClause(-varc[0], -varc[1], varc[2]);
+                            sat.formula().addClause(-varc[0], -varc[2], varc[1]);
+                            sat.formula().addClause(-varc[2], -varc[1], varc[0]);
                             int[] varg = new int[]{
                                 sat.encodeVariable(Variable.group(u, v, i)),
                                 sat.encodeVariable(Variable.group(v, w, i)),
                                 sat.encodeVariable(Variable.group(u, w, i))
                             };
-                            sat.getFormula().addClause(-varg[0], -varg[1], varg[2]);
-                            sat.getFormula().addClause(-varg[0], -varg[2], varg[1]);
-                            sat.getFormula().addClause(-varg[2], -varg[1], varg[0]);
+                            sat.formula().addClause(-varg[0], -varg[1], varg[2]);
+                            sat.formula().addClause(-varg[0], -varg[2], varg[1]);
+                            sat.formula().addClause(-varg[2], -varg[1], varg[0]);
                         }
                     }
                 }
@@ -98,7 +98,7 @@ public abstract class SATEncodingFactoryForCliqueWidth {
                                 sat.encodeVariable(Variable.component(u, v, i - 1)),
                                 sat.encodeVariable(Variable.group(u, v, i))
                             };
-                            sat.getFormula().addClause(var[0], -var[1]);
+                            sat.formula().addClause(var[0], -var[1]);
                         }
                     }
                 }
@@ -120,7 +120,7 @@ public abstract class SATEncodingFactoryForCliqueWidth {
                                 sat.encodeVariable(Variable.component(Math.min(u, v), Math.max(u, v), i - 1)),
                                 sat.encodeVariable(Variable.group(Math.min(v, w), Math.max(v, w), i))
                             };
-                            sat.getFormula().addClause(var[0], -var[1]);
+                            sat.formula().addClause(var[0], -var[1]);
                         }
                     }
                 }
@@ -147,7 +147,7 @@ public abstract class SATEncodingFactoryForCliqueWidth {
                                         sat.encodeVariable(Variable.group(Math.min(u, x), Math.max(u, x), i)),
                                         sat.encodeVariable(Variable.group(Math.min(v, w), Math.max(v, w), i))
                                     };
-                                    sat.getFormula().addClause(var[0], -var[1], -var[2]);
+                                    sat.formula().addClause(var[0], -var[1], -var[2]);
                                 }
                             }
                         }
@@ -170,12 +170,12 @@ public abstract class SATEncodingFactoryForCliqueWidth {
                         clause.addLiteral(var2);
                     }
                 }
-                sat.getFormula().addClause(clause);
+                sat.formula().addClause(clause);
                 // Right part
                 for (Integer u : sat.vertexMap().destinationSet()) {
                     if (u < v) {
                         int var2 = sat.encodeVariable(Variable.group(u, v, i));
-                        sat.getFormula().addClause(-var1, -var2);
+                        sat.formula().addClause(-var1, -var2);
                     }
                 }
             }
@@ -194,12 +194,12 @@ public abstract class SATEncodingFactoryForCliqueWidth {
                             sat.encodeVariable(Variable.order(u, k - 1, i)),
                             sat.encodeVariable(Variable.order(v, 1, i))
                         };
-                        sat.getFormula().addClause(-var[0], -var[1], -var[2], -var[3]);
-                        sat.getFormula().addClause(-var[0], -var[1], -var[2], var[4]);
+                        sat.formula().addClause(-var[0], -var[1], -var[2], -var[3]);
+                        sat.formula().addClause(-var[0], -var[1], -var[2], var[4]);
                         for (int a = 1; a < k - 1; a++) {
                             int o1 = sat.encodeVariable(Variable.order(u, a, i));
                             int o2 = sat.encodeVariable(Variable.order(v, a + 1, i));
-                            sat.getFormula().addClause(-var[0], -var[1], -var[2], -o1, o2);
+                            sat.formula().addClause(-var[0], -var[1], -var[2], -o1, o2);
                         }
                     }
                 }

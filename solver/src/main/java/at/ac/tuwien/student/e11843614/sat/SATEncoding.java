@@ -29,7 +29,7 @@ public class SATEncoding {
      * Returns the formula in this encoding.
      * @return a Formula.
      */
-    public Formula getFormula() {
+    public Formula formula() {
         return formula;
     }
 
