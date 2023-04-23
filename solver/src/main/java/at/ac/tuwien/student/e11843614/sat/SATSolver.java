@@ -1,6 +1,5 @@
 package at.ac.tuwien.student.e11843614.sat;
 
-import at.ac.tuwien.student.e11843614.Logger;
 import at.ac.tuwien.student.e11843614.formula.Clause;
 import at.ac.tuwien.student.e11843614.formula.Formula;
 import org.sat4j.core.VecInt;
@@ -48,14 +47,11 @@ public abstract class SATSolver {
                 solver.addClause(asVecInt(clause));
             }
             if (solver.isSatisfiable()) {
-                Logger.debug("Formula is satisfiable");
                 return solver.findModel();
             } else {
-                Logger.debug("Formula is unsatisfiable");
                 return new int[]{};
             }
         } catch (ContradictionException exception) {
-            Logger.debug("Formula is unsatisfiable");
             return new int[]{};
         }
     }
