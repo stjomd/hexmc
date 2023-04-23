@@ -1,8 +1,8 @@
 package at.ac.tuwien.student.e11843614;
 
 import at.ac.tuwien.student.e11843614.decomposition.DecompositionFactory;
-import at.ac.tuwien.student.e11843614.decomposition.branch.CarvingDerivation;
-import at.ac.tuwien.student.e11843614.decomposition.branch.CarvingDerivationFactory;
+import at.ac.tuwien.student.e11843614.decomposition.carving.CarvingDerivation;
+import at.ac.tuwien.student.e11843614.decomposition.carving.CarvingDerivationFactory;
 import at.ac.tuwien.student.e11843614.example.GraphExamples;
 import at.ac.tuwien.student.e11843614.struct.graph.Graph;
 import at.ac.tuwien.student.e11843614.struct.tree.TreeNode;
