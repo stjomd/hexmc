@@ -11,9 +11,9 @@ import org.sat4j.specs.TimeoutException;
 import java.util.Set;
 
 /**
- * A class that tries to construct a branch derivation until it satisfies all conditions.
+ * A class that tries to construct a carving derivation until it satisfies all conditions.
  */
-public abstract class BranchDerivationFactory {
+public abstract class CarvingDerivationFactory {
 
     // TODO: This class should not be necessary, but I could not figure out the issue.
 
@@ -27,29 +27,29 @@ public abstract class BranchDerivationFactory {
     }
 
     /**
-     * Repeatedly attempts to construct a branch derivation of a graph until it satisfies all conditions.
-     * @param w the target branch-width
+     * Repeatedly attempts to construct a carving derivation of a graph until it satisfies all conditions.
+     * @param w the target carving-width
      * @param constructor a lambda expression that initializes and returns a graph.
-     * @return a branch derivation of width <= w, or null if a) such doesn't exist, or b) took too many attempts.
+     * @return a carving derivation of width <= w, or null if a) such doesn't exist, or b) took too many attempts.
      * @throws TimeoutException if the SAT solver takes too long.
      */
-    public static BranchDerivation branch(int w, GraphConstructor constructor) throws TimeoutException {
-        Logger.debug("Attempting to construct a valid branch derivation");
+    public static CarvingDerivation carving(int w, GraphConstructor constructor) throws TimeoutException {
+        Logger.debug("Attempting to construct a valid carving derivation");
         int tries = 1;
         while (tries <= ATTEMPTS) {
             Graph graph = constructor.construct();
-            SATEncoding encoding = SATEncodingFactory.forBranchWidth(graph, w);
+            SATEncoding encoding = SATEncodingFactory.forCarvingWidth(graph, w);
             Set<Variable> truth = SATSolver.getSatisfyingAssignment(encoding);
             if (truth.isEmpty()) {
                 return null;
             }
             // Derivation does not fulfil D3 sometimes.
-            BranchDerivation derivation = new BranchDerivation(truth, encoding);
+            CarvingDerivation derivation = new CarvingDerivation(truth, encoding);
             if (derivation.fulfilsConditions(graph)) {
-                Logger.debug("Constructed a valid branch derivation on try " + tries);
+                Logger.debug("Constructed a valid carving derivation on try " + tries);
                 return derivation;
             } else {
-                Logger.warn("Obtained an invalid branch derivation. Retrying...");
+                Logger.warn("Obtained an invalid carving derivation. Retrying...");
             }
             tries++;
         }

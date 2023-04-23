@@ -9,13 +9,13 @@ import at.ac.tuwien.student.e11843614.sat.SATEncoding;
 public abstract class SATEncodingFactory {
 
     /**
-     * Constructs a SAT encoding of a graph with a formula that is satisfiable iff branch-width of the graph is <= w.
+     * Constructs a SAT encoding of a graph with a formula that is satisfiable iff carving-width of the graph is <= w.
      * @param graph the graph.
-     * @param w the target branch-width.
-     * @return a SAT encoding for this graph that contains a formula which is satisfiable if bw(graph) <= w.
+     * @param w the target carving-width.
+     * @return a SAT encoding for this graph that contains a formula which is satisfiable if crw(graph) <= w.
      */
-    public static SATEncoding forBranchWidth(Graph graph, int w) {
-        return SATEncodingFactoryForBranchWidth.of(graph, w);
+    public static SATEncoding forCarvingWidth(Graph graph, int w) {
+        return SATEncodingFactoryForCarvingWidth.of(graph, w);
     }
 
     /**
