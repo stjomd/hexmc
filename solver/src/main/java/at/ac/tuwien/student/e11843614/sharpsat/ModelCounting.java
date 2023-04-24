@@ -23,9 +23,8 @@ public abstract class ModelCounting {
     public static int psw(Formula formula) throws TimeoutException, WidthComputationException {
         Graph incidenceGraph = GraphFactory.incidenceGraph(formula);
         // Determine carving width
-        // TODO: max carving width for graph with n vertices?
         CarvingDerivation derivation = null;
-        for (int w = 1; w <= incidenceGraph.vertices().size(); w++) {
+        for (int w = 1; w <= incidenceGraph.edges().size(); w++) {
             SATEncoding encoding = SATEncodingFactory.forCarvingWidth(incidenceGraph, w);
             Set<Variable> truths = SATSolver.getSatisfyingAssignment(encoding);
             if (!truths.isEmpty()) {
