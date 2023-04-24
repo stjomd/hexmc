@@ -4,6 +4,7 @@ import at.ac.tuwien.student.e11843614.Logger;
 import at.ac.tuwien.student.e11843614.decomposition.DecompositionFactory;
 import at.ac.tuwien.student.e11843614.decomposition.DerivationFactory;
 import at.ac.tuwien.student.e11843614.decomposition.carving.CarvingDerivation;
+import at.ac.tuwien.student.e11843614.decomposition.clique.CliqueDecompositionFactory;
 import at.ac.tuwien.student.e11843614.decomposition.clique.CliqueDerivation;
 import at.ac.tuwien.student.e11843614.decomposition.clique.operation.CliqueOperation;
 import at.ac.tuwien.student.e11843614.formula.Formula;
@@ -33,6 +34,7 @@ public abstract class ModelCounting {
         Graph incidenceGraph = GraphFactory.incidenceGraph(formula);
         CliqueDerivation derivation = DerivationFactory.clique(incidenceGraph);
         TreeNode<CliqueOperation> decomposition = DecompositionFactory.clique(derivation, incidenceGraph);
+        CliqueDecompositionFactory.makeDisjointColorSets(decomposition);
         Logger.warn("#SAT utilizing cw not yet implemented, returning 0");
         return 0;
     }
