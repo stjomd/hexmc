@@ -1,8 +1,8 @@
 package at.ac.tuwien.student.e11843614;
 
 import at.ac.tuwien.student.e11843614.decomposition.DecompositionFactory;
+import at.ac.tuwien.student.e11843614.decomposition.DerivationFactory;
 import at.ac.tuwien.student.e11843614.decomposition.carving.CarvingDerivation;
-import at.ac.tuwien.student.e11843614.decomposition.carving.CarvingDerivationFactory;
 import at.ac.tuwien.student.e11843614.example.GraphExamples;
 import at.ac.tuwien.student.e11843614.struct.graph.Graph;
 import at.ac.tuwien.student.e11843614.struct.tree.TreeNode;
@@ -33,11 +33,8 @@ public class CarvingTests {
 
         @BeforeEach
         public void beforeAll() throws TimeoutException {
-            derivation = CarvingDerivationFactory.carving(6, () -> {
-                Graph petersen = GraphExamples.petersen();
-                graph = petersen;
-                return petersen;
-            });
+            graph = GraphExamples.petersen();
+            derivation = DerivationFactory.carving(graph);
             assert derivation != null;
         }
 
@@ -92,11 +89,8 @@ public class CarvingTests {
         @BeforeEach
         public void beforeEach() throws TimeoutException {
             // Exact
-            CarvingDerivation derivation = CarvingDerivationFactory.carving(8, () -> {
-                Graph example = GraphExamples.example();
-                graph = example;
-                return example;
-            });
+            graph = GraphExamples.example();
+            CarvingDerivation derivation = DerivationFactory.carving(graph);
             assert derivation != null;
             exact = DecompositionFactory.carving(derivation);
         }
