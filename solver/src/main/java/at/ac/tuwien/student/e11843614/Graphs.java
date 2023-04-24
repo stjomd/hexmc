@@ -58,4 +58,47 @@ public abstract class Graphs {
         return graph;
     }
 
+    public static Graph grid4x4() {
+        Graph grid = new Graph();
+        grid.addEdge(1, 2);
+        grid.addEdge(1, 5);
+        grid.addEdge(2, 3);
+        grid.addEdge(2, 6);
+        grid.addEdge(3, 4);
+        grid.addEdge(3, 7);
+        grid.addEdge(4, 8);
+        grid.addEdge(5, 6);
+        grid.addEdge(5, 9);
+        grid.addEdge(6, 7);
+        grid.addEdge(6, 10);
+        grid.addEdge(7, 8);
+        grid.addEdge(7, 11);
+        grid.addEdge(8, 12);
+        grid.addEdge(9, 10);
+        grid.addEdge(9, 13);
+        grid.addEdge(10, 11);
+        grid.addEdge(10, 14);
+        grid.addEdge(11, 12);
+        grid.addEdge(11, 15);
+        grid.addEdge(12, 16);
+        grid.addEdge(13, 14);
+        grid.addEdge(14, 15);
+        grid.addEdge(15, 16);
+        return grid;
+    }
+
+    public static Graph triangularPrism() {
+        Graph prism = new Graph();
+        prism.addEdge(1, 2);
+        prism.addEdge(1, 3);
+        prism.addEdge(1, 4);
+        prism.addEdge(2, 3);
+        prism.addEdge(2, 5);
+        prism.addEdge(3, 6);
+        prism.addEdge(4, 5);
+        prism.addEdge(5, 6);
+        prism.addEdge(6, 4);
+        return prism;
+    }
+
 }
