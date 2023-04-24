@@ -10,7 +10,7 @@ import at.ac.tuwien.student.e11843614.struct.graph.Graph;
 import java.util.HashSet;
 import java.util.Set;
 
-public class DecompositionFactory {
+public abstract class DecompositionFactory {
 
     /**
      * Constructs a carving decomposition from a derivation.
