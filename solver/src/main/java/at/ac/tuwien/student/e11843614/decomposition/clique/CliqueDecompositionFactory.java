@@ -59,7 +59,6 @@ public abstract class CliqueDecompositionFactory {
             CliqueRecoloring recoloring = (CliqueRecoloring) node.object();
             shift = Math.max(shift, Math.max(recoloring.getFrom(), recoloring.getTo()));
         }
-        System.out.println("shift = " + shift);
         // Go through union nodes in post-order fashion
         Iterator<TreeNode<CliqueOperation>> iterator = root.depthIterator();
         while (iterator.hasNext()) {
