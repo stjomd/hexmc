@@ -20,6 +20,9 @@ public abstract class SATEncodingFactoryForCarvingWidth {
         int d = (int) Math.floor(graph.vertices().size() / 2.0)
             - (int) Math.ceil(w / deg)
             + (int) Math.max(0, Math.ceil(Math.log(Math.floor(w / deg)) / Math.log(2))); // prevent overflow
+        // Impose lower bound on d
+        int min = 1 + (int) Math.ceil(Math.log(2.0/3.0 * graph.vertices().size()) / Math.log(2));
+        d = Math.max(min, d);
         Logger.debug("Constructing a SAT encoding for carving-width, w = " + w + ", d = " + d);
         SATEncoding sat = new SATEncoding(graph);
         clause1(sat, d);
