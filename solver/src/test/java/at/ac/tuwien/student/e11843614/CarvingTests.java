@@ -87,7 +87,7 @@ public class CarvingTests {
     public class CarvingDecompositionTest {
 
         private Graph graph;
-        private TreeNode<Integer> exact;
+        private TreeNode<Set<Integer>> exact;
 
         @BeforeEach
         public void beforeEach() throws TimeoutException {
@@ -113,19 +113,19 @@ public class CarvingTests {
             checkIfValidCarvingDecomposition(exact, graph);
         }
 
-        private void checkIfValidCarvingDecomposition(TreeNode<Integer> decomposition, Graph graph) {
-            Queue<TreeNode<Integer>> queue = new LinkedList<>();
+        private void checkIfValidCarvingDecomposition(TreeNode<Set<Integer>> decomposition, Graph graph) {
+            Queue<TreeNode<Set<Integer>>> queue = new LinkedList<>();
             Set<Integer> vertices = new HashSet<>();
             queue.add(decomposition);
             while (!queue.isEmpty()) {
-                TreeNode<Integer> node = queue.remove();
-                if (node.object() == null) {
-                    // Internal nodes have no vertex, and have degree 3.
+                TreeNode<Set<Integer>> node = queue.remove();
+                if (node.object().size() > 1) {
+                    // Internal nodes have degree 3.
                     assertEquals(3, node.degree(), "Internal node has degree " + node.degree());
                 } else {
-                    // Leaves must have a vertex stored, and have degree 1.
+                    // Leaves must have degree 1.
                     assertEquals(1, node.degree(), "Leaf has degree " + node.degree());
-                    vertices.add(node.object());
+                    vertices.addAll(node.object());
                 }
                 queue.addAll(node.children());
             }
