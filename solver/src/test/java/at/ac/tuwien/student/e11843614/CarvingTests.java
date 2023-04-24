@@ -110,10 +110,10 @@ public class CarvingTests {
         @Test
         @DisplayName("Derivation to valid decomposition")
         public void exact() {
-            checkIfValidBranchDecomposition(exact, graph);
+            checkIfValidCarvingDecomposition(exact, graph);
         }
 
-        private void checkIfValidBranchDecomposition(TreeNode<Integer> decomposition, Graph graph) {
+        private void checkIfValidCarvingDecomposition(TreeNode<Integer> decomposition, Graph graph) {
             Queue<TreeNode<Integer>> queue = new LinkedList<>();
             Set<Integer> vertices = new HashSet<>();
             queue.add(decomposition);
@@ -129,8 +129,8 @@ public class CarvingTests {
                 }
                 queue.addAll(node.children());
             }
-            // Branch decomposition must contain exactly all vertices of the graph.
-            assertEquals(graph.vertices(), vertices, "Branch decomposition does not contain all vertices of the graph");
+            // Carving decomposition must contain exactly all vertices of the graph.
+            assertEquals(graph.vertices(), vertices, "Carving decomposition does not contain all vertices of the graph");
         }
 
     }
