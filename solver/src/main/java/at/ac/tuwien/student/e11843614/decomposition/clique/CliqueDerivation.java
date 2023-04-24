@@ -27,13 +27,6 @@ public class CliqueDerivation {
         makeStrict();
     }
 
-    // TODO: remove, needed for debugging rn
-    public CliqueDerivation(int k) {
-        for (int i = 0; i <= k; i++) {
-            templates.add(new Template());
-        }
-    }
-
     /**
      * Returns the template at the specified level.
      * @param level the level.
