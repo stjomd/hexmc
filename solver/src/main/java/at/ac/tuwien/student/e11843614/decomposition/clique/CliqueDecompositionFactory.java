@@ -25,7 +25,8 @@ import java.util.Set;
 public abstract class CliqueDecompositionFactory {
 
     /**
-     * Constructs a clique decomposition (parse tree for clique-width) of a graph.
+     * Constructs a normalized clique decomposition (parse tree for clique-width) of a graph. Normalized in the context
+     * means that union nodes have exactly two children.
      * @param derivation the derivation.
      * @param graph the graph.
      * @return the root node of the parse tree.
@@ -42,6 +43,51 @@ public abstract class CliqueDecompositionFactory {
         }
         normalize(root);
         return root;
+    }
+
+    /**
+     * Transforms a clique decomposition into one where graphs under union nodes use disjoint sets of colors.
+     * @param root a normalized clique decomposition, where union nodes have exactly two children.
+     */
+    public static void makeDisjointColorSets(TreeNode<CliqueOperation> root) {
+        // Determine the maximum color label
+        int shift = 0;
+        for (TreeNode<CliqueOperation> node : root) {
+            if (!(node.object() instanceof CliqueRecoloring)) {
+                continue;
+            }
+            CliqueRecoloring recoloring = (CliqueRecoloring) node.object();
+            shift = Math.max(shift, Math.max(recoloring.getFrom(), recoloring.getTo()));
+        }
+        System.out.println("shift = " + shift);
+        // Go through union nodes in post-order fashion
+        Iterator<TreeNode<CliqueOperation>> iterator = root.depthIterator();
+        while (iterator.hasNext()) {
+            TreeNode<CliqueOperation> node = iterator.next();
+            if (!(node.object() instanceof CliqueUnion)) {
+                continue;
+            }
+            // At this point we assume that union nodes have two children
+            Iterator<TreeNode<CliqueOperation>> childIterator = node.children().iterator();
+            TreeNode<CliqueOperation> left = childIterator.next();
+            TreeNode<CliqueOperation> right = childIterator.next();
+            // Determine which colors intersect
+            Set<Integer> intersection = new HashSet<>(colorMap(left).keySet());
+            intersection.retainAll(colorMap(right).keySet());
+            if (intersection.isEmpty()) {
+                continue;
+            }
+            // Insert recoloring nodes above right child
+            for (Integer color : intersection) {
+                right.insertAbove(new CliqueRecoloring(color, color + shift));
+            }
+            // Insert recoloring nodes that revert the change above current union node
+            for (Integer color : intersection) {
+                node.insertAbove(new CliqueRecoloring(color + shift, color));
+            }
+        }
+        // Normalize again
+        colorSingletons(root);
     }
 
     // ----- Node Insertion --------------------------------------------------------------------------------------------
@@ -458,6 +504,13 @@ public abstract class CliqueDecompositionFactory {
                     }
                 }
                 currentNode = currentNode.parent();
+            }
+            // Possible that currentNode is now a recoloring node too, don't forget to consider it
+            if (currentNode.object() instanceof CliqueRecoloring) {
+                CliqueRecoloring op = ((CliqueRecoloring) currentNode.object());
+                if (color == op.getFrom()) {
+                    color = op.getTo();
+                }
             }
             // Color is now determined; store the leaf in the map.
             if (!map.containsKey(color)) {
