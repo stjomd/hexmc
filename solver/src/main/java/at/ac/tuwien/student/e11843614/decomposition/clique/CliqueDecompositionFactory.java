@@ -13,6 +13,7 @@ import at.ac.tuwien.student.e11843614.struct.SubsetIterator;
 import at.ac.tuwien.student.e11843614.struct.graph.Edge;
 import at.ac.tuwien.student.e11843614.struct.graph.Graph;
 import at.ac.tuwien.student.e11843614.struct.tree.TreeNode;
+import org.apache.commons.lang3.time.StopWatch;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -144,6 +145,7 @@ public abstract class CliqueDecompositionFactory {
         while (iterator.hasNext()) {
             TreeNode<CliqueOperation> node = iterator.next();
             if (node.object() instanceof CliqueUnion) {
+                StopWatch stopwatch = StopWatch.create();
                 // If the conditions are already fulfilled, we don't have to insert anything.
                 if (fulfilsColorConditions(node, derivation)) {
                     Logger.debug(node.object() + " fulfils color conditions, skip");
@@ -162,15 +164,19 @@ public abstract class CliqueDecompositionFactory {
                 // Another optimization: often it's enough to only insert recoloring nodes above one of the children.
                 // Attempt that and if that fails, move on to full brute forcing.
                 Logger.debug(node.object() + " is being recolored using one-child-brute-force");
+                stopwatch.start();
                 painted = attemptEdgeRecolorings(node, derivation, width);
+                stopwatch.stop();
                 if (painted) {
-                    Logger.debug(node.object() + " had recoloring nodes inserted above one child");
+                    Logger.debug(node.object() + " had recoloring nodes inserted above one child, in time: " + stopwatch.formatTime());
                     continue;
                 }
                 // As a last resort, brute force.
                 Logger.debug(node.object() + " requires full brute force");
+                stopwatch.start();
                 bruteforceRecolorings(node, derivation, width);
-                Logger.debug(node.object() + " has been repainted using full brute force");
+                stopwatch.stop();
+                Logger.debug(node.object() + " has been repainted using full brute force, in time: " + stopwatch.formatTime());
             }
         }
     }
