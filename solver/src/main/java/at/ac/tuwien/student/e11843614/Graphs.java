@@ -101,4 +101,19 @@ public abstract class Graphs {
         return prism;
     }
 
+    public static Graph clique5() {
+        Graph clique = new Graph();
+        clique.addEdge(1, 2);
+        clique.addEdge(1, 3);
+        clique.addEdge(1, 4);
+        clique.addEdge(1, 5);
+        clique.addEdge(2, 3);
+        clique.addEdge(2, 4);
+        clique.addEdge(2, 5);
+        clique.addEdge(3, 4);
+        clique.addEdge(3, 5);
+        clique.addEdge(4, 5);
+        return clique;
+    }
+
 }
