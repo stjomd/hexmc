@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public abstract class CliqueDecompositionFactory {
 
@@ -152,10 +153,9 @@ public abstract class CliqueDecompositionFactory {
                 }
                 // If not, we try to paint the nodes.
                 boolean painted;
-                // Optimization: it's possible that, if this is a union node at level 1, that all singletons just have
-                // to be painted different colors. Attempt this first. If this satisfies all conditions, we can move on
-                // to other nodes.
-                painted = attemptFirstLevelRecolorings(node, derivation);
+                // Optimization: it's possible that all children just have to be painted different colors. Attempt this
+                // first. If this satisfies all conditions, we can move on to other nodes.
+                painted = attemptSingularRecolorings(node, derivation);
                 if (painted) {
                     continue;
                 }
@@ -172,18 +172,14 @@ public abstract class CliqueDecompositionFactory {
     }
 
     /**
-     * Attempts to recolor the children of a union node at level 1 such that all singletons have different color.
-     * If this does not fulfil the conditions, does nothing.
-     * @param node a union node at level 1.
+     * Attempts to insert one recoloring node per each child, each repainting from 1 to some other color. If this does
+     * not fulfil the conditions, reverts back.
+     * @param node a union node.
      * @param derivation the derivation.
      * @return true, if the recoloring nodes were added, and false otherwise.
      */
-    private static boolean attemptFirstLevelRecolorings(TreeNode<CliqueOperation> node, CliqueDerivation derivation) {
-        CliqueUnion nodeOperation = (CliqueUnion) node.object();
-        if (nodeOperation.getLevel() != 1) {
-            return false;
-        }
-        // Try to paint singletons different colors
+    private static boolean attemptSingularRecolorings(TreeNode<CliqueOperation> node, CliqueDerivation derivation) {
+        // Try to paint children different colors
         int i = 1;
         Set<TreeNode<CliqueOperation>> addedRecoloringNodes = new HashSet<>();
         Set<TreeNode<CliqueOperation>> children = new HashSet<>(node.children());
