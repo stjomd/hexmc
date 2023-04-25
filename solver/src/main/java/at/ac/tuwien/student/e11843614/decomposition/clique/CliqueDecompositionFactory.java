@@ -51,14 +51,17 @@ public abstract class CliqueDecompositionFactory {
      * @param root a normalized clique decomposition, where union nodes have exactly two children.
      */
     public static void makeDisjointColorSets(TreeNode<CliqueOperation> root) {
-        // Determine the maximum color label
+        // Determine the maximum color label, also check that each union node has 2 children
         int shift = 0;
         for (TreeNode<CliqueOperation> node : root) {
-            if (!(node.object() instanceof CliqueRecoloring)) {
-                continue;
+            if (node.object() instanceof CliqueUnion) {
+                if (node.children().size() != 2) {
+                    throw new IllegalArgumentException("Node " + node.object() + " has " + node.children().size() + " children, not 2");
+                }
+            } else if (node.object() instanceof CliqueRecoloring) {
+                CliqueRecoloring recoloring = (CliqueRecoloring) node.object();
+                shift = Math.max(shift, Math.max(recoloring.getFrom(), recoloring.getTo()));
             }
-            CliqueRecoloring recoloring = (CliqueRecoloring) node.object();
-            shift = Math.max(shift, Math.max(recoloring.getFrom(), recoloring.getTo()));
         }
         // Go through union nodes in post-order fashion
         Iterator<TreeNode<CliqueOperation>> iterator = root.depthIterator();
@@ -152,10 +155,10 @@ public abstract class CliqueDecompositionFactory {
                 }
                 // If not, we try to paint the nodes.
                 boolean painted;
-                painted = figureOutRecoloring(node, derivation);
-                if (painted) {
-                    continue;
-                }
+//                painted = figureOutRecoloring(node, derivation);
+//                if (painted) {
+//                    continue;
+//                }
                 // Optimization: it's possible that all children just have to be painted different colors. Attempt this
                 // first. If this satisfies all conditions, we can move on to other nodes.
                 painted = attemptSingularRecolorings(node, derivation, width);
