@@ -22,7 +22,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public abstract class CliqueDecompositionFactory {
 
@@ -148,7 +147,7 @@ public abstract class CliqueDecompositionFactory {
             if (node.object() instanceof CliqueUnion) {
                 // If the conditions are already fulfilled, we don't have to insert anything.
                 if (fulfilsColorConditions(node, derivation)) {
-                    Logger.debug(node.object() + " fulfils color conditions, skip");
+                    Logger.debug(node.object() + " fulfils color conditions");
                     continue;
                 }
                 // If not, we try to paint the nodes.
@@ -217,6 +216,7 @@ public abstract class CliqueDecompositionFactory {
         }
         // Check conditions and revert if they fail
         if (fulfilsColorConditions(node, derivation)) {
+            Logger.debug(node.object() + " had each child repainted different color (shared color was " + sharedColor + ")");
             return true;
         } else {
             for (TreeNode<CliqueOperation> addedNode : addedRecoloringNodes) {
@@ -279,7 +279,7 @@ public abstract class CliqueDecompositionFactory {
     @SuppressWarnings({"UnusedReturnValue", "SameParameterValue"})
     private static boolean bruteforceRecolorings(TreeNode<CliqueOperation> node, CliqueDerivation derivation, int width,
                                                  boolean excludeSingleChildren) {
-        Logger.debug(node.object() + " attempting full brute force");
+        Logger.debug(node.object() + " is being recolored using full brute force");
         StopWatch stopwatch = StopWatch.createStarted();
         Iterator<List<TreeNode<CliqueOperation>>> childSubsetIterator = new SubsetIterator<>(node.children());
         while (childSubsetIterator.hasNext()) {
