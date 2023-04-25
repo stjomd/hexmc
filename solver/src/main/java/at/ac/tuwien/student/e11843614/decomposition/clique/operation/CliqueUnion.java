@@ -15,11 +15,11 @@ public class CliqueUnion implements CliqueOperation {
         this.level = level;
     }
 
-    public Set<Integer> getComponent() {
+    public Set<Integer> component() {
         return component;
     }
 
-    public int getLevel() {
+    public int level() {
         return level;
     }
 

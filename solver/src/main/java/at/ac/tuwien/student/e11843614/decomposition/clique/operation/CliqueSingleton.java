@@ -13,11 +13,11 @@ public class CliqueSingleton implements CliqueOperation {
         this.color = color;
     }
 
-    public int getVertex() {
+    public int vertex() {
         return vertex;
     }
 
-    public int getColor() {
+    public int color() {
         return color;
     }
 
