@@ -166,7 +166,7 @@ public abstract class CliqueDecompositionFactory {
                     continue;
                 }
                 // As a last resort, brute force.
-                bruteforceRecolorings(node, derivation, width);
+                bruteforceRecolorings(node, derivation, width, true);
             }
         }
     }
@@ -253,15 +253,21 @@ public abstract class CliqueDecompositionFactory {
      * @param node a union node, above whose children recoloring nodes will be inserted.
      * @param derivation the respective derivation.
      * @param width the width of this derivation.
+     * @param excludeSingleChildren a boolean value indicating if child subsets of size <= 1 should be skipped. Set this
+     *                              to true if brute force has been performed for singular children.
      * @return true, if recoloring nodes were added, and false otherwise.
      */
-    @SuppressWarnings("UnusedReturnValue")
-    private static boolean bruteforceRecolorings(TreeNode<CliqueOperation> node, CliqueDerivation derivation, int width) {
+    @SuppressWarnings({"UnusedReturnValue", "SameParameterValue"})
+    private static boolean bruteforceRecolorings(TreeNode<CliqueOperation> node, CliqueDerivation derivation, int width,
+                                                 boolean excludeSingleChildren) {
         Logger.debug(node.object() + " attempting full brute force");
         StopWatch stopwatch = StopWatch.createStarted();
         Iterator<List<TreeNode<CliqueOperation>>> childSubsetIterator = new SubsetIterator<>(node.children());
         while (childSubsetIterator.hasNext()) {
             List<TreeNode<CliqueOperation>> childSubset = childSubsetIterator.next();
+            if (excludeSingleChildren && childSubset.size() <= 1) {
+                continue;
+            }
             Iterator<List<List<CliqueRecoloring>>> recoloringIterator = new ChildrenRecoloringIterator(childSubset.size(), width);
             while (recoloringIterator.hasNext()) {
                 List<List<CliqueRecoloring>> recolorings = recoloringIterator.next();
