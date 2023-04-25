@@ -39,9 +39,10 @@ public class ChildrenRecoloringIterator implements Iterator<List<List<CliqueReco
         this.elements = new ArrayList<>();
         this.iterators = new ArrayList<>();
         for (int i = 0; i < length; i++) {
-            list.add(0);
-            elements.add(List.of());
-            iterators.add(new EdgeRecoloringIterator(0, k));
+            list.add(1);
+            Iterator<List<CliqueRecoloring>> iterator = new EdgeRecoloringIterator(1, k);
+            iterators.add(iterator);
+            elements.add(iterator.next());
         }
     }
 
@@ -69,6 +70,7 @@ public class ChildrenRecoloringIterator implements Iterator<List<List<CliqueReco
         if (hasNext()) {
             started = true;
             List<List<CliqueRecoloring>> el = copy(elements);
+            visited.add(numerize(elements));
             boolean obtainedNew = false;
             while (!obtainedNew) {
                 List<List<Long>> numbering = numerize(elements);
