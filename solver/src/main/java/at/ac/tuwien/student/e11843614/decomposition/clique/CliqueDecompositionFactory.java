@@ -60,7 +60,7 @@ public abstract class CliqueDecompositionFactory {
                 }
             } else if (node.object() instanceof CliqueRecoloring) {
                 CliqueRecoloring recoloring = (CliqueRecoloring) node.object();
-                shift = Math.max(shift, Math.max(recoloring.getFrom(), recoloring.getTo()));
+                shift = Math.max(shift, Math.max(recoloring.from(), recoloring.to()));
             }
         }
         // Go through union nodes in post-order fashion
@@ -115,13 +115,13 @@ public abstract class CliqueDecompositionFactory {
                 for (TreeNode<CliqueOperation> node : root) {
                     if (node.object() instanceof CliqueUnion) {
                         CliqueUnion contents = (CliqueUnion) node.object();
-                        if (contents.getComponent().containsAll(cmp)) {
+                        if (contents.component().containsAll(cmp)) {
                             target = node;
                         }
                     }
                 }
                 if (target != null) {
-                    int level = ((CliqueUnion) target.object()).getLevel();
+                    int level = ((CliqueUnion) target.object()).level();
                     // Add child to target. If target.level = 1, we add a leaf, otherwise a union node.
                     CliqueOperation contents;
                     if (level == 1) {
@@ -181,7 +181,7 @@ public abstract class CliqueDecompositionFactory {
     private static boolean figureOutRecoloring(TreeNode<CliqueOperation> node, CliqueDerivation derivation) {
         System.out.println(node.object() + " figuring out recoloring");
         CliqueUnion operation = (CliqueUnion) node.object();
-        Partition<Integer> target = derivation.grp(operation.getLevel());
+        Partition<Integer> target = derivation.grp(operation.level());
         // Try until no changes possible
         Partition<Integer> current = grp(node);
         // We don't need to touch groups in 'current' that are the same in 'target'.
@@ -222,7 +222,7 @@ public abstract class CliqueDecompositionFactory {
                     mapLoop: for (Integer color : colorMap.keySet()) {
                         List<CliqueSingleton> singletons = colorMap.get(color);
                         for (CliqueSingleton singleton : singletons) {
-                            if (singleton.getVertex() == vertex) {
+                            if (singleton.vertex() == vertex) {
                                 childWithVertex = child;
                                 sourceColor = color;
                                 break mapLoop;
@@ -239,7 +239,7 @@ public abstract class CliqueDecompositionFactory {
                         mapLoop: for (Integer color : colorMap.keySet()) {
                             List<CliqueSingleton> singletons = colorMap.get(color);
                             for (CliqueSingleton singleton : singletons) {
-                                if (singleton.getVertex() == u) {
+                                if (singleton.vertex() == u) {
                                     targetColor = color;
                                     break mapLoop;
                                 }
@@ -434,9 +434,9 @@ public abstract class CliqueDecompositionFactory {
                 boolean containsU = false, containsV = false;
                 check: for (List<CliqueSingleton> group : colorMap.values()) {
                     for (CliqueSingleton leaf : group) {
-                        if (leaf.getVertex() == u) {
+                        if (leaf.vertex() == u) {
                             containsU = true;
-                        } else if (leaf.getVertex() == v) {
+                        } else if (leaf.vertex() == v) {
                             containsV = true;
                         }
                         if (containsU && containsV) {
@@ -444,9 +444,9 @@ public abstract class CliqueDecompositionFactory {
                         }
                     }
                 }
-                if (containsU && containsV && operation.getLevel() < targetLevel) {
+                if (containsU && containsV && operation.level() < targetLevel) {
                     target = node;
-                    targetLevel = operation.getLevel();
+                    targetLevel = operation.level();
                     targetColorMap = colorMap;
                 }
             }
@@ -458,9 +458,9 @@ public abstract class CliqueDecompositionFactory {
             search: for (int color : targetColorMap.keySet()) {
                 List<CliqueSingleton> group = targetColorMap.get(color);
                 for (CliqueSingleton leaf : group) {
-                    if (leaf.getVertex() == u) {
+                    if (leaf.vertex() == u) {
                         colorU = color;
-                    } else if (leaf.getVertex() == v) {
+                    } else if (leaf.vertex() == v) {
                         colorV = color;
                     }
                     if (colorU != 0 && colorV != 0) {
@@ -481,8 +481,8 @@ public abstract class CliqueDecompositionFactory {
                         break;
                     } else if (current.object() instanceof CliqueEdgeCreation) {
                         CliqueEdgeCreation operation = (CliqueEdgeCreation) current.object();
-                        if ((operation.getFrom() == colorU && operation.getTo() == colorV)
-                            || (operation.getFrom() == colorV && operation.getTo() == colorU)) {
+                        if ((operation.from() == colorU && operation.to() == colorV)
+                            || (operation.from() == colorV && operation.to() == colorU)) {
                             // A node that adds this edge to the graph is already in
                             return;
                         }
@@ -554,7 +554,7 @@ public abstract class CliqueDecompositionFactory {
                     continue;
                 }
                 CliqueRecoloring recoloring = (CliqueRecoloring) parent.object();
-                singleton.setColor(recoloring.getTo());
+                singleton.setColor(recoloring.to());
                 parent.contract();
             }
         }
@@ -573,7 +573,7 @@ public abstract class CliqueDecompositionFactory {
             if (!(node.object() instanceof CliqueUnion) || node.children().size() <= 2) {
                 continue;
             }
-            int level = ((CliqueUnion) node.object()).getLevel();
+            int level = ((CliqueUnion) node.object()).level();
             // While this node has more than two children, proceed as follows. Pick two children, say a, b, and detach
             // them from this node. Create a new union node c, add a, b to its children. Then add c as a child to node.
             while (node.children().size() > 2) {
@@ -586,12 +586,12 @@ public abstract class CliqueDecompositionFactory {
                 Set<Integer> component = new HashSet<>();
                 for (List<CliqueSingleton> singletons : colorMap(a).values()) {
                     for (CliqueSingleton singleton : singletons) {
-                        component.add(singleton.getVertex());
+                        component.add(singleton.vertex());
                     }
                 }
                 for (List<CliqueSingleton> singletons : colorMap(b).values()) {
                     for (CliqueSingleton singleton : singletons) {
-                        component.add(singleton.getVertex());
+                        component.add(singleton.vertex());
                     }
                 }
                 // Add new union node
@@ -615,7 +615,7 @@ public abstract class CliqueDecompositionFactory {
     private static boolean fulfilsColorConditions(TreeNode<CliqueOperation> node, CliqueDerivation derivation) {
         CliqueUnion nodeOperation = (CliqueUnion) node.object();
         Partition<Integer> grp = grp(node);
-        return derivation.grp(nodeOperation.getLevel()).equivalenceClasses()
+        return derivation.grp(nodeOperation.level()).equivalenceClasses()
             .containsAll(grp.equivalenceClasses());
     }
 
@@ -637,13 +637,13 @@ public abstract class CliqueDecompositionFactory {
         // For each leaf, backtrack back to node, taking recoloring nodes on the way into account.
         for (TreeNode<CliqueOperation> leaf : leaves) {
             CliqueSingleton content = ((CliqueSingleton) leaf.object());
-            int color = content.getColor();
+            int color = content.color();
             TreeNode<CliqueOperation> currentNode = leaf;
             while (currentNode != node) {
                 if (currentNode.object() instanceof CliqueRecoloring) {
                     CliqueRecoloring op = ((CliqueRecoloring) currentNode.object());
-                    if (color == op.getFrom()) {
-                        color = op.getTo();
+                    if (color == op.from()) {
+                        color = op.to();
                     }
                 }
                 currentNode = currentNode.parent();
@@ -651,8 +651,8 @@ public abstract class CliqueDecompositionFactory {
             // Possible that currentNode is now a recoloring node too, don't forget to consider it
             if (currentNode.object() instanceof CliqueRecoloring) {
                 CliqueRecoloring op = ((CliqueRecoloring) currentNode.object());
-                if (color == op.getFrom()) {
-                    color = op.getTo();
+                if (color == op.from()) {
+                    color = op.to();
                 }
             }
             // Color is now determined; store the leaf in the map.
@@ -676,10 +676,10 @@ public abstract class CliqueDecompositionFactory {
         Partition<Integer> partition = new Partition<>();
         for (List<CliqueSingleton> group : map.values()) {
             if (group.size() == 1) {
-                partition.add(group.get(0).getVertex());
+                partition.add(group.get(0).vertex());
             } else {
                 for (int i = 1; i < group.size(); i++) {
-                    partition.add(group.get(i - 1).getVertex(), group.get(i).getVertex());
+                    partition.add(group.get(i - 1).vertex(), group.get(i).vertex());
                 }
             }
         }

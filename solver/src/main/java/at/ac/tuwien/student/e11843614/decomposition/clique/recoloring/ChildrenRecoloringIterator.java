@@ -113,7 +113,7 @@ public class ChildrenRecoloringIterator implements Iterator<List<List<CliqueReco
             List<Long> values = new ArrayList<>();
             for (CliqueRecoloring recoloring : edgeRecoloring) {
                 // value = k(i-1) + j
-                long value = (long) k*(recoloring.getFrom() - 1) + recoloring.getTo();
+                long value = (long) k*(recoloring.from() - 1) + recoloring.to();
                 values.add(value);
             }
             result.add(values);
