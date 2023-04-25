@@ -155,7 +155,7 @@ public abstract class CliqueDecompositionFactory {
                 boolean painted;
                 // Optimization: it's possible that all children just have to be painted different colors. Attempt this
                 // first. If this satisfies all conditions, we can move on to other nodes.
-                painted = attemptSingularRecolorings(node, derivation);
+                painted = attemptSingularRecolorings(node, derivation, width);
                 if (painted) {
                     continue;
                 }
@@ -172,25 +172,48 @@ public abstract class CliqueDecompositionFactory {
     }
 
     /**
-     * Attempts to insert one recoloring node per each child, each repainting from 1 to some other color. If this does
-     * not fulfil the conditions, reverts back.
+     * Attempts to insert <= 1 recoloring node per each child, each repainting from a shared color to some other color,
+     * in cases when all vertices share the same color. If this does not fulfil the conditions, reverts back.
      * @param node a union node.
      * @param derivation the derivation.
      * @return true, if the recoloring nodes were added, and false otherwise.
      */
-    private static boolean attemptSingularRecolorings(TreeNode<CliqueOperation> node, CliqueDerivation derivation) {
+    private static boolean attemptSingularRecolorings(TreeNode<CliqueOperation> node, CliqueDerivation derivation, int width) {
         // Try to paint children different colors
-        int i = 1;
+        // Check the colors of the vertices under children. If all have the same color, we can try singular recolorings
+        Set<Integer> colors = new HashSet<>();
+        for (TreeNode<CliqueOperation> child : node.children()) {
+            Set<Integer> labels = colorMap(child).keySet();
+            colors.addAll(labels);
+        }
+        if (colors.size() > 1) {
+            return false;
+        }
+        // All vertices have same color, try recolorings
+        int sharedColor = colors.iterator().next();
+        int otherColor = (sharedColor == 1) ? 2 : 1;
+        boolean skippedFirst = false;
+        // Keep track of added nodes to revert later
         Set<TreeNode<CliqueOperation>> addedRecoloringNodes = new HashSet<>();
         Set<TreeNode<CliqueOperation>> children = new HashSet<>(node.children());
         for (TreeNode<CliqueOperation> child : children) {
-            if (i == 1) {
-                i++;
+            if (!skippedFirst) {
+                // Leave one child be without new recoloring nodes
+                skippedFirst = true;
                 continue;
             }
-            TreeNode<CliqueOperation> rec = child.insertAbove(new CliqueRecoloring(1, i));
+            // Insert a recoloring node
+            TreeNode<CliqueOperation> rec = child.insertAbove(new CliqueRecoloring(sharedColor, otherColor));
             addedRecoloringNodes.add(rec);
-            i++;
+            // Increment
+            otherColor++;
+            if (otherColor == sharedColor) {
+                otherColor++;
+            }
+            if (otherColor > width) {
+                // colors cannot be larger than clique-width
+                break;
+            }
         }
         // Check conditions and revert if they fail
         if (fulfilsColorConditions(node, derivation)) {
