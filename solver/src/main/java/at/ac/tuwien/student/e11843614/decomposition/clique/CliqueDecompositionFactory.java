@@ -145,7 +145,6 @@ public abstract class CliqueDecompositionFactory {
         while (iterator.hasNext()) {
             TreeNode<CliqueOperation> node = iterator.next();
             if (node.object() instanceof CliqueUnion) {
-                StopWatch stopwatch = StopWatch.create();
                 // If the conditions are already fulfilled, we don't have to insert anything.
                 if (fulfilsColorConditions(node, derivation)) {
                     Logger.debug(node.object() + " fulfils color conditions, skip");
@@ -158,25 +157,16 @@ public abstract class CliqueDecompositionFactory {
                 // to other nodes.
                 painted = attemptFirstLevelRecolorings(node, derivation);
                 if (painted) {
-                    Logger.debug(node.object() + " had its children painted different colors");
                     continue;
                 }
                 // Another optimization: often it's enough to only insert recoloring nodes above one of the children.
                 // Attempt that and if that fails, move on to full brute forcing.
-                Logger.debug(node.object() + " is being recolored using one-child-brute-force");
-                stopwatch.start();
                 painted = attemptEdgeRecolorings(node, derivation, width);
-                stopwatch.stop();
                 if (painted) {
-                    Logger.debug(node.object() + " had recoloring nodes inserted above one child, in time: " + stopwatch.formatTime());
                     continue;
                 }
                 // As a last resort, brute force.
-                Logger.debug(node.object() + " requires full brute force");
-                stopwatch.start();
                 bruteforceRecolorings(node, derivation, width);
-                stopwatch.stop();
-                Logger.debug(node.object() + " has been repainted using full brute force, in time: " + stopwatch.formatTime());
             }
         }
     }
@@ -225,6 +215,8 @@ public abstract class CliqueDecompositionFactory {
      * @return true, if the recoloring nodes were added, and false otherwise.
      */
     private static boolean attemptEdgeRecolorings(TreeNode<CliqueOperation> node, CliqueDerivation derivation, int width) {
+        Logger.debug(node.object() + " is being recolored using one-child brute force");
+        StopWatch stopwatch = StopWatch.createStarted();
         Set<TreeNode<CliqueOperation>> children = new HashSet<>(node.children());
         for (TreeNode<CliqueOperation> child : children) {
             // Attempt to insert nodes above this child. We can insert from 1 to k nodes.
@@ -239,6 +231,8 @@ public abstract class CliqueDecompositionFactory {
                     }
                     // Check if conditions are fulfilled, and if necessary, revert
                     if (fulfilsColorConditions(node, derivation)) {
+                        stopwatch.stop();
+                        Logger.debug(node.object() + " had recoloring nodes inserted above one child, in time: " + stopwatch.formatTime());
                         return true;
                     } else {
                         for (TreeNode<CliqueOperation> addedNode : addedRecoloringNodes) {
@@ -248,6 +242,8 @@ public abstract class CliqueDecompositionFactory {
                 }
             }
         }
+        stopwatch.stop();
+        Logger.debug(node.object() + " unsuccessful one-child brute force attempt took time: " + stopwatch.formatTime());
         return false;
     }
 
@@ -261,6 +257,8 @@ public abstract class CliqueDecompositionFactory {
      */
     @SuppressWarnings("UnusedReturnValue")
     private static boolean bruteforceRecolorings(TreeNode<CliqueOperation> node, CliqueDerivation derivation, int width) {
+        Logger.debug(node.object() + " attempting full brute force");
+        StopWatch stopwatch = StopWatch.createStarted();
         Iterator<List<TreeNode<CliqueOperation>>> childSubsetIterator = new SubsetIterator<>(node.children());
         while (childSubsetIterator.hasNext()) {
             List<TreeNode<CliqueOperation>> childSubset = childSubsetIterator.next();
@@ -277,6 +275,8 @@ public abstract class CliqueDecompositionFactory {
                 }
                 // Check conditions, and if they fail, revert
                 if (fulfilsColorConditions(node, derivation)) {
+                    stopwatch.stop();
+                    Logger.debug(node.object() + " has been repainted using full brute force, in time: " + stopwatch.formatTime());
                     return true;
                 } else {
                     for (TreeNode<CliqueOperation> addedNode : addedRecoloringNodes) {
@@ -285,6 +285,8 @@ public abstract class CliqueDecompositionFactory {
                 }
             }
         }
+        stopwatch.stop();
+        Logger.warn(node.object() + " has not been repainted using full brute force, in time: " + stopwatch.formatTime());
         return false;
     }
 
