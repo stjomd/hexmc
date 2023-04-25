@@ -476,6 +476,7 @@ public abstract class CliqueDecompositionFactory {
             if (!(node.object() instanceof CliqueUnion) || node.children().size() <= 2) {
                 continue;
             }
+            int level = ((CliqueUnion) node.object()).getLevel();
             // While this node has more than two children, proceed as follows. Pick two children, say a, b, and detach
             // them from this node. Create a new union node c, add a, b to its children. Then add c as a child to node.
             while (node.children().size() > 2) {
@@ -484,7 +485,20 @@ public abstract class CliqueDecompositionFactory {
                 TreeNode<CliqueOperation> b = childIterator.next();
                 a.detach();
                 b.detach();
-                CliqueUnion operation = new CliqueUnion(Set.of(), -1);
+                // Determine the component of the new union node
+                Set<Integer> component = new HashSet<>();
+                for (List<CliqueSingleton> singletons : colorMap(a).values()) {
+                    for (CliqueSingleton singleton : singletons) {
+                        component.add(singleton.getVertex());
+                    }
+                }
+                for (List<CliqueSingleton> singletons : colorMap(b).values()) {
+                    for (CliqueSingleton singleton : singletons) {
+                        component.add(singleton.getVertex());
+                    }
+                }
+                // Add new union node
+                CliqueUnion operation = new CliqueUnion(component, level);
                 TreeNode<CliqueOperation> c = new TreeNode<>(operation);
                 c.addChild(a);
                 c.addChild(b);
