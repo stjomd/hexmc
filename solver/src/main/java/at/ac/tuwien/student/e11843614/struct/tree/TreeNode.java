@@ -63,6 +63,21 @@ public class TreeNode<T> implements Iterable<TreeNode<T>> {
         return parentDegree + children.size();
     }
 
+    /**
+     * Computes the height of this node, i.e. the amount of levels.
+     * @return the height.
+     */
+    public int getHeight() {
+        if (children.isEmpty()) {
+            return 1;
+        }
+        int height = 0;
+        for (TreeNode<T> child : children) {
+            height = Math.max(height, child.getHeight());
+        }
+        return height + 1;
+    }
+
     // ----- Mutators --------------------------------------------------------------------------------------------------
 
     /**

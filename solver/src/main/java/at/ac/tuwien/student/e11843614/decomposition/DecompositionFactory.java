@@ -11,6 +11,7 @@ import at.ac.tuwien.student.e11843614.struct.tree.TreeNode;
 import at.ac.tuwien.student.e11843614.struct.graph.Graph;
 import org.sat4j.specs.TimeoutException;
 
+import java.util.HashSet;
 import java.util.Set;
 
 public abstract class DecompositionFactory {
@@ -26,6 +27,49 @@ public abstract class DecompositionFactory {
             return CarvingDecompositionFactory.from(derivation);
         } else {
             return null;
+        }
+    }
+
+    /**
+     * Transforms a carving decomposition into a branch decomposition as defined in the psw paper, i.e.
+     * a binary tree.
+     * @param carving the root of a carving decomposition.
+     */
+    public static void transformCarvingIntoBranch(TreeNode<Set<Integer>> carving) {
+        if (carving.children().size() < 3) {
+            return;
+        }
+        int minHeight = Integer.MAX_VALUE;
+        TreeNode<Set<Integer>> nodeToMove = null;
+        for (TreeNode<Set<Integer>> child : carving.children()) {
+            int height = child.getHeight();
+            if (height < minHeight) {
+                minHeight = height;
+                nodeToMove = child;
+            }
+        }
+        // Remove 'nodeToMove' from children of the root
+        carving.removeChild(nodeToMove);
+        // Go in breadth-first order through the carving. The first leaf we find will have the smallest distance to root.
+        TreeNode<Set<Integer>> target = null;
+        for (TreeNode<Set<Integer>> node : carving) {
+            if (node.children().isEmpty()) {
+                target = node;
+                break;
+            }
+        }
+        // Now, 'target' is a leaf. Insert a union node above that will have as children the 'target' and 'nodeToMove'.
+        if (target != null && nodeToMove != null) {
+            Set<Integer> set = new HashSet<>(target.object());
+            set.addAll(nodeToMove.object());
+            TreeNode<Set<Integer>> internal = target.insertAbove(set);
+            internal.addChild(nodeToMove);
+            // Update sets above
+            TreeNode<Set<Integer>> current = internal.parent();
+            while (current != null) {
+                current.object().addAll(set);
+                current = current.parent();
+            }
         }
     }
 

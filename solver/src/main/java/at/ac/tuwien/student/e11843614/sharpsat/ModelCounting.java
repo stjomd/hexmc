@@ -14,14 +14,15 @@ import java.util.Set;
 
 public abstract class ModelCounting {
 
-    // TODO: special cases when derivation does not exist
     // TODO: dynamic algorithm for #SAT
 
     // utilizing psw
     public static int psw(Formula formula) throws TimeoutException {
         Graph incidenceGraph = GraphFactory.incidenceGraph(formula);
-        // Compute a carving decomposition (aka branch decomposition as defined in the psw paper)
+        // Compute a carving decomposition
         TreeNode<Set<Integer>> decomposition = DecompositionFactory.carving(incidenceGraph);
+        // Transform it into a branch decomposition as defined in the psw paper (binary tree)
+        DecompositionFactory.transformCarvingIntoBranch(decomposition);
         // Solve #SAT
         Logger.warn("#SAT utilizing psw not yet implemented, returning 0");
         return 0;
