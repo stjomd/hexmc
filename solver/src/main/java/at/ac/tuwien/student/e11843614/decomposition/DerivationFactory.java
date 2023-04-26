@@ -42,13 +42,14 @@ public abstract class DerivationFactory {
     }
 
     /**
-     * Computes a clique derivation of a graph.
+     * Computes a clique derivation of a graph. This method checks for clique-width starting with 2. If the graph
+     * has clique-width 1, this method returns null.
      * @param graph the graph.
-     * @return an optimal clique derivation of the graph, or null if such doesn't exist.
+     * @return an optimal clique derivation of the graph, or null if such doesn't exis or cw(graph) = 1.
      * @throws TimeoutException if the SAT solver takes too long.
      */
     public static CliqueDerivation clique(Graph graph) throws TimeoutException {
-        if (graph.vertices().size() == 0) {
+        if (graph.vertices().isEmpty() || graph.edges().isEmpty()) {
             return null;
         }
         CliqueDerivation derivation = null;
