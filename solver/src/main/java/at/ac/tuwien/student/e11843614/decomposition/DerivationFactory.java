@@ -21,7 +21,7 @@ public abstract class DerivationFactory {
      * @throws TimeoutException if the SAT solver takes too long.
      */
     public static CarvingDerivation carving(Graph graph) throws TimeoutException {
-        if (graph.vertices().size() <= 1 || graph.edges().size() <= 1) {
+        if (graph.vertices().size() <= 1) {
             // graph has no carving
             return null;
         }

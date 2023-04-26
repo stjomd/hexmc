@@ -90,9 +90,7 @@ public class CarvingTests {
         public void beforeEach() throws TimeoutException {
             // Exact
             graph = GraphExamples.example();
-            CarvingDerivation derivation = DerivationFactory.carving(graph);
-            assert derivation != null;
-            exact = DecompositionFactory.carving(derivation);
+            exact = DecompositionFactory.carving(graph);
         }
 
         @AfterEach
