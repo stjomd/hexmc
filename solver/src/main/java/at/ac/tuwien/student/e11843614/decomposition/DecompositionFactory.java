@@ -5,6 +5,8 @@ import at.ac.tuwien.student.e11843614.decomposition.carving.CarvingDerivation;
 import at.ac.tuwien.student.e11843614.decomposition.clique.CliqueDecompositionFactory;
 import at.ac.tuwien.student.e11843614.decomposition.clique.CliqueDerivation;
 import at.ac.tuwien.student.e11843614.decomposition.clique.operation.CliqueOperation;
+import at.ac.tuwien.student.e11843614.decomposition.clique.operation.CliqueSingleton;
+import at.ac.tuwien.student.e11843614.decomposition.clique.operation.CliqueUnion;
 import at.ac.tuwien.student.e11843614.struct.tree.TreeNode;
 import at.ac.tuwien.student.e11843614.struct.graph.Graph;
 import org.sat4j.specs.TimeoutException;
@@ -38,8 +40,23 @@ public abstract class DecompositionFactory {
             return null;
         }
         // The derivation factory will check starting with cw = 2. Check for cw = 1 here.
-        // Clique-width is 1 if every component of the graph is a singleton.
-        // TODO: ^^^
+        // Clique-width is 1 if every component of the graph is a singleton (alternatively, there are no edges)
+        if (graph.edges().isEmpty()) {
+            // If there is one vertex, just return the singleton
+            if (graph.vertices().size() == 1) {
+                int vertex = graph.vertices().iterator().next();
+                return new TreeNode<>(new CliqueSingleton(vertex, 1));
+            }
+            // Otherwise we just have to join all vertices by union
+            TreeNode<CliqueOperation> root = new TreeNode<>(new CliqueUnion(graph.vertices(), 1));
+            for (int vertex : graph.vertices()) {
+                TreeNode<CliqueOperation> child = new TreeNode<>(new CliqueSingleton(vertex, 1));
+                root.addChild(child);
+            }
+            CliqueDecompositionFactory.normalize(root);
+            return root;
+        }
+        // Otherwise use the derivation factory
         CliqueDerivation derivation = DerivationFactory.clique(graph);
         return CliqueDecompositionFactory.from(derivation, graph);
     }

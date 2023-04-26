@@ -93,6 +93,21 @@ public abstract class CliqueDecompositionFactory {
         colorSingletons(root);
     }
 
+    /**
+     * Normalizes the clique decomposition, i.e. transforms it into a tree without redundant nodes.
+     * @param root the root of the tree.
+     */
+    public static void normalize(TreeNode<CliqueOperation> root) {
+        // Firstly, we can reduce union paths. If there is a path = (... - union - union - ...), a union is redundant.
+        reduceUnionPaths(root);
+        // Singletons always have color set to 1, and if required have a recoloring node above. We can spare a few
+        // recoloring nodes if we change the color of the singleton.
+        colorSingletons(root);
+        // Union nodes might have more than two children. In that case, transform the subtree into an equivalent one
+        // that has two children.
+        binarizeUnionNodes(root);
+    }
+
     // ----- Node Insertion --------------------------------------------------------------------------------------------
 
     /**
@@ -495,21 +510,6 @@ public abstract class CliqueDecompositionFactory {
     }
 
     // ----- Normalization ---------------------------------------------------------------------------------------------
-
-    /**
-     * Normalizes the clique decomposition, i.e. transforms it into a tree without redundant nodes.
-     * @param root the root of the tree.
-     */
-    private static void normalize(TreeNode<CliqueOperation> root) {
-        // Firstly, we can reduce union paths. If there is a path = (... - union - union - ...), a union is redundant.
-        reduceUnionPaths(root);
-        // Singletons always have color set to 1, and if required have a recoloring node above. We can spare a few
-        // recoloring nodes if we change the color of the singleton.
-        colorSingletons(root);
-        // Union nodes might have more than two children. In that case, transform the subtree into an equivalent one
-        // that has two children.
-        binarizeUnionNodes(root);
-    }
 
     /**
      * Checks if there are union paths (... - union - union - ...) and reduces those.
