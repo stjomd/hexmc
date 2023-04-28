@@ -31,14 +31,27 @@ public abstract class DecompositionFactory {
     }
 
     /**
-     * Transforms a carving decomposition into a branch decomposition as defined in the psw paper, i.e.
-     * a binary tree.
-     * @param carving the root of a carving decomposition.
+     * Constructs a branch decomposition for ps-width (binary tree containing vertices of the graph). The resulting
+     * branch decomposition is not optimal in terms of ps-width.
+     * @param graph the graph. For ps-width applications an incidence graph of the formula.
+     * @return a branch decomposition for ps-width (a binary tree containing vertices of the graph), or null if it does
+     * not exist.
      */
-    public static void transformCarvingIntoBranch(TreeNode<Set<Integer>> carving) {
-        if (carving.children().size() < 3) {
-            return;
+    public static TreeNode<Set<Integer>> pswBranch(Graph graph) throws TimeoutException {
+        // We construct a carving decomposition and then transform it into a binary tree. But, if there is only one
+        // vertex, a carving decomposition does not exist, while a branch decomposition does.
+        if (graph.vertices().size() == 1) {
+            return new TreeNode<>(Set.of(graph.vertices().iterator().next()));
         }
+        // Next, determine a carving decomposition.
+        TreeNode<Set<Integer>> carving = carving(graph);
+        if (carving == null) {
+            return null;
+        } else if (carving.children().size() < 3) {
+            // No need to transform into binary tree
+            return carving;
+        }
+        // Transform into binary tree. First determine the 'nodeToMove', which will be the subtree with minimum height.
         int minHeight = Integer.MAX_VALUE;
         TreeNode<Set<Integer>> nodeToMove = null;
         for (TreeNode<Set<Integer>> child : carving.children()) {
@@ -48,9 +61,10 @@ public abstract class DecompositionFactory {
                 nodeToMove = child;
             }
         }
-        // Remove 'nodeToMove' from children of the root
+        // Remove 'nodeToMove' from children of the root.
         carving.removeChild(nodeToMove);
         // Go in breadth-first order through the carving. The first leaf we find will have the smallest distance to root.
+        // This will be our target where we will move 'nodeToMove'.
         TreeNode<Set<Integer>> target = null;
         for (TreeNode<Set<Integer>> node : carving) {
             if (node.children().isEmpty()) {
@@ -71,6 +85,7 @@ public abstract class DecompositionFactory {
                 current = current.parent();
             }
         }
+        return carving;
     }
 
     /**
