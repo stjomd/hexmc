@@ -91,9 +91,12 @@ public abstract class DecompositionFactory {
     /**
      * Construct a clique decomposition (parse tree for clique-width) of a graph.
      * @param graph the graph.
+     * @param disjointColorSets a boolean value indicating if, in the decomposition, the graphs appearing as operands
+     *                          of the disjoint union use disjoint sets of colors (the resulting decomposition might
+     *                          need up to twice as many colors).
      * @return a clique decomposition, or null if it does not exist.
      */
-    public static TreeNode<CliqueOperation> clique(Graph graph) throws TimeoutException {
+    public static TreeNode<CliqueOperation> clique(Graph graph, boolean disjointColorSets) throws TimeoutException {
         // There is no decomposition of the graph if there are no vertices
         if (graph.vertices().isEmpty()) {
             return null;
@@ -117,7 +120,11 @@ public abstract class DecompositionFactory {
         }
         // Otherwise use the derivation factory
         CliqueDerivation derivation = DerivationFactory.clique(graph);
-        return CliqueDecompositionFactory.from(derivation, graph);
+        TreeNode<CliqueOperation> decomposition = CliqueDecompositionFactory.from(derivation, graph);
+        if (disjointColorSets) {
+            CliqueDecompositionFactory.makeDisjointColorSets(decomposition);
+        }
+        return decomposition;
     }
 
 }
