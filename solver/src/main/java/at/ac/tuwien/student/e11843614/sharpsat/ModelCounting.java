@@ -15,7 +15,13 @@ public abstract class ModelCounting {
 
     // TODO: dynamic algorithm for #SAT
 
-    // utilizing psw
+    /**
+     * Counts the amount of models of a propositional formula with a dynamic algorithm utilizing the ps-width of the
+     * formula.
+     * @param formula the formula.
+     * @return the amount of the formula's models.
+     * @throws TimeoutException if the SAT solver takes too long while computing a carving derivation.
+     */
     public static int psw(Formula formula) throws TimeoutException {
         Graph incidenceGraph = GraphFactory.incidenceGraph(formula);
         // Compute a branch decomposition (as defined in the psw paper)
@@ -25,7 +31,13 @@ public abstract class ModelCounting {
         return 0;
     }
 
-    // utilizing cw
+    /**
+     * Counts the amount of models of a propositional formula with a dynamic algorithm utilizing the clique-width of the
+     * formula.
+     * @param formula the formula.
+     * @return the amount of the formula's models.
+     * @throws TimeoutException if the SAT solver takes too long while computing a clique derivation.
+     */
     public static int cw(Formula formula) throws TimeoutException {
         Graph incidenceGraph = GraphFactory.incidenceGraph(formula);
         // Compute a parse tree for clique width
