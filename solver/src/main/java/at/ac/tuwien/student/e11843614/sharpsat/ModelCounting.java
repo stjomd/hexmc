@@ -19,10 +19,8 @@ public abstract class ModelCounting {
     // utilizing psw
     public static int psw(Formula formula) throws TimeoutException {
         Graph incidenceGraph = GraphFactory.incidenceGraph(formula);
-        // Compute a carving decomposition
-        TreeNode<Set<Integer>> decomposition = DecompositionFactory.carving(incidenceGraph);
-        // Transform it into a branch decomposition as defined in the psw paper (binary tree)
-        DecompositionFactory.transformCarvingIntoBranch(decomposition);
+        // Compute a branch decomposition (as defined in the psw paper)
+        TreeNode<Set<Integer>> decomposition = DecompositionFactory.pswBranch(incidenceGraph);
         // Solve #SAT
         Logger.warn("#SAT utilizing psw not yet implemented, returning 0");
         return 0;
