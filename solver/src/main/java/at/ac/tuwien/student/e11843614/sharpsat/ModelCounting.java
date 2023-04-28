@@ -2,7 +2,6 @@ package at.ac.tuwien.student.e11843614.sharpsat;
 
 import at.ac.tuwien.student.e11843614.Logger;
 import at.ac.tuwien.student.e11843614.decomposition.DecompositionFactory;
-import at.ac.tuwien.student.e11843614.decomposition.clique.CliqueDecompositionFactory;
 import at.ac.tuwien.student.e11843614.decomposition.clique.operation.CliqueOperation;
 import at.ac.tuwien.student.e11843614.formula.Formula;
 import at.ac.tuwien.student.e11843614.struct.graph.Graph;
@@ -30,8 +29,7 @@ public abstract class ModelCounting {
     public static int cw(Formula formula) throws TimeoutException {
         Graph incidenceGraph = GraphFactory.incidenceGraph(formula);
         // Compute a parse tree for clique width
-        TreeNode<CliqueOperation> decomposition = DecompositionFactory.clique(incidenceGraph);
-        CliqueDecompositionFactory.makeDisjointColorSets(decomposition);
+        TreeNode<CliqueOperation> decomposition = DecompositionFactory.clique(incidenceGraph, true);
         // Solve #SAT
         Logger.warn("#SAT utilizing cw not yet implemented, returning 0");
         return 0;
