@@ -4,6 +4,7 @@ import at.ac.tuwien.student.e11843614.Logger;
 import at.ac.tuwien.student.e11843614.decomposition.DecompositionFactory;
 import at.ac.tuwien.student.e11843614.decomposition.clique.operation.CliqueOperation;
 import at.ac.tuwien.student.e11843614.formula.Formula;
+import at.ac.tuwien.student.e11843614.sharpsat.clique.CliqueDynamicModelCounting;
 import at.ac.tuwien.student.e11843614.struct.graph.Graph;
 import at.ac.tuwien.student.e11843614.struct.graph.GraphFactory;
 import at.ac.tuwien.student.e11843614.struct.tree.TreeNode;
@@ -48,10 +49,14 @@ public abstract class ModelCounting {
         StopWatch stopwatch = StopWatch.createStarted();
         TreeNode<CliqueOperation> decomposition = DecompositionFactory.clique(incidenceGraph, true);
         stopwatch.stop();
-        Logger.debug("[cw] Computed a clique decomposition, time elapsed: " + stopwatch.formatTime());
+        Logger.debug("[cw] Computed a clique decomposition in time: " + stopwatch.formatTime());
         // Solve #SAT
-        Logger.warn("#SAT utilizing cw not yet implemented, returning 0");
-        return 0;
+        stopwatch.reset();
+        stopwatch.start();
+        int models = CliqueDynamicModelCounting.count(decomposition);
+        stopwatch.stop();
+        Logger.debug("[cw] Computed the amount of models in time: " + stopwatch.formatTime());
+        return models;
     }
 
 }
