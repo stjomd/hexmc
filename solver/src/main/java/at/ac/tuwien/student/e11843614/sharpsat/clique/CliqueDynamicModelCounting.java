@@ -91,7 +91,13 @@ public abstract class CliqueDynamicModelCounting {
         } else if (singleton.vertex() % 10 == 2) {
             // The singleton is a clause. If A contains x, the clause is removed, and we get an empty
             // formula with 1 model, otherwise it's unchanged. B, C do not affect the formula.
-            forEachSubset(width, (a, b, c) -> table.set(a, b, c, 1));
+            forEachSubset(width, (a, b, c) -> {
+                if (a.contains(singleton.color())) {
+                    table.set(a, b, c, 1);
+                } else {
+                    table.set(a, b, c, 1);
+                }
+            });
         } else {
             throw new IllegalArgumentException("The decomposition is not of an incidence graph");
         }
@@ -124,6 +130,10 @@ public abstract class CliqueDynamicModelCounting {
         int i = recoloring.from(), j = recoloring.to();
         CliqueTable table = new CliqueTable();
         forEachSubset(width, (a, b, c) -> {
+            if (b.contains(i) || c.contains(i)) {
+                table.set(a, b, c, 0);
+                return;
+            }
             Set<Integer> aPrime = new HashSet<>(a);
             if (a.contains(j)) {
                 aPrime.add(i);
