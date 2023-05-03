@@ -28,15 +28,15 @@ public abstract class PswDynamicModelCounting {
     private static PSSetMap computePSSets(Formula formula, TreeNode<Set<Integer>> decomposition) {
         PSSetMap map = new PSSetMap();
         // First, we compute the sets for the base cases: root node and leaves.
-        computePSbaseCases(formula, decomposition, map);
+        computePSBaseCases(formula, decomposition, map);
         // Now, we compute the PS sets for F_v for internal nodes.
-        computePSpositives(formula, decomposition, map);
+        computePSPositives(formula, decomposition, map);
         // Finally, we compute the PS sets for F_-v for internal nodes.
-        computePSnegatives(formula, decomposition, map);
+        computePSNegatives(formula, decomposition, map);
         return map;
     }
 
-    private static void computePSbaseCases(Formula formula, TreeNode<Set<Integer>> decomposition, PSSetMap map) {
+    private static void computePSBaseCases(Formula formula, TreeNode<Set<Integer>> decomposition, PSSetMap map) {
         Iterator<TreeNode<Set<Integer>>> iterator = decomposition.depthIterator();
         while (iterator.hasNext()) {
             TreeNode<Set<Integer>> node = iterator.next();
@@ -92,7 +92,7 @@ public abstract class PswDynamicModelCounting {
         }
     }
 
-    private static void computePSpositives(Formula formula, TreeNode<Set<Integer>> decomposition, PSSetMap map) {
+    private static void computePSPositives(Formula formula, TreeNode<Set<Integer>> decomposition, PSSetMap map) {
         Iterator<TreeNode<Set<Integer>>> iterator = decomposition.depthIterator();
         while (iterator.hasNext()) {
             TreeNode<Set<Integer>> node = iterator.next();
@@ -122,7 +122,7 @@ public abstract class PswDynamicModelCounting {
         }
     }
 
-    private static void computePSnegatives(Formula formula, TreeNode<Set<Integer>> decomposition, PSSetMap map) {
+    private static void computePSNegatives(Formula formula, TreeNode<Set<Integer>> decomposition, PSSetMap map) {
         Iterator<TreeNode<Set<Integer>>> iterator = decomposition.breadthIterator();
         while (iterator.hasNext()) {
             TreeNode<Set<Integer>> node = iterator.next();
