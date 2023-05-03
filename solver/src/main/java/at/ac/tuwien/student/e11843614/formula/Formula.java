@@ -2,7 +2,9 @@ package at.ac.tuwien.student.e11843614.formula;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * An object that represents a propositional formula in conjunctive normal form (CNF).
@@ -49,6 +51,20 @@ public class Formula {
      */
     public List<Clause> clauses() {
         return clauses;
+    }
+
+    /**
+     * Computes the set of variables in this formula.
+     * @return the set of variables.
+     */
+    public Set<Integer> getVariables() {
+        Set<Integer> variables = new HashSet<>();
+        for (Clause clause : clauses) {
+            for (Integer literal : clause.literals()) {
+                variables.add(Math.abs(literal));
+            }
+        }
+        return variables;
     }
 
     @Override

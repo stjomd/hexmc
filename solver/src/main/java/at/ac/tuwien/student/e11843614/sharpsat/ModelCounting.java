@@ -5,6 +5,7 @@ import at.ac.tuwien.student.e11843614.decomposition.DecompositionFactory;
 import at.ac.tuwien.student.e11843614.decomposition.clique.operation.CliqueOperation;
 import at.ac.tuwien.student.e11843614.formula.Formula;
 import at.ac.tuwien.student.e11843614.sharpsat.clique.CliqueDynamicModelCounting;
+import at.ac.tuwien.student.e11843614.sharpsat.psw.PswDynamicModelCounting;
 import at.ac.tuwien.student.e11843614.struct.graph.Graph;
 import at.ac.tuwien.student.e11843614.struct.graph.GraphFactory;
 import at.ac.tuwien.student.e11843614.struct.tree.TreeNode;
@@ -30,10 +31,12 @@ public abstract class ModelCounting {
         StopWatch stopwatch = StopWatch.createStarted();
         TreeNode<Set<Integer>> decomposition = DecompositionFactory.pswBranch(incidenceGraph);
         stopwatch.stop();
+        System.out.println(decomposition);
         Logger.debug("[psw] Computed a psw branch decomposition, time elapsed: " + stopwatch.formatTime());
         // Solve #SAT
+        int models = PswDynamicModelCounting.count(formula, decomposition);
         Logger.warn("#SAT utilizing psw not yet implemented, returning 0");
-        return 0;
+        return models;
     }
 
     /**

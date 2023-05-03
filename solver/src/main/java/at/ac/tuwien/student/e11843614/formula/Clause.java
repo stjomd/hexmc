@@ -13,6 +13,14 @@ public class Clause {
     public Clause() {}
 
     /**
+     * Creates a copy of a clause.
+     * @param other the clause to be copied.
+     */
+    public Clause(Clause other) {
+        this.literals.addAll(other.literals);
+    }
+
+    /**
      * Adds a literal to the clause.
      * @param literal a literal represented by an integer (by a negative one if the literal is negated).
      */
