@@ -61,6 +61,9 @@ public abstract class CliqueDecompositionFactory {
             } else if (node.object() instanceof CliqueRecoloring) {
                 CliqueRecoloring recoloring = (CliqueRecoloring) node.object();
                 shift = Math.max(shift, Math.max(recoloring.from(), recoloring.to()));
+            } else if (node.object() instanceof CliqueSingleton) {
+                CliqueSingleton singleton = (CliqueSingleton) node.object();
+                shift = Math.max(shift, singleton.color());
             }
         }
         // Go through union nodes in post-order fashion
