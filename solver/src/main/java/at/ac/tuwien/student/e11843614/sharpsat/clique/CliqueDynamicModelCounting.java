@@ -27,11 +27,13 @@ public abstract class CliqueDynamicModelCounting {
         // Determine the clique-width (amount of colors in the decomposition)
         int width = 1;
         for (TreeNode<CliqueOperation> node : decomposition) {
-            if (!(node.object() instanceof CliqueRecoloring)) {
-                continue;
+            if (node.object() instanceof CliqueRecoloring) {
+                CliqueRecoloring recoloring = (CliqueRecoloring) node.object();
+                width = Math.max(width, Math.max(recoloring.from(), recoloring.to()));
+            } else if (node.object() instanceof CliqueSingleton) {
+                CliqueSingleton singleton = (CliqueSingleton) node.object();
+                width = Math.max(width, singleton.color());
             }
-            CliqueRecoloring recoloring = (CliqueRecoloring) node.object();
-            width = Math.max(width, Math.max(recoloring.from(), recoloring.to()));
         }
         // Map each vertex of the decomposition to a table
         Map<TreeNode<CliqueOperation>, CliqueTable> tableMap = new HashMap<>();
