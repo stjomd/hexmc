@@ -25,14 +25,14 @@ public abstract class CliqueDynamicModelCounting {
      */
     public static int count(TreeNode<CliqueOperation> decomposition) {
         // Determine the clique-width (amount of colors in the decomposition)
-        int width = 1;
+        int k = 1;
         for (TreeNode<CliqueOperation> node : decomposition) {
             if (node.object() instanceof CliqueRecoloring) {
                 CliqueRecoloring recoloring = (CliqueRecoloring) node.object();
-                width = Math.max(width, Math.max(recoloring.from(), recoloring.to()));
+                k = Math.max(k, Math.max(recoloring.from(), recoloring.to()));
             } else if (node.object() instanceof CliqueSingleton) {
                 CliqueSingleton singleton = (CliqueSingleton) node.object();
-                width = Math.max(width, singleton.color());
+                k = Math.max(k, singleton.color());
             }
         }
         // Map each vertex of the decomposition to a table
@@ -44,20 +44,20 @@ public abstract class CliqueDynamicModelCounting {
             CliqueTable table = null;
             if (node.object() instanceof CliqueSingleton) {
                 CliqueSingleton singleton = (CliqueSingleton) node.object();
-                table = baseCase(singleton, width);
+                table = baseCase(singleton, k);
             } else if (node.object() instanceof CliqueUnion) {
                 Iterator<TreeNode<CliqueOperation>> iter = node.children().iterator();
                 CliqueTable tableU = tableMap.get(iter.next());
                 CliqueTable tableW = tableMap.get(iter.next());
-                table = unionReduction(tableU, tableW, width);
+                table = unionReduction(tableU, tableW, k);
             } else if (node.object() instanceof CliqueRecoloring) {
                 CliqueRecoloring recoloring = (CliqueRecoloring) node.object();
                 CliqueTable tableU = tableMap.get(node.children().iterator().next());
-                table = recoloringReduction(recoloring, tableU, width);
+                table = recoloringReduction(recoloring, tableU, k);
             } else if (node.object() instanceof CliqueEdgeCreation) {
                 CliqueEdgeCreation edgeCreation = (CliqueEdgeCreation) node.object();
                 CliqueTable tableU = tableMap.get(node.children().iterator().next());
-                table = edgeCreationReduction(edgeCreation, tableU, width);
+                table = edgeCreationReduction(edgeCreation, tableU, k);
             }
             tableMap.put(node, table);
         }
@@ -69,10 +69,10 @@ public abstract class CliqueDynamicModelCounting {
     /**
      * Computes a table for a singleton node.
      * @param singleton the singleton.
-     * @param width the width of the decomposition.
+     * @param k the width of the decomposition.
      * @return the table.
      */
-    private static CliqueTable baseCase(CliqueSingleton singleton, int width) {
+    private static CliqueTable baseCase(CliqueSingleton singleton, int k) {
         // Base case. (A,B,C) in the table mean the following. From the corresponding formula we remove clauses
         // colored with a in A. For every b of B, we add a disjunction to the formula, which contains variables
         // colored with b. For every c of C, we add a disjunction of the negations of variables colored with c.
@@ -83,7 +83,7 @@ public abstract class CliqueDynamicModelCounting {
         if (singleton.vertex() % 10 == 1) {
             // The singleton is a variable of the formula. A, B don't affect the formula. If C contains x, we
             // get an unsatisfiable formula with 0 models, otherwise it's unchanged.
-            forEachSubset(width, (a, b, c) -> {
+            forEachSubset(k, (a, b, c) -> {
                 if (c.contains(singleton.color())) {
                     table.set(a, b, c, 0);
                 } else {
@@ -93,7 +93,7 @@ public abstract class CliqueDynamicModelCounting {
         } else if (singleton.vertex() % 10 == 2) {
             // The singleton is a clause. If A contains x, the clause is removed, and we get an empty
             // formula with 1 model, otherwise it's unchanged. B, C do not affect the formula.
-            forEachSubset(width, (a, b, c) -> {
+            forEachSubset(k, (a, b, c) -> {
                 if (a.contains(singleton.color())) {
                     table.set(a, b, c, 1);
                 } else {
@@ -110,12 +110,12 @@ public abstract class CliqueDynamicModelCounting {
      * Computes a table for a union node.
      * @param tableU the table of one child node.
      * @param tableW the table of the other child node.
-     * @param width the width of the decomposition.
+     * @param k the width of the decomposition.
      * @return the table.
      */
-    private static CliqueTable unionReduction(CliqueTable tableU, CliqueTable tableW, int width) {
+    private static CliqueTable unionReduction(CliqueTable tableU, CliqueTable tableW, int k) {
         CliqueTable table = new CliqueTable();
-        forEachSubset(width, (a, b, c) -> {
+        forEachSubset(k, (a, b, c) -> {
             int x = tableU.get(a, b, c) * tableW.get(a, b, c);
             table.set(a, b, c, x);
         });
@@ -125,13 +125,13 @@ public abstract class CliqueDynamicModelCounting {
     /**
      * Computes a table for a recoloring node.
      * @param tableU the table of the child node.
-     * @param width the width of the decomposition.
+     * @param k the width of the decomposition.
      * @return the table.
      */
-    private static CliqueTable recoloringReduction(CliqueRecoloring recoloring, CliqueTable tableU, int width) {
+    private static CliqueTable recoloringReduction(CliqueRecoloring recoloring, CliqueTable tableU, int k) {
         int i = recoloring.from(), j = recoloring.to();
         CliqueTable table = new CliqueTable();
-        forEachSubset(width, (a, b, c) -> {
+        forEachSubset(k, (a, b, c) -> {
             if (b.contains(i) || c.contains(i)) {
                 table.set(a, b, c, 0);
                 return;
@@ -166,13 +166,13 @@ public abstract class CliqueDynamicModelCounting {
     /**
      * Computes a table for an edge creation node.
      * @param tableU the table of the child node.
-     * @param width the width of the decomposition.
+     * @param k the width of the decomposition.
      * @return the table.
      */
-    private static CliqueTable edgeCreationReduction(CliqueEdgeCreation edgeCreation, CliqueTable tableU, int width) {
+    private static CliqueTable edgeCreationReduction(CliqueEdgeCreation edgeCreation, CliqueTable tableU, int k) {
         int i = edgeCreation.from(), j = edgeCreation.to();
         CliqueTable table = new CliqueTable();
-        forEachSubset(width, (a, b, c) -> {
+        forEachSubset(k, (a, b, c) -> {
             int x = 0;
             if (a.contains(i)) {
                 x = tableU.get(a, b, c);
