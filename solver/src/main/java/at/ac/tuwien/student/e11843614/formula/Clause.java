@@ -2,6 +2,7 @@ package at.ac.tuwien.student.e11843614.formula;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * A class representing a clause of a propositional formula.
@@ -38,7 +39,20 @@ public class Clause {
 
     @Override
     public String toString() {
-        return this.literals.toString();
+        return "cl" + this.literals;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Clause clause = (Clause) o;
+        return Objects.equals(literals, clause.literals);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(literals);
     }
 
 }

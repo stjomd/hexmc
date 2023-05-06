@@ -4,16 +4,91 @@ import at.ac.tuwien.student.e11843614.formula.Clause;
 import at.ac.tuwien.student.e11843614.formula.Formula;
 import at.ac.tuwien.student.e11843614.struct.tree.TreeNode;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public abstract class PswDynamicModelCounting {
 
     public static int count(Formula formula, TreeNode<Set<Integer>> decomposition) {
         int width = 0;
+        // Compute PS sets
         PSSetMap psMap = computePSSets(formula, decomposition);
+        // Compute tables
+        Map<TreeNode<Set<Integer>>, PSTable> tableMap = new HashMap<>();
+        Iterator<TreeNode<Set<Integer>>> iterator = decomposition.depthIterator();
+        System.out.println("PS VALUES");
+        while (iterator.hasNext()) {
+            TreeNode<Set<Integer>> node = iterator.next();
+            System.out.println("\nvisiting: " + node.object());
+            PSTable table = new PSTable();
+            if (node.children().isEmpty()) {
+                // leaf, base case
+                for (Set<Clause> c1 : psMap.getPositive(node)) {
+                    for (Set<Clause> c2 : psMap.getNegative(node)) {
+                        // TODO: 0,1,2?
+                        table.set(c1, c2, 0);
+                    }
+                }
+                List<Formula> indf = inducedFormulas(formula, node);
+                System.out.println("F_v:  " + indf.get(0));
+                System.out.println("F_-v: " + indf.get(1));
+                System.out.println("PS(F_v):");
+                for (Set<Clause> psset : psMap.getPositive(node)) {
+                    System.out.println("\t" + psset);
+                }
+                System.out.println("PS(F_-v):");
+                for (Set<Clause> psset : psMap.getNegative(node)) {
+                    System.out.println("\t" + psset);
+                }
+            } else {
+                List<Formula> indf = inducedFormulas(formula, node);
+                System.out.println("F_v:  " + indf.get(0));
+                System.out.println("F_-v: " + indf.get(1));
+                System.out.println("PS(F_v):");
+                for (Set<Clause> psset : psMap.getPositive(node)) {
+                    System.out.println("\t" + psset);
+                }
+                System.out.println("PS(F_-v):");
+                for (Set<Clause> psset : psMap.getNegative(node)) {
+                    System.out.println("\t" + psset);
+                }
+                // internal node, reduction
+                // initialize to 0
+                for (Set<Clause> c1 : psMap.getPositive(node)) {
+                    for (Set<Clause> c2 : psMap.getNegative(node)) {
+                        table.set(c1, c2, 0);
+                    }
+                }
+                // fill the table
+                Iterator<TreeNode<Set<Integer>>> childIterator = node.children().iterator();
+                TreeNode<Set<Integer>> child1 = childIterator.next();
+                TreeNode<Set<Integer>> child2 = childIterator.next();
+                PSTable child1Table = tableMap.get(child1);
+                PSTable child2Table = tableMap.get(child2);
+                for (Set<Clause> c1 : psMap.getPositive(child1)) {
+                    for (Set<Clause> c2 : psMap.getPositive(child2)) {
+                        for (Set<Clause> cv : psMap.getNegative(node)) {
+                            Set<Clause> first = new HashSet<>(c2);
+                            first.addAll(cv);
+                            first.retainAll(deltaClauses(child1, formula));
+                            Set<Clause> second = new HashSet<>(c1);
+                            second.addAll(cv);
+                            second.retainAll(deltaClauses(child2, formula));
+                            Set<Clause> third = new HashSet<>(c1);
+                            third.addAll(c2);
+                            third.removeAll(deltaClauses(node, formula));
+                            int n = table.get(third, cv) + child1Table.get(c1, first) + child2Table.get(c2, second);
+                            table.set(third, cv, n);
+                        }
+                    }
+                }
+            }
+            tableMap.put(node, table);
+        }
         return width;
     }
 
@@ -45,43 +120,57 @@ public abstract class PswDynamicModelCounting {
                 throw new IllegalArgumentException("The decomposition is not of an incidence graph");
             }
             if (node.children().isEmpty()) {
+                System.out.println("\nvisiting: " + node.object());
                 // child node, base case
-                List<Formula> formulas = inducedFormulas(formula, node);
-                // F_v is of the form {{x},...,{x},{-x},...{-x}} with two PS sets: {{x},...,{x}} and {{-x},...,{-x}}.
-                // It might also contain {x,x} and the like; as well as {x,-x} which are always satisfied.
-                Set<Clause> onePs = new HashSet<>();
-                Set<Clause> twoPs = new HashSet<>();
-                for (Clause clause : formulas.get(0).clauses()) {
-                    // TODO: if empty?
-                    // If the clause has only x, add it to onePs. If it only has -x, add it to twoPs.
-                    // If the clause has both x and -x, add it to both.
-                    boolean containsPositive = false, containsNegative = false;
-                    for (int literal : clause.literals()) {
-                        if (literal > 0) {
-                            containsPositive = true;
-                        } else if (literal < 0) {
-                            containsNegative = true;
+                List<Formula> formulas = inducedFormulas(formula, node); // 0 => F_v, 1 => F_-v
+                System.out.println("F:    " + formula);
+                System.out.println("F_v:  " + formulas.get(0));
+                System.out.println("F_-v: " + formulas.get(1));
+                if (vertex % 10 == 1) {
+                    // variable vertex
+                    // F_v  = {{x},...,{x,x},...,{-x},...,{-x,-x},...,{x,-x},...}
+                    // F_-v = {}
+                    Set<Clause> ps1 = new HashSet<>();
+                    Set<Clause> ps2 = new HashSet<>();
+                    // PS(F_v) contains {{x},...,{x,x},...,{x,-x},...} and {{-x},...,{-x,-x},...,{x,-x},...}
+                    for (Clause clause : formulas.get(0).clauses()) {
+                        // Check which literals the clause contains
+                        boolean hasPositiveLiterals = false, hasNegatedLiterals = false;
+                        for (int literal : clause.literals()) {
+                            if (literal > 0) {
+                                hasPositiveLiterals = true;
+                            } else {
+                                hasNegatedLiterals = true;
+                            }
+                        }
+                        // both {x,-x} => ps1 & ps2; {x,...} => ps1; {-x,...} => ps2
+                        if (hasPositiveLiterals) {
+                            ps1.add(clause);
+                        }
+                        if (hasNegatedLiterals) {
+                            ps2.add(clause);
                         }
                     }
-                    if (containsPositive && containsNegative) {
-                        onePs.add(clause);
-                        twoPs.add(clause);
-                    } else if (containsPositive) {
-                        onePs.add(clause);
-                    } else if (containsNegative) {
-                        twoPs.add(clause);
-                    }
-                }
-                map.addToPositive(node, onePs);
-                map.addToPositive(node, twoPs);
-                // F_-v is of the form {{x_1,x_2,...,-x_k,...,-x_n}} with one PS set: the clause itself
-                Set<Clause> ps = new HashSet<>();
-                if (!formulas.get(1).clauses().isEmpty()) {
-                    ps.add(formulas.get(1).clauses().get(0));
+                    map.addToPositive(node, ps1);
+                    map.addToPositive(node, ps2);
+                    // PS(F_-v) = {}
+                    map.setNegative(node, Set.of());
+                    System.out.println("PS(F_v):  " + map.getPositive(node));
+                    System.out.println("PS(F_-v): " + map.getNegative(node));
                 } else {
-                    ps.add(new Clause());
+                    // clause vertex
+                    // F_v  = {{},{},...}
+                    // F_-v = {c}
+                    // PS(F_v) = {F_v}
+                    Set<Clause> clauses = new HashSet<>(formulas.get(0).clauses());
+                    map.addToPositive(node, clauses);
+                    // PS(F-v) = {{c}}
+                    Clause clause = formulas.get(1).clauses().iterator().next();
+                    map.addToNegative(node, Set.of(clause));
+                    map.addToNegative(node, Set.of());
+                    System.out.println("PS(F_v):  " + map.getPositive(node));
+                    System.out.println("PS(F_-v): " + map.getNegative(node));
                 }
-                map.addToNegative(node, ps);
             } else if (node.parent() == null) {
                 // root node, base case
                 List<Formula> inducedFormulas = inducedFormulas(formula, node);
@@ -97,10 +186,13 @@ public abstract class PswDynamicModelCounting {
         while (iterator.hasNext()) {
             TreeNode<Set<Integer>> node = iterator.next();
             if (node.parent() != null && !node.children().isEmpty()) {
+                System.out.println("\nvisiting: " + node.object());
                 // internal node. for positive: both children
                 Iterator<TreeNode<Set<Integer>>> childIterator = node.children().iterator();
                 TreeNode<Set<Integer>> c1 = childIterator.next();
                 TreeNode<Set<Integer>> c2 = childIterator.next();
+                System.out.println("c1: " + c1.object());
+                System.out.println("c2: " + c2.object());
                 // reduction
                 Set<Clause> deltaClauses = new HashSet<>();
                 for (Integer vertex : node.object()) {
@@ -108,6 +200,8 @@ public abstract class PswDynamicModelCounting {
                         deltaClauses.add(formula.clauses().get(vertex/10 - 1));
                     }
                 }
+                System.out.println("PS(F_c1): " + map.getPositive(c1));
+                System.out.println("PS(F_c2): " + map.getPositive(c2));
                 Set<Set<Clause>> l = new HashSet<>();
                 for (Set<Clause> clauses1 : map.getPositive(c1)) {
                     for (Set<Clause> clauses2 : map.getPositive(c2)) {
@@ -115,8 +209,12 @@ public abstract class PswDynamicModelCounting {
                         newClauses.addAll(clauses2);
                         newClauses.removeAll(deltaClauses);
                         l.add(newClauses);
+                        System.out.println("C1 = " + clauses1 + ", C2 = " + clauses2);
+                        System.out.println("cla delta = " + deltaClauses);
+                        System.out.println("new = " + newClauses);
                     }
                 }
+                System.out.println("l: " + l);
                 map.setPositive(node, l);
             }
         }
@@ -154,6 +252,29 @@ public abstract class PswDynamicModelCounting {
                 map.setNegative(node, l);
             }
         }
+    }
+
+    // ----- Helpers ---------------------------------------------------------------------------------------------------
+
+    private static Set<Integer> deltaVariables(TreeNode<Set<Integer>> node) {
+        Set<Integer> vars = new HashSet<>();
+        for (int vertex : node.object()) {
+            if (vertex % 10 == 1) {
+                vars.add(vertex / 10);
+            }
+        }
+        return vars;
+    }
+
+    private static Set<Clause> deltaClauses(TreeNode<Set<Integer>> node, Formula formula) {
+        Set<Clause> clauses = new HashSet<>();
+        for (int vertex : node.object()) {
+            if (vertex % 10 == 2) {
+                Clause clause = formula.clauses().get(vertex/10 - 1);
+                clauses.add(clause);
+            }
+        }
+        return clauses;
     }
 
     /**
