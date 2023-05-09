@@ -42,6 +42,7 @@ public class Formula {
      * @param clause a clause to be added.
      */
     public void addClause(Clause clause) {
+        clause.setPosition(clauses.size() + 1);
         clauses.add(clause);
     }
 
