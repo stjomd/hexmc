@@ -10,6 +10,7 @@ import java.util.Objects;
 public class Clause {
 
     private final List<Integer> literals = new ArrayList<>();
+    private int position = 0;
 
     public Clause() {}
 
@@ -19,6 +20,7 @@ public class Clause {
      */
     public Clause(Clause other) {
         this.literals.addAll(other.literals);
+        this.position = other.position();
     }
 
     /**
@@ -35,6 +37,14 @@ public class Clause {
      */
     public List<Integer> literals() {
         return literals;
+    }
+
+    public int position() {
+        return position;
+    }
+
+    public void setPosition(int position) {
+        this.position = position;
     }
 
     @Override
