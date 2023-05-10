@@ -11,6 +11,13 @@ public class PSTableRefs {
     private final Map<Set<Integer>, Map<Set<Integer>, Integer>> map = new HashMap<>();
 
     public int get(Set<Integer> c1, Set<Integer> c2) {
+        if (!map.containsKey(c1)) {
+            return 0;
+        }
+        Map<Set<Integer>, Integer> c1Map = map.get(c1);
+        if (!c1Map.containsKey(c2)) {
+            return 0;
+        }
         return map.get(c1).get(c2);
     }
 
