@@ -114,7 +114,7 @@ public abstract class PswDynamicModelCounting {
                 throw new IllegalArgumentException("The decomposition is not of an incidence graph");
             }
             if (node.children().isEmpty()) {
-                // child node, base case
+                // leaf node, base case
                 List<Formula> formulas = inducedFormulas(formula, node); // 0 => F_v, 1 => F_-v
                 if (vertex % 10 == 1) {
                     // variable vertex
@@ -197,6 +197,7 @@ public abstract class PswDynamicModelCounting {
     }
 
     private static void computePSNegatives(TreeNode<Set<Integer>> decomposition, PSSetMapRefs map) {
+        System.out.println("computing ps negatives");
         Iterator<TreeNode<Set<Integer>>> iterator = decomposition.breadthIterator();
         while (iterator.hasNext()) {
             TreeNode<Set<Integer>> node = iterator.next();
@@ -223,6 +224,7 @@ public abstract class PswDynamicModelCounting {
                 map.setNegative(node, l);
             }
         }
+        System.out.println("ps negatives done");
     }
 
     // ----- Helpers ---------------------------------------------------------------------------------------------------
