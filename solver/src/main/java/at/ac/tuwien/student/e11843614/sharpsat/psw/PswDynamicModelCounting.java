@@ -15,85 +15,75 @@ import java.util.stream.Collectors;
 public abstract class PswDynamicModelCounting {
 
     public static int count(Formula formula, TreeNode<Set<Integer>> decomposition) {
-        int width = 0;
-        for (Clause clause : formula.clauses()) {
-            System.out.println(clause + " at pos " + clause.position());
-        }
-        // Compute PS sets
         PSSetMapRefs psMap = computePSSets(formula, decomposition);
-        // Compute tables
         Map<TreeNode<Set<Integer>>, PSTableRefs> tableMap = new HashMap<>();
+        // Compute tables
         Iterator<TreeNode<Set<Integer>>> iterator = decomposition.depthIterator();
-        System.out.println("PS VALUES");
         while (iterator.hasNext()) {
             TreeNode<Set<Integer>> node = iterator.next();
-            System.out.println("\nvisiting: " + node.object());
             PSTableRefs table = new PSTableRefs();
             if (node.children().isEmpty()) {
                 // leaf, base case
-                for (Set<Integer> c1 : psMap.getPositive(node)) {
-                    for (Set<Integer> c2 : psMap.getNegative(node)) {
-                        // TODO: 0,1,2?
-                        table.set(c1, c2, 0);
-                    }
-                }
-                List<Formula> indf = inducedFormulas(formula, node);
-                System.out.println("F_v:  " + indf.get(0));
-                System.out.println("F_-v: " + indf.get(1));
-                System.out.println("PS(F_v):");
-                for (Set<Integer> psset : psMap.getPositive(node)) {
-                    System.out.println("\t" + psset);
-                }
-                System.out.println("PS(F_-v):");
-                for (Set<Integer> psset : psMap.getNegative(node)) {
-                    System.out.println("\t" + psset);
-                }
+                computeTableBaseCase(node, psMap, table);
             } else {
-                List<Formula> indf = inducedFormulas(formula, node);
-                System.out.println("F_v:  " + indf.get(0));
-                System.out.println("F_-v: " + indf.get(1));
-                System.out.println("PS(F_v):");
-                for (Set<Integer> psset : psMap.getPositive(node)) {
-                    System.out.println("\t" + psset);
-                }
-                System.out.println("PS(F_-v):");
-                for (Set<Integer> psset : psMap.getNegative(node)) {
-                    System.out.println("\t" + psset);
-                }
                 // internal node, reduction
-                // initialize to 0
-                for (Set<Integer> c1 : psMap.getPositive(node)) {
-                    for (Set<Integer> c2 : psMap.getNegative(node)) {
-                        table.set(c1, c2, 0);
-                    }
-                }
-                // fill the table
                 Iterator<TreeNode<Set<Integer>>> childIterator = node.children().iterator();
                 TreeNode<Set<Integer>> child1 = childIterator.next();
                 TreeNode<Set<Integer>> child2 = childIterator.next();
                 PSTableRefs child1Table = tableMap.get(child1);
                 PSTableRefs child2Table = tableMap.get(child2);
-                for (Set<Integer> c1 : psMap.getPositive(child1)) {
-                    for (Set<Integer> c2 : psMap.getPositive(child2)) {
-                        for (Set<Integer> cv : psMap.getNegative(node)) {
-                            Set<Integer> first = new HashSet<>(c2);
-                            first.addAll(cv);
-                            first.retainAll(deltaClauses(child1, formula));
-                            Set<Integer> second = new HashSet<>(c1);
-                            second.addAll(cv);
-                            second.retainAll(deltaClauses(child2, formula));
-                            Set<Integer> third = new HashSet<>(c1);
-                            third.addAll(c2);
-                            third.removeAll(deltaClauses(node, formula));
-                            int n = table.get(third, cv) + child1Table.get(c1, first) + child2Table.get(c2, second);
-                            table.set(third, cv, n);
-                        }
-                    }
-                }
+                computeTableReduction(node, psMap, table, child1Table, child2Table);
             }
             tableMap.put(node, table);
         }
-        return width;
+        return tableMap.get(decomposition).get(Set.of(), Set.of());
+    }
+
+    private static void computeTableBaseCase(TreeNode<Set<Integer>> node, PSSetMapRefs psMap, PSTableRefs table) {
+        int vertex = node.object().iterator().next();
+        for (Set<Integer> c1 : psMap.getPositive(node)) {
+            for (Set<Integer> c2 : psMap.getNegative(node)) {
+                if (vertex % 10 == 1) {
+                    // variable vertex, set to amount of ps sets for positive
+                    int n = psMap.getPositive(node).size();
+                    table.set(c1, c2, n);
+                } else {
+                    // clause vertex, set to 0
+                    table.set(c1, c2, 0);
+                }
+            }
+        }
+    }
+
+    private static void computeTableReduction(TreeNode<Set<Integer>> node, PSSetMapRefs psMap, PSTableRefs table,
+                                              PSTableRefs child1Table, PSTableRefs child2Table) {
+        // initialize to 0
+        for (Set<Integer> c1 : psMap.getPositive(node)) {
+            for (Set<Integer> c2 : psMap.getNegative(node)) {
+                table.set(c1, c2, 0);
+            }
+        }
+        // fill the table
+        Iterator<TreeNode<Set<Integer>>> childIterator = node.children().iterator();
+        TreeNode<Set<Integer>> child1 = childIterator.next();
+        TreeNode<Set<Integer>> child2 = childIterator.next();
+        for (Set<Integer> c1 : psMap.getPositive(child1)) {
+            for (Set<Integer> c2 : psMap.getPositive(child2)) {
+                for (Set<Integer> cv : psMap.getNegative(node)) {
+                    Set<Integer> first = new HashSet<>(c2);
+                    first.addAll(cv);
+                    first.retainAll(deltaClauses(child1));
+                    Set<Integer> second = new HashSet<>(c1);
+                    second.addAll(cv);
+                    second.retainAll(deltaClauses(child2));
+                    Set<Integer> third = new HashSet<>(c1);
+                    third.addAll(c2);
+                    third.removeAll(deltaClauses(node));
+                    int n = table.get(third, cv) + (child1Table.get(c1, first) * child2Table.get(c2, second));
+                    table.set(third, cv, n);
+                }
+            }
+        }
     }
 
     // ----- Computing PS Sets -----------------------------------------------------------------------------------------
@@ -109,9 +99,9 @@ public abstract class PswDynamicModelCounting {
         // First, we compute the sets for the base cases: root node and leaves.
         computePSBaseCases(formula, decomposition, map);
         // Now, we compute the PS sets for F_v for internal nodes.
-        computePSPositives(formula, decomposition, map);
+        computePSPositives(decomposition, map);
         // Finally, we compute the PS sets for F_-v for internal nodes.
-        computePSNegatives(formula, decomposition, map);
+        computePSNegatives(decomposition, map);
         return map;
     }
 
@@ -124,18 +114,8 @@ public abstract class PswDynamicModelCounting {
                 throw new IllegalArgumentException("The decomposition is not of an incidence graph");
             }
             if (node.children().isEmpty()) {
-                System.out.println("\nvisiting: " + node.object());
                 // child node, base case
                 List<Formula> formulas = inducedFormulas(formula, node); // 0 => F_v, 1 => F_-v
-                System.out.println("F:    " + formula);
-                System.out.println("F_v:  " + formulas.get(0));
-                for (Clause clause : formulas.get(0).clauses()) {
-                    System.out.println("\t" + clause + " at pos " + clause.position());
-                }
-                System.out.println("F_-v: " + formulas.get(1));
-                for (Clause clause : formulas.get(1).clauses()) {
-                    System.out.println("\t" + clause + " at pos " + clause.position());
-                }
                 if (vertex % 10 == 1) {
                     // variable vertex
                     // F_v  = {{x},...,{x,x},...,{-x},...,{-x,-x},...,{x,-x},...}
@@ -166,23 +146,16 @@ public abstract class PswDynamicModelCounting {
                     map.addToPositive(node, ps2);
                     // PS(F_-v) = {{}}
                     map.addToNegative(node, Set.of());
-                    System.out.println("PS(F_v):  " + map.getPositive(node));
-                    System.out.println("PS(F_-v): " + map.getNegative(node));
                 } else {
                     // clause vertex
                     // F_v  = {{},{},...}
                     // F_-v = {c}
-                    // PS(F_v) = {F_v}
-                    Set<Integer> clauses = formulas.get(0).clauses().stream()
-                        .map(Clause::position)
-                        .collect(Collectors.toSet());
+                    // PS(F_v) = {{}}
                     map.addToPositive(node, Set.of());
-                    // PS(F-v) = {{c}}
+                    // PS(F-v) = {{}, {c}}
                     int clause = formulas.get(1).clauses().iterator().next().position();
                     map.addToNegative(node, Set.of());
                     map.addToNegative(node, Set.of(clause));
-                    System.out.println("PS(F_v):  " + map.getPositive(node));
-                    System.out.println("PS(F_-v): " + map.getNegative(node));
                 }
             } else if (node.parent() == null) {
                 // root node, base case
@@ -198,48 +171,32 @@ public abstract class PswDynamicModelCounting {
         }
     }
 
-    private static void computePSPositives(Formula formula, TreeNode<Set<Integer>> decomposition, PSSetMapRefs map) {
+    private static void computePSPositives(TreeNode<Set<Integer>> decomposition, PSSetMapRefs map) {
         Iterator<TreeNode<Set<Integer>>> iterator = decomposition.depthIterator();
         while (iterator.hasNext()) {
             TreeNode<Set<Integer>> node = iterator.next();
             if (!node.children().isEmpty()) {
-                System.out.println("\nvisiting: " + node.object());
                 // internal node. for positive: both children
                 Iterator<TreeNode<Set<Integer>>> childIterator = node.children().iterator();
                 TreeNode<Set<Integer>> c1 = childIterator.next();
                 TreeNode<Set<Integer>> c2 = childIterator.next();
-                System.out.println("c1: " + c1.object());
-                System.out.println("c2: " + c2.object());
                 // reduction
-                Set<Integer> deltaClauses = new HashSet<>();
-                for (Integer vertex : node.object()) {
-                    if (vertex % 10 == 2) {
-                        deltaClauses.add(vertex / 10);
-                    }
-                }
-                System.out.println("PS(F_c1): " + map.getPositive(c1));
-                System.out.println("PS(F_c2): " + map.getPositive(c2));
+                Set<Integer> deltaClauses = deltaClauses(node);
                 Set<Set<Integer>> l = new HashSet<>();
                 for (Set<Integer> clauses1 : map.getPositive(c1)) {
                     for (Set<Integer> clauses2 : map.getPositive(c2)) {
                         Set<Integer> newClauses = new HashSet<>(clauses1);
                         newClauses.addAll(clauses2);
                         newClauses.removeAll(deltaClauses);
-//                        if (!newClauses.isEmpty()) {
-                            l.add(newClauses);
-//                        }
-                        System.out.println("C1 = " + clauses1 + ", C2 = " + clauses2);
-                        System.out.println("cla delta = " + deltaClauses);
-                        System.out.println("new = " + newClauses);
+                        l.add(newClauses);
                     }
                 }
-                System.out.println("l: " + l);
                 map.setPositive(node, l);
             }
         }
     }
 
-    private static void computePSNegatives(Formula formula, TreeNode<Set<Integer>> decomposition, PSSetMapRefs map) {
+    private static void computePSNegatives(TreeNode<Set<Integer>> decomposition, PSSetMapRefs map) {
         Iterator<TreeNode<Set<Integer>>> iterator = decomposition.breadthIterator();
         while (iterator.hasNext()) {
             TreeNode<Set<Integer>> node = iterator.next();
@@ -253,12 +210,7 @@ public abstract class PswDynamicModelCounting {
                     }
                 }
                 // Reduction
-                Set<Integer> deltaClauses = new HashSet<>();
-                for (Integer vertex : node.object()) {
-                    if (vertex % 10 == 2) {
-                        deltaClauses.add(vertex / 10);
-                    }
-                }
+                Set<Integer> deltaClauses = deltaClauses(node);
                 Set<Set<Integer>> l = new HashSet<>();
                 for (Set<Integer> clauses1 : map.getPositive(s)) {
                     for (Set<Integer> clauses2 : map.getNegative(p)) {
@@ -271,7 +223,6 @@ public abstract class PswDynamicModelCounting {
                 map.setNegative(node, l);
             }
         }
-        System.out.println("computed ps negatives");
     }
 
     // ----- Helpers ---------------------------------------------------------------------------------------------------
@@ -286,7 +237,7 @@ public abstract class PswDynamicModelCounting {
         return vars;
     }
 
-    private static Set<Integer> deltaClauses(TreeNode<Set<Integer>> node, Formula formula) {
+    private static Set<Integer> deltaClauses(TreeNode<Set<Integer>> node) {
         Set<Integer> clauses = new HashSet<>();
         for (int vertex : node.object()) {
             if (vertex % 10 == 2) {
