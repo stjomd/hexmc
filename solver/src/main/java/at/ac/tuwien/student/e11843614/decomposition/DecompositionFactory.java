@@ -1,5 +1,6 @@
 package at.ac.tuwien.student.e11843614.decomposition;
 
+import at.ac.tuwien.student.e11843614.Logger;
 import at.ac.tuwien.student.e11843614.decomposition.carving.CarvingDecompositionFactory;
 import at.ac.tuwien.student.e11843614.decomposition.carving.CarvingDerivation;
 import at.ac.tuwien.student.e11843614.decomposition.clique.CliqueDecompositionFactory;
@@ -141,6 +142,7 @@ public abstract class DecompositionFactory {
                 current = current.parent();
             }
         }
+        Logger.debug("Computed a quick branch decomposition of the formula");
         return root;
     }
 

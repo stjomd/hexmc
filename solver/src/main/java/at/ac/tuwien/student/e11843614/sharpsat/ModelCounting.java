@@ -30,14 +30,12 @@ public abstract class ModelCounting {
         // Compute a branch decomposition (as defined in the psw paper)
         StopWatch stopwatch = StopWatch.createStarted();
         TreeNode<Set<Integer>> decomposition = DecompositionFactory.pswBranch(incidenceGraph);
-        stopwatch.stop();
-        Logger.debug("[psw] Computed a psw branch decomposition in time: " + stopwatch.formatTime());
+        stopwatch.split();
+        Logger.debug("[psw] Time elapsed: " + stopwatch.formatSplitTime());
         // Solve #SAT
-        stopwatch.reset();
-        stopwatch.start();
         int models = PswDynamicModelCounting.count(formula, decomposition);
         stopwatch.stop();
-        Logger.debug("[psw] Computed the amount of models in time: " + stopwatch.formatTime());
+        Logger.debug("[psw] Time elapsed: " + stopwatch.formatTime());
         return models;
     }
 
@@ -53,14 +51,12 @@ public abstract class ModelCounting {
         // Compute a parse tree for clique width
         StopWatch stopwatch = StopWatch.createStarted();
         TreeNode<CliqueOperation> decomposition = DecompositionFactory.clique(incidenceGraph, true);
-        stopwatch.stop();
-        Logger.debug("[cw] Computed a clique decomposition in time: " + stopwatch.formatTime());
+        stopwatch.split();
+        Logger.debug("[cw] Time elapsed: " + stopwatch.formatSplitTime());
         // Solve #SAT
-        stopwatch.reset();
-        stopwatch.start();
         int models = CliqueDynamicModelCounting.count(decomposition);
         stopwatch.stop();
-        Logger.debug("[cw] Computed the amount of models in time: " + stopwatch.formatTime());
+        Logger.debug("[cw] Time elapsed: " + stopwatch.formatTime());
         return models;
     }
 
