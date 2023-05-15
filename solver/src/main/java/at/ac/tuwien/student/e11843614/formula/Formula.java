@@ -68,6 +68,19 @@ public class Formula {
         return variables;
     }
 
+    /**
+     * Returns a boolean value indicating whether this formula contains an empty clause.
+     * @return true if there is an empty clause in the formula, and false otherwise.
+     */
+    public boolean hasEmptyClauses() {
+        for (Clause clause : clauses) {
+            if (clause.literals().isEmpty()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Override
     public String toString() {
         return clauses.toString();
