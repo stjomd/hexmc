@@ -12,6 +12,7 @@ import at.ac.tuwien.student.e11843614.struct.graph.Graph;
 import org.sat4j.specs.TimeoutException;
 
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 public abstract class DecompositionFactory {
@@ -31,13 +32,13 @@ public abstract class DecompositionFactory {
     }
 
     /**
-     * Constructs a branch decomposition for ps-width (binary tree containing vertices of the graph). The resulting
-     * branch decomposition is not optimal in terms of ps-width.
+     * Constructs a branch decomposition for ps-width (binary tree containing vertices of the graph) from a carving
+     * decomposition. The resulting branch decomposition is not optimal in terms of ps-width.
      * @param graph the graph. For ps-width applications an incidence graph of the formula.
      * @return a branch decomposition for ps-width (a binary tree containing vertices of the graph), or null if it does
      * not exist.
      */
-    public static TreeNode<Set<Integer>> pswBranch(Graph graph) throws TimeoutException {
+    public static TreeNode<Set<Integer>> pswBranchFromCarving(Graph graph) throws TimeoutException {
         // We construct a carving decomposition and then transform it into a binary tree. But, if there is only one
         // vertex, a carving decomposition does not exist, while a branch decomposition does.
         if (graph.vertices().size() == 1) {
@@ -86,6 +87,61 @@ public abstract class DecompositionFactory {
             }
         }
         return carving;
+    }
+
+    /**
+     * Constructs a branch decomposition for ps-width (binary tree containing vertices of the graph) quickly. The
+     * resulting branch decomposition is not optimal in terms of ps-width.
+     * @param graph the graph. For ps-width applications an incidence graph of the formula.
+     * @return a branch decomposition for ps-width (a binary tree containing vertices of the graph), or null if it does
+     * not exist.
+     */
+    public static TreeNode<Set<Integer>> pswBranch(Graph graph) {
+        if (graph.vertices().isEmpty()) {
+            return null;
+        } else if (graph.vertices().size() == 1) {
+            int vertex = graph.vertices().iterator().next();
+            return new TreeNode<>(Set.of(vertex));
+        }
+        // >= 2 vertices at this point
+        Iterator<Integer> vertexIterator = graph.vertices().iterator();
+        TreeNode<Set<Integer>> root = new TreeNode<>(new HashSet<>());
+        root.addChild(new TreeNode<>(Set.of(vertexIterator.next())));
+        root.addChild(new TreeNode<>(Set.of(vertexIterator.next())));
+        // Suppose we have a binary tree/decomposition that contains some vertices of the graph. Choose some leaf,
+        // transform it into an internal node with two children: one stores the value previously stored in the leaf,
+        // the other a new value.
+        while (vertexIterator.hasNext()) {
+            int vertex = vertexIterator.next();
+            for (TreeNode<Set<Integer>> node : root) {
+                if (!node.children().isEmpty()) {
+                    continue;
+                }
+                // Found a leaf
+                TreeNode<Set<Integer>> parent = node.parent();
+                TreeNode<Set<Integer>> internal = new TreeNode<>(new HashSet<>());
+                node.detach();
+                internal.addChild(node);
+                internal.addChild(new TreeNode<>(Set.of(vertex)));
+                parent.addChild(internal);
+                break;
+            }
+        }
+        // Propagate sets
+        Iterator<TreeNode<Set<Integer>>> nodeIterator = root.depthIterator();
+        while (nodeIterator.hasNext()) {
+            TreeNode<Set<Integer>> node = nodeIterator.next();
+            if (!node.children().isEmpty()) {
+                continue;
+            }
+            // 'node' is a leaf
+            TreeNode<Set<Integer>> current = node.parent();
+            while (current != null) {
+                current.object().addAll(node.object());
+                current = current.parent();
+            }
+        }
+        return root;
     }
 
     /**
