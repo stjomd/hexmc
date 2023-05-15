@@ -27,9 +27,12 @@ public class FormulaReader {
         File file = new File(path);
         Scanner scanner = new Scanner(file);
         Formula formula = new Formula();
+        int line = 0;
         while (scanner.hasNextLine()) {
+            line++;
             String[] items = scanner.nextLine().split(" ");
             if (items[0].equals("c")) {
+                // comment line
                 continue;
             } else if (items[0].equals("p")) {
                 // header line
@@ -48,6 +51,9 @@ public class FormulaReader {
                     throw new FormulaParseException(
                         String.format("Size specification mismatch (header specifies %d clauses)", clauseBound)
                     );
+                }
+                if (!items[items.length - 1].equals("0")) {
+                    throw new FormulaParseException("Clause line " + line + " does not terminate with zero");
                 }
                 Clause clause = new Clause();
                 for (String item : items) {
