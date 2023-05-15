@@ -31,7 +31,10 @@ public class FormulaReader {
         while (scanner.hasNextLine()) {
             line++;
             String[] items = scanner.nextLine().split(" ");
-            if (items[0].equals("c")) {
+            if (items[0].equals("")) {
+                // empty line
+                continue;
+            } else if (items[0].equals("c")) {
                 // comment line
                 continue;
             } else if (items[0].equals("p")) {
