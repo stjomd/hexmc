@@ -32,10 +32,13 @@ public abstract class ModelCounting {
         TreeNode<Set<Integer>> decomposition = DecompositionFactory.pswBranch(incidenceGraph);
         stopwatch.stop();
         System.out.println(decomposition);
-        Logger.debug("[psw] Computed a psw branch decomposition, time elapsed: " + stopwatch.formatTime());
+        Logger.debug("[psw] Computed a psw branch decomposition in time: " + stopwatch.formatTime());
         // Solve #SAT
+        stopwatch.reset();
+        stopwatch.start();
         int models = PswDynamicModelCounting.count(formula, decomposition);
-        Logger.warn("#SAT utilizing psw not yet implemented, returning 0");
+        stopwatch.stop();
+        Logger.debug("[psw] Computed the amount of models in time: " + stopwatch.formatTime());
         return models;
     }
 
