@@ -53,7 +53,7 @@ public class FormulaReader {
                     );
                 }
                 if (!items[items.length - 1].equals("0")) {
-                    throw new FormulaParseException("Clause line " + line + " does not terminate with zero");
+                    throw new FormulaParseException("Line " + line + ": clause line does not terminate with zero");
                 }
                 Clause clause = new Clause();
                 for (String item : items) {
