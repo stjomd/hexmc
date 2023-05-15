@@ -31,7 +31,6 @@ public abstract class ModelCounting {
         StopWatch stopwatch = StopWatch.createStarted();
         TreeNode<Set<Integer>> decomposition = DecompositionFactory.pswBranch(incidenceGraph);
         stopwatch.stop();
-        System.out.println(decomposition);
         Logger.debug("[psw] Computed a psw branch decomposition in time: " + stopwatch.formatTime());
         // Solve #SAT
         stopwatch.reset();
