@@ -1,4 +1,4 @@
-package at.ac.tuwien.student.e11843614.formula;
+package at.ac.tuwien.student.e11843614.exception;
 
 public class FormulaParseException extends Exception {
 
