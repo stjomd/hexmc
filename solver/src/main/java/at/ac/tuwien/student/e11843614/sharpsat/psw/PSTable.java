@@ -1,24 +1,37 @@
 package at.ac.tuwien.student.e11843614.sharpsat.psw;
 
-import at.ac.tuwien.student.e11843614.formula.Clause;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * An object that maps elements of PS(F_v) x PS(F_-v) to integers.
+ */
 public class PSTable {
 
-    private final Map<Set<Clause>, Map<Set<Clause>, Integer>> map = new HashMap<>();
+    private final Map<Set<Integer>, Map<Set<Integer>, Integer>> map = new HashMap<>();
 
-    public int get(Set<Clause> c1, Set<Clause> c2) {
+    /**
+     * Returns the integer mapped to the specified index.
+     * @param c1 the first index.
+     * @param c2 the second index.
+     * @return the integer mapped to (c1, c2).
+     */
+    public int get(Set<Integer> c1, Set<Integer> c2) {
         return map.get(c1).get(c2);
     }
 
-    public void set(Set<Clause> c1, Set<Clause> c2, int n) {
+    /**
+     * Maps an integer to the specified index.
+     * @param c1 the first index.
+     * @param c2 the second index.
+     * @param n the integer to be mapped to (c1, c2).
+     */
+    public void set(Set<Integer> c1, Set<Integer> c2, int n) {
         if (!map.containsKey(c1)) {
             map.put(c1, new HashMap<>());
         }
-        Map<Set<Clause>, Integer> c1Map = map.get(c1);
+        Map<Set<Integer>, Integer> c1Map = map.get(c1);
         c1Map.put(c2, n);
     }
 
