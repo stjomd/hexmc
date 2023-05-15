@@ -14,13 +14,13 @@ import java.util.Set;
 public abstract class PswDynamicModelCounting {
 
     public static int count(Formula formula, TreeNode<Set<Integer>> decomposition) {
-        PSSetMapRefs psMap = computePSSets(formula, decomposition);
-        Map<TreeNode<Set<Integer>>, PSTableRefs> tableMap = new HashMap<>();
+        PSSetMap psMap = computePSSets(formula, decomposition);
+        Map<TreeNode<Set<Integer>>, PSTable> tableMap = new HashMap<>();
         // Compute tables
         Iterator<TreeNode<Set<Integer>>> iterator = decomposition.depthIterator();
         while (iterator.hasNext()) {
             TreeNode<Set<Integer>> node = iterator.next();
-            PSTableRefs table = new PSTableRefs();
+            PSTable table = new PSTable();
             if (node.children().isEmpty()) {
                 // leaf, base case
                 computeTableBaseCase(node, psMap, table);
@@ -29,8 +29,8 @@ public abstract class PswDynamicModelCounting {
                 Iterator<TreeNode<Set<Integer>>> childIterator = node.children().iterator();
                 TreeNode<Set<Integer>> child1 = childIterator.next();
                 TreeNode<Set<Integer>> child2 = childIterator.next();
-                PSTableRefs child1Table = tableMap.get(child1);
-                PSTableRefs child2Table = tableMap.get(child2);
+                PSTable child1Table = tableMap.get(child1);
+                PSTable child2Table = tableMap.get(child2);
                 computeTableReduction(node, psMap, table, child1Table, child2Table);
             }
             tableMap.put(node, table);
@@ -38,7 +38,7 @@ public abstract class PswDynamicModelCounting {
         return tableMap.get(decomposition).get(Set.of(), Set.of());
     }
 
-    private static void computeTableBaseCase(TreeNode<Set<Integer>> node, PSSetMapRefs psMap, PSTableRefs table) {
+    private static void computeTableBaseCase(TreeNode<Set<Integer>> node, PSSetMap psMap, PSTable table) {
         int vertex = node.object().iterator().next();
         for (Set<Integer> c1 : psMap.getPositive(node)) {
             for (Set<Integer> c2 : psMap.getNegative(node)) {
@@ -62,8 +62,8 @@ public abstract class PswDynamicModelCounting {
         }
     }
 
-    private static void computeTableReduction(TreeNode<Set<Integer>> node, PSSetMapRefs psMap, PSTableRefs table,
-                                              PSTableRefs child1Table, PSTableRefs child2Table) {
+    private static void computeTableReduction(TreeNode<Set<Integer>> node, PSSetMap psMap, PSTable table,
+                                              PSTable child1Table, PSTable child2Table) {
         // initialize to 0
         for (Set<Integer> c1 : psMap.getPositive(node)) {
             for (Set<Integer> c2 : psMap.getNegative(node)) {
@@ -101,8 +101,8 @@ public abstract class PswDynamicModelCounting {
      * @param decomposition the root node of the decomposition.
      * @return a map from nodes of the decomposition to PS sets.
      */
-    private static PSSetMapRefs computePSSets(Formula formula, TreeNode<Set<Integer>> decomposition) {
-        PSSetMapRefs map = new PSSetMapRefs();
+    private static PSSetMap computePSSets(Formula formula, TreeNode<Set<Integer>> decomposition) {
+        PSSetMap map = new PSSetMap();
         // First, we compute the sets for the base cases: root node and leaves.
         computePSBaseCases(formula, decomposition, map);
         // Now, we compute the PS sets for F_v for internal nodes.
@@ -112,7 +112,7 @@ public abstract class PswDynamicModelCounting {
         return map;
     }
 
-    private static void computePSBaseCases(Formula formula, TreeNode<Set<Integer>> decomposition, PSSetMapRefs map) {
+    private static void computePSBaseCases(Formula formula, TreeNode<Set<Integer>> decomposition, PSSetMap map) {
         Iterator<TreeNode<Set<Integer>>> iterator = decomposition.depthIterator();
         while (iterator.hasNext()) {
             TreeNode<Set<Integer>> node = iterator.next();
@@ -174,7 +174,7 @@ public abstract class PswDynamicModelCounting {
         }
     }
 
-    private static void computePSPositives(TreeNode<Set<Integer>> decomposition, PSSetMapRefs map) {
+    private static void computePSPositives(TreeNode<Set<Integer>> decomposition, PSSetMap map) {
         Iterator<TreeNode<Set<Integer>>> iterator = decomposition.depthIterator();
         while (iterator.hasNext()) {
             TreeNode<Set<Integer>> node = iterator.next();
@@ -199,7 +199,7 @@ public abstract class PswDynamicModelCounting {
         }
     }
 
-    private static void computePSNegatives(TreeNode<Set<Integer>> decomposition, PSSetMapRefs map) {
+    private static void computePSNegatives(TreeNode<Set<Integer>> decomposition, PSSetMap map) {
         Iterator<TreeNode<Set<Integer>>> iterator = decomposition.breadthIterator();
         while (iterator.hasNext()) {
             TreeNode<Set<Integer>> node = iterator.next();
