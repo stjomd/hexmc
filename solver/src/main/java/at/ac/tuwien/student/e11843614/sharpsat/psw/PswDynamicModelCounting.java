@@ -1,5 +1,6 @@
 package at.ac.tuwien.student.e11843614.sharpsat.psw;
 
+import at.ac.tuwien.student.e11843614.Logger;
 import at.ac.tuwien.student.e11843614.formula.Clause;
 import at.ac.tuwien.student.e11843614.formula.Formula;
 import at.ac.tuwien.student.e11843614.struct.tree.TreeNode;
@@ -35,6 +36,7 @@ public abstract class PswDynamicModelCounting {
             }
             tableMap.put(node, table);
         }
+        Logger.debug("Computed the psw tables for all nodes");
         return tableMap.get(decomposition).get(Set.of(), Set.of());
     }
 
@@ -109,6 +111,7 @@ public abstract class PswDynamicModelCounting {
         computePSPositives(decomposition, map);
         // Finally, we compute the PS sets for F_-v for internal nodes.
         computePSNegatives(decomposition, map);
+        Logger.debug("Computed PS sets for nodes of the decomposition");
         return map;
     }
 
