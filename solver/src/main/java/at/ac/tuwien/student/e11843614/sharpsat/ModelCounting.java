@@ -16,7 +16,28 @@ import java.util.Set;
 
 public abstract class ModelCounting {
 
-    // TODO: dynamic algorithm for #SAT
+    public enum CheckResult {
+        UNSATISFIABLE, INFINITE, UNCLEAR
+    }
+
+    /**
+     * Performs special case check on the formula. Returns the amount of models or a special value indicating that
+     * the models need to be counted with the other methods in this class.
+     * @param formula the formula to perform checks against.
+     * @return a CheckResult value: UNSATISFIABLE if the formula is unsatisfiable, INFINITE if the formula is empty and
+     *         is satisfied by any assignment, and UNCLEAR if the models have to be counted using other methods in this
+     *         class.
+     */
+    public static CheckResult specialCaseCheck(Formula formula) {
+        if (formula.hasEmptyClauses()) {
+            Logger.debug("Formula contains an empty (unsatisfiable) clause");
+            return CheckResult.UNSATISFIABLE;
+        } else if (formula.clauses().isEmpty()) {
+            Logger.debug("Formula has no clauses");
+            return CheckResult.INFINITE;
+        }
+        return CheckResult.UNCLEAR;
+    }
 
     /**
      * Counts the amount of models of a propositional formula with a dynamic algorithm utilizing the ps-width of the
