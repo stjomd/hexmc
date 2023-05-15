@@ -10,7 +10,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public abstract class PswDynamicModelCounting {
 
@@ -44,12 +43,20 @@ public abstract class PswDynamicModelCounting {
         for (Set<Integer> c1 : psMap.getPositive(node)) {
             for (Set<Integer> c2 : psMap.getNegative(node)) {
                 if (vertex % 10 == 1) {
-                    // variable vertex, set to amount of ps sets for positive
-                    int n = psMap.getPositive(node).size();
-                    table.set(c1, c2, n);
+                    // variable vertex
+                    if (c1.isEmpty()) {
+                        table.set(c1, c2, 1);
+                    } else {
+                        table.set(c1, c2, 1);
+                    }
                 } else {
-                    // clause vertex, set to 0
-                    table.set(c1, c2, 0);
+                    // clause vertex
+                    int clause = vertex / 10;
+                    if (c2.contains(clause)) {
+                        table.set(c1, c2, 1);
+                    } else {
+                        table.set(c1, c2, 0);
+                    }
                 }
             }
         }
@@ -159,14 +166,10 @@ public abstract class PswDynamicModelCounting {
                 }
             } else if (node.parent() == null) {
                 // root node, base case
-                List<Formula> inducedFormulas = inducedFormulas(formula, node);
                 // at the root node, F_v is an empty formula without any clauses.
                 map.addToPositive(node, Set.of());
                 // And F_-v is a formula with empty clauses.
-                Set<Integer> clauses = inducedFormulas.get(1).clauses().stream()
-                    .map(Clause::position)
-                    .collect(Collectors.toSet());
-                map.addToNegative(node, clauses);
+                map.addToNegative(node, Set.of());
             }
         }
     }
@@ -175,7 +178,7 @@ public abstract class PswDynamicModelCounting {
         Iterator<TreeNode<Set<Integer>>> iterator = decomposition.depthIterator();
         while (iterator.hasNext()) {
             TreeNode<Set<Integer>> node = iterator.next();
-            if (!node.children().isEmpty()) {
+            if (!node.children().isEmpty() && node.parent() != null) {
                 // internal node. for positive: both children
                 Iterator<TreeNode<Set<Integer>>> childIterator = node.children().iterator();
                 TreeNode<Set<Integer>> c1 = childIterator.next();
@@ -197,7 +200,6 @@ public abstract class PswDynamicModelCounting {
     }
 
     private static void computePSNegatives(TreeNode<Set<Integer>> decomposition, PSSetMapRefs map) {
-        System.out.println("computing ps negatives");
         Iterator<TreeNode<Set<Integer>>> iterator = decomposition.breadthIterator();
         while (iterator.hasNext()) {
             TreeNode<Set<Integer>> node = iterator.next();
@@ -217,14 +219,13 @@ public abstract class PswDynamicModelCounting {
                     for (Set<Integer> clauses2 : map.getNegative(p)) {
                         Set<Integer> newClauses = new HashSet<>(clauses1);
                         newClauses.addAll(clauses2);
-                        newClauses.removeAll(deltaClauses);
+                        newClauses.retainAll(deltaClauses);
                         l.add(newClauses);
                     }
                 }
                 map.setNegative(node, l);
             }
         }
-        System.out.println("ps negatives done");
     }
 
     // ----- Helpers ---------------------------------------------------------------------------------------------------
