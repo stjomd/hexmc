@@ -7,8 +7,8 @@ import at.ac.tuwien.student.e11843614.decomposition.clique.operation.CliqueOpera
 import at.ac.tuwien.student.e11843614.decomposition.clique.operation.CliqueRecoloring;
 import at.ac.tuwien.student.e11843614.decomposition.clique.operation.CliqueSingleton;
 import at.ac.tuwien.student.e11843614.decomposition.clique.operation.CliqueUnion;
-import at.ac.tuwien.student.e11843614.example.GraphExamples;
-import at.ac.tuwien.student.e11843614.example.PartitionChecks;
+import at.ac.tuwien.student.e11843614.misc.GraphExamples;
+import at.ac.tuwien.student.e11843614.misc.PartitionChecks;
 import at.ac.tuwien.student.e11843614.sat.SATEncoding;
 import at.ac.tuwien.student.e11843614.sat.SATSolver;
 import at.ac.tuwien.student.e11843614.sat.Variable;
