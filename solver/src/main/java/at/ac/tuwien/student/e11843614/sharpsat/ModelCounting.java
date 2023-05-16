@@ -6,7 +6,7 @@ import at.ac.tuwien.student.e11843614.decomposition.clique.operation.CliqueOpera
 import at.ac.tuwien.student.e11843614.exception.InfiniteModelsException;
 import at.ac.tuwien.student.e11843614.formula.Formula;
 import at.ac.tuwien.student.e11843614.sharpsat.clique.CliqueDynamicModelCounting;
-import at.ac.tuwien.student.e11843614.sharpsat.psw.PswDynamicModelCounting;
+import at.ac.tuwien.student.e11843614.sharpsat.psw.PSDynamicModelCounting;
 import at.ac.tuwien.student.e11843614.struct.graph.Graph;
 import at.ac.tuwien.student.e11843614.struct.graph.GraphFactory;
 import at.ac.tuwien.student.e11843614.struct.tree.TreeNode;
@@ -51,7 +51,7 @@ public abstract class ModelCounting {
         stopwatch.split();
         Logger.debug("[psw] Time elapsed: " + stopwatch.formatSplitTime());
         // Solve #SAT
-        long models = PswDynamicModelCounting.count(formula, decomposition);
+        long models = PSDynamicModelCounting.count(formula, decomposition);
         stopwatch.stop();
         Logger.debug("[psw] Time elapsed: " + stopwatch.formatTime());
         return models;

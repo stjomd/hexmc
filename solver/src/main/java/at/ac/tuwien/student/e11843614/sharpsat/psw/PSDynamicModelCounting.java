@@ -11,7 +11,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-public abstract class PswDynamicModelCounting {
+public abstract class PSDynamicModelCounting {
 
     /**
      * Counts the models of a formula dynamically and returns the computed value.
