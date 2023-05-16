@@ -23,24 +23,30 @@ public class Main {
         parser.addArgument("input")
             .type(String.class)
             .help("the input path for the DIMACS CNF file");
-        parser.addArgument("--verbose")
-            .type(boolean.class)
-            .action(Arguments.storeTrue()) // defaults to... false
-            .help("output additional information");
+        parser.addArgument("-a", "--alg")
+            .type(Constants.Parameter.class)
+            .setDefault(Constants.Parameter.psw)
+            .help("specifies the algorithm to use for model counting (either utilizing ps-width or clique-width)."
+                + " WARNING! cw is experimental and does not return correct answers, use it only for debugging."
+                + " The standard value is psw (ps-width)");
         parser.addArgument("-t", "--timeout")
             .metavar("SECONDS")
             .type(int.class)
             .setDefault(0)
-            .help("SAT solver timeout in seconds");
+            .help("timeout in seconds for the SAT solver");
+        parser.addArgument("--verbose")
+            .type(boolean.class)
+            .action(Arguments.storeTrue()) // defaults to... false
+            .help("output additional information");
 
         try {
             Namespace namespace = parser.parseArgs(args);
             String path = namespace.getString("input");
-            Constants.setVerbose(namespace.getBoolean("verbose"));
+            Constants.setAlgorithm(namespace.get("alg"));
             Constants.setTimeout(namespace.getInt("timeout"));
+            Constants.setVerbose(namespace.getBoolean("verbose"));
 
             Formula formula = Formula.fromPath(path);
-
             long models = ModelCounting.count(formula);
             Logger.info(models);
         } catch (InfiniteModelsException exception) {

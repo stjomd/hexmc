@@ -1,5 +1,6 @@
 package at.ac.tuwien.student.e11843614.sharpsat;
 
+import at.ac.tuwien.student.e11843614.Constants;
 import at.ac.tuwien.student.e11843614.Logger;
 import at.ac.tuwien.student.e11843614.decomposition.DecompositionFactory;
 import at.ac.tuwien.student.e11843614.decomposition.clique.operation.CliqueOperation;
@@ -32,8 +33,14 @@ public abstract class ModelCounting {
             Logger.debug("Formula has no clauses");
             throw new InfiniteModelsException();
         }
-        return psw(formula);
-        // return cw(formula);
+        switch (Constants.algorithm()) {
+            case psw:
+                return psw(formula);
+            case cw:
+                return cw(formula);
+            default:
+                throw new IllegalArgumentException("Dynamic algorithm '" + Constants.algorithm() + "' does not exist");
+        }
     }
 
     /**
