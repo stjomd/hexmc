@@ -4,6 +4,7 @@ import at.ac.tuwien.student.e11843614.decomposition.DecompositionFactory;
 import at.ac.tuwien.student.e11843614.decomposition.DerivationFactory;
 import at.ac.tuwien.student.e11843614.decomposition.carving.CarvingDerivation;
 import at.ac.tuwien.student.e11843614.example.GraphExamples;
+import at.ac.tuwien.student.e11843614.example.PartitionChecks;
 import at.ac.tuwien.student.e11843614.struct.graph.Graph;
 import at.ac.tuwien.student.e11843614.struct.tree.TreeNode;
 import org.junit.jupiter.api.AfterEach;
@@ -64,8 +65,10 @@ public class CarvingTests {
         public void d2() {
             int l = derivation.size();
             for (int i = 1; i < l - 2; i++) {
-                assertTrue(derivation.getLevel(i).isBinaryRefinementOf(derivation.getLevel(i + 1)),
-                    "P_" + i + " is not a 2-ary refinement of P_" + (i+1));
+                assertTrue(
+                    PartitionChecks.isBinaryRefinement(derivation.getLevel(i), derivation.getLevel(i + 1)),
+                    "P_" + i + " is not a 2-ary refinement of P_" + (i+1)
+                );
             }
         }
 
@@ -73,8 +76,10 @@ public class CarvingTests {
         @DisplayName("D3")
         public void d3() {
             int l = derivation.size();
-            assertTrue(derivation.getLevel(l - 1).isTernaryRefinementOf(derivation.getLevel(l)),
-                "P_" + (l-1) + " is not a 3-ary refinement of P_" + l);
+            assertTrue(
+                PartitionChecks.isTernaryRefinement(derivation.getLevel(l - 1), derivation.getLevel(l)),
+                "P_" + (l-1) + " is not a 3-ary refinement of P_" + l
+            );
         }
 
     }
