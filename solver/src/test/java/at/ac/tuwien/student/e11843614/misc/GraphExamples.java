@@ -1,4 +1,4 @@
-package at.ac.tuwien.student.e11843614.example;
+package at.ac.tuwien.student.e11843614.misc;
 
 import at.ac.tuwien.student.e11843614.struct.graph.Graph;
 
