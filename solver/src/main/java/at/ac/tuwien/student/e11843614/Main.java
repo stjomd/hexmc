@@ -43,6 +43,10 @@ public class Main {
             .help("specifies the algorithm to use for model counting (either utilizing ps-width or clique-width)."
                 + " WARNING! cw is experimental and does not return correct answers, use it only for debugging."
                 + " The standard value is psw (ps-width)");
+        parser.addArgument("-c", "--carving")
+            .type(boolean.class)
+            .action(Arguments.storeTrue())
+            .help("use a carving decomposition as input for the psw algorithm. By default computes a decomposition heuristically");
         parser.addArgument("-t", "--timeout")
             .metavar("SECONDS")
             .type(int.class)
@@ -57,6 +61,7 @@ public class Main {
             Namespace namespace = parser.parseArgs(args);
             String path = namespace.getString("input");
             Constants.setAlgorithm(namespace.get("alg"));
+            Constants.setCarving(namespace.getBoolean("carving"));
             Constants.setTimeout(namespace.getInt("timeout"));
             Constants.setVerbose(namespace.getBoolean("verbose"));
 

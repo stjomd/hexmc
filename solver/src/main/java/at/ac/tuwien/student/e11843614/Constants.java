@@ -7,6 +7,7 @@ public abstract class Constants {
     }
 
     private static Parameter algorithm = Parameter.psw;
+    private static boolean carving = false;
     private static int timeout = 0;
     private static boolean verbose = false;
 
@@ -15,6 +16,13 @@ public abstract class Constants {
     }
     public static void setAlgorithm(Parameter parameter) {
         Constants.algorithm = parameter;
+    }
+
+    public static boolean carving() {
+        return carving;
+    }
+    public static void setCarving(boolean flag) {
+        Constants.carving = flag;
     }
 
     public static int timeout() {

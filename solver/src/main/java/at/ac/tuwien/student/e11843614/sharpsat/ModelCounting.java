@@ -54,7 +54,12 @@ public abstract class ModelCounting {
         Graph incidenceGraph = GraphFactory.incidenceGraph(formula);
         // Compute a branch decomposition (as defined in the psw paper)
         StopWatch stopwatch = StopWatch.createStarted();
-        TreeNode<Set<Integer>> decomposition = DecompositionFactory.pswBranch(incidenceGraph);
+        TreeNode<Set<Integer>> decomposition;
+        if (Constants.carving()) {
+            decomposition = DecompositionFactory.pswBranchFromCarving(incidenceGraph);
+        } else {
+            decomposition = DecompositionFactory.pswBranch(incidenceGraph);
+        }
         stopwatch.split();
         Logger.debug("[psw] Time elapsed: " + stopwatch.formatSplitTime());
         // Solve #SAT
