@@ -8,6 +8,7 @@ import net.sourceforge.argparse4j.impl.Arguments;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
 import net.sourceforge.argparse4j.inf.Namespace;
+import org.sat4j.specs.TimeoutException;
 
 import java.util.Locale;
 
@@ -53,6 +54,8 @@ public class Main {
             Logger.info("inf");
         } catch (ArgumentParserException exception) {
             parser.handleError(exception);
+        } catch (TimeoutException exception) {
+            Logger.error("Timeout (" + Constants.timeout() + " s) exceeded");
         } catch (Exception exception) {
             exception.printStackTrace();
         }
