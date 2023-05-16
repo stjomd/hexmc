@@ -81,7 +81,7 @@ public class CarvingTests {
 
     @Nested
     @DisplayName("Decomposition Tests")
-    public class CarvingDecompositionTest {
+    public class CarvingDecompositionTests {
 
         private Graph graph;
         private TreeNode<Set<Integer>> exact;

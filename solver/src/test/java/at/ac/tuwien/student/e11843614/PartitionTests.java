@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class PartitionTest {
+public class PartitionTests {
 
     @Test
     @DisplayName("Adding two elements")
