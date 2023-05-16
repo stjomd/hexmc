@@ -4,6 +4,20 @@ import at.ac.tuwien.student.e11843614.struct.graph.Graph;
 
 public abstract class GraphExamples {
 
+    public static Graph triangularPrism() {
+        Graph prism = new Graph();
+        prism.addEdge(1, 2);
+        prism.addEdge(1, 3);
+        prism.addEdge(1, 4);
+        prism.addEdge(2, 3);
+        prism.addEdge(2, 5);
+        prism.addEdge(3, 6);
+        prism.addEdge(4, 5);
+        prism.addEdge(5, 6);
+        prism.addEdge(6, 4);
+        return prism;
+    }
+
     public static Graph example() {
         // a1, b2, c3, d4, e5, f6, g7, h8, i9, j10, k11
         Graph graph = new Graph();
