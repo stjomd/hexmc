@@ -9,7 +9,7 @@ import java.util.Set;
  */
 public class PSTable {
 
-    private final Map<Set<Integer>, Map<Set<Integer>, Integer>> map = new HashMap<>();
+    private final Map<Set<Integer>, Map<Set<Integer>, Long>> map = new HashMap<>();
 
     /**
      * Returns the integer mapped to the specified index.
@@ -17,7 +17,7 @@ public class PSTable {
      * @param c2 the second index.
      * @return the integer mapped to (c1, c2).
      */
-    public int get(Set<Integer> c1, Set<Integer> c2) {
+    public long get(Set<Integer> c1, Set<Integer> c2) {
         return map.get(c1).get(c2);
     }
 
@@ -27,11 +27,11 @@ public class PSTable {
      * @param c2 the second index.
      * @param n the integer to be mapped to (c1, c2).
      */
-    public void set(Set<Integer> c1, Set<Integer> c2, int n) {
+    public void set(Set<Integer> c1, Set<Integer> c2, long n) {
         if (!map.containsKey(c1)) {
             map.put(c1, new HashMap<>());
         }
-        Map<Set<Integer>, Integer> c1Map = map.get(c1);
+        Map<Set<Integer>, Long> c1Map = map.get(c1);
         c1Map.put(c2, n);
     }
 
