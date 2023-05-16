@@ -12,6 +12,8 @@ import org.sat4j.specs.TimeoutException;
 
 import java.util.Locale;
 
+import static java.lang.System.exit;
+
 public class Main {
 
     public static void main(String[] args) {
@@ -52,14 +54,22 @@ public class Main {
             Logger.info(models);
         } catch (InfiniteModelsException exception) {
             Logger.info("inf");
-        } catch (ArgumentParserException exception) {
-            parser.handleError(exception);
         } catch (TimeoutException exception) {
             Logger.error("Timeout (" + Constants.timeout() + " s) exceeded");
+            exit(1);
+        } catch (ArithmeticException exception) {
+            Logger.error("Overflow, formula might have more than " + Long.MAX_VALUE + " models");
+            Logger.info(">= " + Long.MAX_VALUE);
+            exit(1);
+        } catch (ArgumentParserException exception) {
+            parser.handleError(exception);
+            exit(1);
         } catch (Exception exception) {
             exception.printStackTrace();
+            exit(1);
         }
 
+        exit(0);
     }
 
 }
