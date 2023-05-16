@@ -10,7 +10,9 @@ import net.sourceforge.argparse4j.inf.ArgumentParserException;
 import net.sourceforge.argparse4j.inf.Namespace;
 import org.sat4j.specs.TimeoutException;
 
+import java.io.IOException;
 import java.util.Locale;
+import java.util.Properties;
 
 import static java.lang.System.exit;
 
@@ -18,7 +20,12 @@ public class Main {
 
     public static void main(String[] args) {
 
-        ArgumentParser parser = ArgumentParsers.newFor("solver")
+        Properties properties = new Properties();
+        try {
+            properties.load(Main.class.getClassLoader().getResourceAsStream("project.properties"));
+        } catch (IOException ignored) {}
+
+        ArgumentParser parser = ArgumentParsers.newFor(properties.getProperty("name"))
             .locale(Locale.US)
             .singleMetavar(true)
             .build()
@@ -26,6 +33,10 @@ public class Main {
         parser.addArgument("input")
             .type(String.class)
             .help("the input path for the DIMACS CNF file");
+        parser.addArgument("--version")
+            .type(boolean.class)
+            .action(Arguments.storeTrue())
+            .help("output the version and exit");
         parser.addArgument("-a", "--alg")
             .type(Constants.Parameter.class)
             .setDefault(Constants.Parameter.psw)
@@ -37,7 +48,7 @@ public class Main {
             .type(int.class)
             .setDefault(0)
             .help("timeout in seconds for the SAT solver");
-        parser.addArgument("--verbose")
+        parser.addArgument("-v", "--verbose")
             .type(boolean.class)
             .action(Arguments.storeTrue()) // defaults to... false
             .help("output additional information");
@@ -49,6 +60,11 @@ public class Main {
             Constants.setTimeout(namespace.getInt("timeout"));
             Constants.setVerbose(namespace.getBoolean("verbose"));
 
+            if (namespace.getBoolean("version")) {
+                Logger.info(properties.getProperty("version"));
+                exit(0);
+            }
+
             Formula formula = Formula.fromPath(path);
             long models = ModelCounting.count(formula);
             Logger.info(models);
@@ -58,7 +74,7 @@ public class Main {
             Logger.error("Timeout (" + Constants.timeout() + " s) exceeded");
             exit(1);
         } catch (ArithmeticException exception) {
-            Logger.error("Overflow, formula might have more than " + Long.MAX_VALUE + " models");
+            Logger.debug("Formula might have more than " + Long.MAX_VALUE + " models (long overflow occurred)");
             Logger.info(">= " + Long.MAX_VALUE);
             exit(1);
         } catch (ArgumentParserException exception) {
