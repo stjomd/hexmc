@@ -5,19 +5,9 @@ package at.ac.tuwien.student.e11843614;
  */
 public abstract class Logger {
 
-    private static boolean on = false;
-
     private static final String YELLOW = "\u001B[33m";
     private static final String BLUE = "\u001B[34m";
     private static final String RESET = "\u001B[0m";
-
-    /**
-     * Turns the logger on or off. If off, the logger will output only info and error messages.
-     * @param verbose a boolean value that indicates whether this logger is on.
-     */
-    public static void set(boolean verbose) {
-        Logger.on = verbose;
-    }
 
     /**
      * Outputs an info message to the console, even when the logger is off.
@@ -32,7 +22,7 @@ public abstract class Logger {
      * @param x the object to be output.
      */
     public static void debug(Object x) {
-        if (on) {
+        if (Constants.verbose()) {
             System.out.println(BLUE + x.toString() + RESET);
         }
     }
@@ -42,7 +32,7 @@ public abstract class Logger {
      * @param x the object to be output.
      */
     public static void warn(Object x) {
-        if (on) {
+        if (Constants.verbose()) {
             System.out.println(YELLOW + x.toString() + RESET);
         }
     }
