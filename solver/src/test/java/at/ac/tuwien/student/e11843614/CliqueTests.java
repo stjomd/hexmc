@@ -8,6 +8,7 @@ import at.ac.tuwien.student.e11843614.decomposition.clique.operation.CliqueRecol
 import at.ac.tuwien.student.e11843614.decomposition.clique.operation.CliqueSingleton;
 import at.ac.tuwien.student.e11843614.decomposition.clique.operation.CliqueUnion;
 import at.ac.tuwien.student.e11843614.example.GraphExamples;
+import at.ac.tuwien.student.e11843614.example.PartitionChecks;
 import at.ac.tuwien.student.e11843614.sat.SATEncoding;
 import at.ac.tuwien.student.e11843614.sat.SATSolver;
 import at.ac.tuwien.student.e11843614.sat.Variable;
@@ -75,7 +76,7 @@ public class CliqueTests {
         public void d2() {
             for (int i = 0; i < derivation.size(); i++) {
                 assertTrue(
-                    derivation.grp(i).isRefinementOf(derivation.cmp(i)),
+                    PartitionChecks.isRefinement(derivation.grp(i), derivation.cmp(i)),
                     "grp(T_" + i + ") is not a refinement of cmp(T_" + i + ")"
                 );
             }
@@ -86,7 +87,7 @@ public class CliqueTests {
         public void d3() {
             for (int i = 1; i < derivation.size(); i++) {
                 assertTrue(
-                    derivation.cmp(i - 1).isRefinementOf(derivation.cmp(i)),
+                    PartitionChecks.isRefinement(derivation.cmp(i - 1), derivation.cmp(i)),
                     "cmp(T_" + (i-1) + ") is not a refinement of cmp(T_" + i + ")"
                 );
             }
@@ -97,7 +98,7 @@ public class CliqueTests {
         public void d4() {
             for (int i = 1; i < derivation.size(); i++) {
                 assertTrue(
-                    derivation.grp(i - 1).isRefinementOf(derivation.grp(i)),
+                    PartitionChecks.isRefinement(derivation.grp(i - 1), derivation.grp(i)),
                     "grp(T_" + (i-1) + ") is not a refinement of grp(T_" + i + ")"
                 );
             }
