@@ -1,5 +1,6 @@
 package at.ac.tuwien.student.e11843614.sat;
 
+import at.ac.tuwien.student.e11843614.Constants;
 import at.ac.tuwien.student.e11843614.formula.Clause;
 import at.ac.tuwien.student.e11843614.formula.Formula;
 import org.sat4j.core.VecInt;
@@ -41,6 +42,9 @@ public abstract class SATSolver {
      */
     public static int[] getModel(Formula formula) throws TimeoutException {
         ISolver solver = SolverFactory.newDefault();
+        if (Constants.timeout() > 0) {
+            solver.setTimeout(Constants.timeout());
+        }
         solver.setExpectedNumberOfClauses(formula.clauses().size());
         try {
             for (Clause clause : formula.clauses()) {
