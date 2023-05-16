@@ -3,6 +3,7 @@ package at.ac.tuwien.student.e11843614.sharpsat;
 import at.ac.tuwien.student.e11843614.Logger;
 import at.ac.tuwien.student.e11843614.decomposition.DecompositionFactory;
 import at.ac.tuwien.student.e11843614.decomposition.clique.operation.CliqueOperation;
+import at.ac.tuwien.student.e11843614.exception.InfiniteModelsException;
 import at.ac.tuwien.student.e11843614.formula.Formula;
 import at.ac.tuwien.student.e11843614.sharpsat.clique.CliqueDynamicModelCounting;
 import at.ac.tuwien.student.e11843614.sharpsat.psw.PswDynamicModelCounting;
@@ -16,27 +17,23 @@ import java.util.Set;
 
 public abstract class ModelCounting {
 
-    public enum CheckResult {
-        UNSATISFIABLE, INFINITE, UNCLEAR
-    }
-
     /**
-     * Performs special case check on the formula. Returns the amount of models or a special value indicating that
-     * the models need to be counted with the other methods in this class.
-     * @param formula the formula to perform checks against.
-     * @return a CheckResult value: UNSATISFIABLE if the formula is unsatisfiable, INFINITE if the formula is empty and
-     *         is satisfied by any assignment, and UNCLEAR if the models have to be counted using other methods in this
-     *         class.
+     * Returns the amount of models of a propositional formula.
+     * @param formula the formula to count models of.
+     * @return the amount of models.
+     * @throws TimeoutException if the SAT solver takes too long.
+     * @throws InfiniteModelsException if the formula has an infinite number of models.
      */
-    public static CheckResult specialCaseCheck(Formula formula) {
+    public static int count(Formula formula) throws TimeoutException, InfiniteModelsException {
         if (formula.hasEmptyClauses()) {
             Logger.debug("Formula contains an empty (unsatisfiable) clause");
-            return CheckResult.UNSATISFIABLE;
+            return 0;
         } else if (formula.clauses().isEmpty()) {
             Logger.debug("Formula has no clauses");
-            return CheckResult.INFINITE;
+            throw new InfiniteModelsException();
         }
-        return CheckResult.UNCLEAR;
+        return psw(formula);
+        // return cw(formula);
     }
 
     /**
@@ -46,7 +43,7 @@ public abstract class ModelCounting {
      * @return the amount of the formula's models.
      * @throws TimeoutException if the SAT solver takes too long while computing a carving derivation.
      */
-    public static int psw(Formula formula) throws TimeoutException {
+    private static int psw(Formula formula) throws TimeoutException {
         Graph incidenceGraph = GraphFactory.incidenceGraph(formula);
         // Compute a branch decomposition (as defined in the psw paper)
         StopWatch stopwatch = StopWatch.createStarted();
@@ -67,7 +64,7 @@ public abstract class ModelCounting {
      * @return the amount of the formula's models.
      * @throws TimeoutException if the SAT solver takes too long while computing a clique derivation.
      */
-    public static int cw(Formula formula) throws TimeoutException {
+    private static int cw(Formula formula) throws TimeoutException {
         Graph incidenceGraph = GraphFactory.incidenceGraph(formula);
         // Compute a parse tree for clique width
         StopWatch stopwatch = StopWatch.createStarted();
