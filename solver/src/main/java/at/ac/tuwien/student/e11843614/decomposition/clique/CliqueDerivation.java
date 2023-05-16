@@ -4,7 +4,6 @@ import at.ac.tuwien.student.e11843614.Logger;
 import at.ac.tuwien.student.e11843614.sat.SATEncoding;
 import at.ac.tuwien.student.e11843614.sat.Variable;
 import at.ac.tuwien.student.e11843614.struct.Partition;
-import at.ac.tuwien.student.e11843614.struct.graph.Graph;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -143,39 +142,6 @@ public class CliqueDerivation {
             }
         }
         Logger.debug("Made derivation strict; t = " + (size() - 1));
-    }
-
-    /**
-     * Checks whether this derivation fulfils the conditions.
-     * @param graph the graph associated with this derivation.
-     * @return true, if all conditions are satisfied, and false otherwise.
-     */
-    public boolean fulfilsConditions(Graph graph) {
-        // D1
-        int t = templates.size() - 1;
-        if (graph.vertices().size() != cmp(0).size()
-            || graph.vertices().size() != grp(0).size() || 1 != cmp(t).size()) {
-            return false;
-        }
-        // D2
-        for (int i = 0; i < templates.size(); i++) {
-            if (!grp(i).isRefinementOf(cmp(i))) {
-                return false;
-            }
-        }
-        // D3
-        for (int i = 1; i < templates.size(); i++) {
-            if (!cmp(i - 1).isRefinementOf(cmp(i))) {
-                return false;
-            }
-        }
-        // D4
-        for (int i = 1; i < templates.size(); i++) {
-            if (!grp(i - 1).isRefinementOf(grp(i))) {
-                return false;
-            }
-        }
-        return true;
     }
 
     @Override

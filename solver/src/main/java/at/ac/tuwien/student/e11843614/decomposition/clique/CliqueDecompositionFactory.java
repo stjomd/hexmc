@@ -173,10 +173,6 @@ public abstract class CliqueDecompositionFactory {
                 }
                 // If not, we try to paint the nodes.
                 boolean painted;
-//                painted = figureOutRecoloring(node, derivation);
-//                if (painted) {
-//                    continue;
-//                }
                 // Optimization: it's possible that all children just have to be painted different colors. Attempt this
                 // first. If this satisfies all conditions, we can move on to other nodes.
                 painted = attemptSingularRecolorings(node, derivation, width);
@@ -192,96 +188,6 @@ public abstract class CliqueDecompositionFactory {
                 // As a last resort, brute force.
                 bruteforceRecolorings(node, derivation, width, true);
             }
-        }
-    }
-
-    // TODO: doesn't work yet
-    private static boolean figureOutRecoloring(TreeNode<CliqueOperation> node, CliqueDerivation derivation) {
-        System.out.println(node.object() + " figuring out recoloring");
-        CliqueUnion operation = (CliqueUnion) node.object();
-        Partition<Integer> target = derivation.grp(operation.level());
-        // Try until no changes possible
-        Partition<Integer> current = grp(node);
-        // We don't need to touch groups in 'current' that are the same in 'target'.
-        Set<Set<Integer>> wrongs = new HashSet<>();
-        for (Set<Integer> group : current) {
-            if (target.equivalenceClasses().contains(group)) {
-                continue;
-            }
-            wrongs.add(group);
-        }
-        Set<TreeNode<CliqueOperation>> addedNodes = new HashSet<>();
-        // For each group in 'wrongs', find the group in 'target' with the largest overlap.
-        for (Set<Integer> group : wrongs) {
-            int maxOverlap = 0;                             // size of the biggest overlap
-            Set<Integer> biggestOverlap = new HashSet<>();  // the overlap
-            Set<Integer> groupInTarget = new HashSet<>();   // the group in target with the biggest overlap with 'group'
-            for (Set<Integer> targetGroup : target.equivalenceClasses()) {
-                Set<Integer> overlap = new HashSet<>(group);
-                overlap.retainAll(targetGroup);
-                if (overlap.size() > maxOverlap) {
-                    maxOverlap = overlap.size();
-                    biggestOverlap = overlap;
-                    groupInTarget = targetGroup;
-                }
-            }
-            // The vertices that are not both in 'group' and 'groupInTarget' are the ones that should be recolored.
-            Set<Integer> verticesToRecolor = new HashSet<>(groupInTarget);
-            verticesToRecolor.addAll(group);
-            verticesToRecolor.removeAll(biggestOverlap);
-            for (Integer vertex : verticesToRecolor) {
-                // Find the child of 'node' that contains 'vertex' and look at its color map. Find the color that
-                // 'vertex' has. This will be the source color.
-                Integer sourceColor = null;
-                TreeNode<CliqueOperation> childWithVertex = null;
-                for (TreeNode<CliqueOperation> child : node.children()) {
-                    Map<Integer, List<CliqueSingleton>> colorMap = colorMap(child);
-                    // Find color of 'vertex'
-                    mapLoop: for (Integer color : colorMap.keySet()) {
-                        List<CliqueSingleton> singletons = colorMap.get(color);
-                        for (CliqueSingleton singleton : singletons) {
-                            if (singleton.vertex() == vertex) {
-                                childWithVertex = child;
-                                sourceColor = color;
-                                break mapLoop;
-                            }
-                        }
-                    }
-                }
-                // Look at 'groupInTarget' and choose any vertex u that is not 'vertex'. Then look in the colorMap of
-                // this node to find which color the vertex u has. This will be the target color.
-                Integer targetColor = null;
-                for (Integer u : groupInTarget) {
-                    if (!u.equals(vertex)) {
-                        Map<Integer, List<CliqueSingleton>> colorMap = colorMap(node);
-                        mapLoop: for (Integer color : colorMap.keySet()) {
-                            List<CliqueSingleton> singletons = colorMap.get(color);
-                            for (CliqueSingleton singleton : singletons) {
-                                if (singleton.vertex() == u) {
-                                    targetColor = color;
-                                    break mapLoop;
-                                }
-                            }
-                        }
-                        break;
-                    }
-                }
-                // Now insert a recoloring node above 'childWithVertex'.
-                if (sourceColor != null && targetColor != null) {
-                    TreeNode<CliqueOperation> recoloringNode = childWithVertex.insertAbove(new CliqueRecoloring(sourceColor, targetColor));
-                    addedNodes.add(recoloringNode);
-                }
-            }
-        }
-        if (fulfilsColorConditions(node, derivation)) {
-            System.out.println(node.object() + " figured out recoloring");
-            return true;
-        } else {
-            System.out.println(node.object() + " couldn't figure out");
-            for (TreeNode<CliqueOperation> addedNode : addedNodes) {
-                addedNode.contract();
-            }
-            return false;
         }
     }
 

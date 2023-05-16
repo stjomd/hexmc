@@ -39,10 +39,19 @@ public class Clause {
         return literals;
     }
 
+    /**
+     * Retrieves the position value. Warning: do not expect this value to always be truthful as it can be reset at any
+     * time. To obtain the true position, use the list of clauses in the formula.
+     * @return the position of this clause.
+     */
     public int position() {
         return position;
     }
 
+    /**
+     * Updates the position value.
+     * @param position the position.
+     */
     public void setPosition(int position) {
         this.position = position;
     }
