@@ -14,7 +14,7 @@ import java.util.Set;
 
 public abstract class PswDynamicModelCounting {
 
-    public static int count(Formula formula, TreeNode<Set<Integer>> decomposition) {
+    public static long count(Formula formula, TreeNode<Set<Integer>> decomposition) {
         PSSetMap psMap = computePSSets(formula, decomposition);
         Map<TreeNode<Set<Integer>>, PSTable> tableMap = new HashMap<>();
         // Compute tables
@@ -88,7 +88,10 @@ public abstract class PswDynamicModelCounting {
                     Set<Integer> third = new HashSet<>(c1);
                     third.addAll(c2);
                     third.removeAll(deltaClauses(node));
-                    int n = table.get(third, cv) + (child1Table.get(c1, first) * child2Table.get(c2, second));
+                    long n = Math.addExact(
+                        table.get(third, cv),
+                        Math.multiplyExact(child1Table.get(c1, first), child2Table.get(c2, second))
+                    );
                     table.set(third, cv, n);
                 }
             }

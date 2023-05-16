@@ -24,7 +24,7 @@ public abstract class ModelCounting {
      * @throws TimeoutException if the SAT solver takes too long.
      * @throws InfiniteModelsException if the formula has an infinite number of models.
      */
-    public static int count(Formula formula) throws TimeoutException, InfiniteModelsException {
+    public static long count(Formula formula) throws TimeoutException, InfiniteModelsException {
         if (formula.hasEmptyClauses()) {
             Logger.debug("Formula contains an empty (unsatisfiable) clause");
             return 0;
@@ -43,7 +43,7 @@ public abstract class ModelCounting {
      * @return the amount of the formula's models.
      * @throws TimeoutException if the SAT solver takes too long while computing a carving derivation.
      */
-    private static int psw(Formula formula) throws TimeoutException {
+    private static long psw(Formula formula) throws TimeoutException {
         Graph incidenceGraph = GraphFactory.incidenceGraph(formula);
         // Compute a branch decomposition (as defined in the psw paper)
         StopWatch stopwatch = StopWatch.createStarted();
@@ -51,7 +51,7 @@ public abstract class ModelCounting {
         stopwatch.split();
         Logger.debug("[psw] Time elapsed: " + stopwatch.formatSplitTime());
         // Solve #SAT
-        int models = PswDynamicModelCounting.count(formula, decomposition);
+        long models = PswDynamicModelCounting.count(formula, decomposition);
         stopwatch.stop();
         Logger.debug("[psw] Time elapsed: " + stopwatch.formatTime());
         return models;
@@ -64,7 +64,7 @@ public abstract class ModelCounting {
      * @return the amount of the formula's models.
      * @throws TimeoutException if the SAT solver takes too long while computing a clique derivation.
      */
-    private static int cw(Formula formula) throws TimeoutException {
+    private static long cw(Formula formula) throws TimeoutException {
         Graph incidenceGraph = GraphFactory.incidenceGraph(formula);
         // Compute a parse tree for clique width
         StopWatch stopwatch = StopWatch.createStarted();
