@@ -29,7 +29,7 @@ solver input [--help] [--version] [--alg {psw,cw}] [--timeout SECONDS] [--verbos
 | --: | :----
 | `input` | The path to the DIMACS CNF file.
 | `-h, --help` | Output usage, help information, and exit.
-| `--version` | Output the current version.
+| `--version` | Output the current version and exit.
 | `-a, --alg {psw,cw}` | The algorithm to use for model counting (ps-width or clique-width).
 | `-t, --timeout SECONDS` | The timeout (in seconds) for the SAT solver – effective when computing decompositions.
 | `-v, --verbose` | Output additional information to the console.
