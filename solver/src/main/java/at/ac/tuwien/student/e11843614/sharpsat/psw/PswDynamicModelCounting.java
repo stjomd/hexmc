@@ -4,23 +4,43 @@ import at.ac.tuwien.student.e11843614.Logger;
 import at.ac.tuwien.student.e11843614.formula.Clause;
 import at.ac.tuwien.student.e11843614.formula.Formula;
 import at.ac.tuwien.student.e11843614.struct.tree.TreeNode;
+import org.apache.commons.lang3.time.StopWatch;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 public abstract class PswDynamicModelCounting {
 
+    /**
+     * Counts the models of a formula dynamically and returns the computed value.
+     * @param formula the formula to count models of.
+     * @param decomposition a branch decomposition (psw) of the formula.
+     * @return the amount of models of the formula.
+     */
     public static long count(Formula formula, TreeNode<Set<Integer>> decomposition) {
         PSSetMap psMap = computePSSets(formula, decomposition);
-        Map<TreeNode<Set<Integer>>, PSTable> tableMap = new HashMap<>();
-        // Compute tables
+        PSTableMap tableMap = computeTables(decomposition, psMap);
+        return tableMap.get(decomposition).get(Set.of(), Set.of());
+    }
+
+    // ----- Computing tables ------------------------------------------------------------------------------------------
+
+    /**
+     * Computes the tables for this decomposition.
+     * @param decomposition the root node of the decomposition.
+     * @param psMap the map of PS sets.
+     * @return a map from nodes to PS tables, where the table at the root node, and at index ({},{}), stores the
+     *         amount of models.
+     */
+    private static PSTableMap computeTables(TreeNode<Set<Integer>> decomposition, PSSetMap psMap) {
+        StopWatch stopwatch = StopWatch.createStarted();
+        PSTableMap tableMap = new PSTableMap();
         Iterator<TreeNode<Set<Integer>>> iterator = decomposition.depthIterator();
         while (iterator.hasNext()) {
             TreeNode<Set<Integer>> node = iterator.next();
+            Logger.debug(node.object() + " is having its PS table computed");
             PSTable table = new PSTable();
             if (node.children().isEmpty()) {
                 // leaf, base case
@@ -34,10 +54,11 @@ public abstract class PswDynamicModelCounting {
                 PSTable child2Table = tableMap.get(child2);
                 computeTableReduction(node, psMap, table, child1Table, child2Table);
             }
-            tableMap.put(node, table);
+            tableMap.set(node, table);
         }
-        Logger.debug("Computed the psw tables for all nodes");
-        return tableMap.get(decomposition).get(Set.of(), Set.of());
+        stopwatch.stop();
+        Logger.debug("Computed all PS tables in time: " + stopwatch.formatTime());
+        return tableMap;
     }
 
     private static void computeTableBaseCase(TreeNode<Set<Integer>> node, PSSetMap psMap, PSTable table) {
@@ -108,13 +129,19 @@ public abstract class PswDynamicModelCounting {
      */
     private static PSSetMap computePSSets(Formula formula, TreeNode<Set<Integer>> decomposition) {
         PSSetMap map = new PSSetMap();
+        Logger.debug("Computing PS sets");
+        StopWatch stopwatch = StopWatch.createStarted();
         // First, we compute the sets for the base cases: root node and leaves.
         computePSBaseCases(formula, decomposition, map);
+        Logger.debug("Computed PS sets for base cases");
         // Now, we compute the PS sets for F_v for internal nodes.
         computePSPositives(decomposition, map);
+        Logger.debug("Computed PS(F_v) sets");
         // Finally, we compute the PS sets for F_-v for internal nodes.
         computePSNegatives(decomposition, map);
-        Logger.debug("Computed PS sets for nodes of the decomposition");
+        stopwatch.stop();
+        Logger.debug("Computed PS(F_-v) sets");
+        Logger.debug("Computed all PS sets in time: " + stopwatch.formatTime());
         return map;
     }
 
@@ -170,12 +197,16 @@ public abstract class PswDynamicModelCounting {
                     map.addToNegative(node, Set.of());
                     map.addToNegative(node, Set.of(clause));
                 }
+                Logger.debug(node.object() + " PS(F_v) = " + map.getPositive(node));
+                Logger.debug(node.object() + " PS(F_-v) = " + map.getNegative(node));
             } else if (node.parent() == null) {
                 // root node, base case
                 // at the root node, F_v is an empty formula without any clauses.
                 map.addToPositive(node, Set.of());
                 // And F_-v is a formula with empty clauses.
                 map.addToNegative(node, Set.of());
+                Logger.debug(node.object() + " PS(F_v) = " + map.getPositive(node));
+                Logger.debug(node.object() + " PS(F_-v) = " + map.getNegative(node));
             }
         }
     }
@@ -201,6 +232,7 @@ public abstract class PswDynamicModelCounting {
                     }
                 }
                 map.setPositive(node, l);
+                Logger.debug(node.object() + " PS(F_v) = " + map.getPositive(node));
             }
         }
     }
@@ -230,22 +262,18 @@ public abstract class PswDynamicModelCounting {
                     }
                 }
                 map.setNegative(node, l);
+                Logger.debug(node.object() + " PS(F_-v) = " + map.getNegative(node));
             }
         }
     }
 
     // ----- Helpers ---------------------------------------------------------------------------------------------------
 
-    private static Set<Integer> deltaVariables(TreeNode<Set<Integer>> node) {
-        Set<Integer> vars = new HashSet<>();
-        for (int vertex : node.object()) {
-            if (vertex % 10 == 1) {
-                vars.add(vertex / 10);
-            }
-        }
-        return vars;
-    }
-
+    /**
+     * Computes the set of clauses in delta.
+     * @param node the node.
+     * @return the set cla(delta(node)).
+     */
     private static Set<Integer> deltaClauses(TreeNode<Set<Integer>> node) {
         Set<Integer> clauses = new HashSet<>();
         for (int vertex : node.object()) {
