@@ -29,13 +29,13 @@ public class Main {
             .locale(Locale.US)
             .singleMetavar(true)
             .build()
+            .version(properties.getProperty("version"))
             .description("Accepts a CNF formula in DIMACS CNF format, and counts the number of its models.");
         parser.addArgument("input")
             .type(String.class)
             .help("the input path for the DIMACS CNF file");
         parser.addArgument("--version")
-            .type(boolean.class)
-            .action(Arguments.storeTrue())
+            .action(Arguments.version())
             .help("output the version and exit");
         parser.addArgument("-a", "--alg")
             .type(Constants.Parameter.class)
@@ -58,18 +58,11 @@ public class Main {
             .help("output additional information");
 
         try {
+            // Parse arguments
             Namespace namespace = parser.parseArgs(args);
             String path = namespace.getString("input");
-            Constants.setAlgorithm(namespace.get("alg"));
-            Constants.setCarving(namespace.getBoolean("carving"));
-            Constants.setTimeout(namespace.getInt("timeout"));
-            Constants.setVerbose(namespace.getBoolean("verbose"));
-
-            if (namespace.getBoolean("version")) {
-                Logger.info(properties.getProperty("version"));
-                exit(0);
-            }
-
+            Constants.set(namespace);
+            // Count models
             Formula formula = Formula.fromPath(path);
             long models = ModelCounting.count(formula);
             Logger.info(models);
@@ -86,7 +79,11 @@ public class Main {
             parser.handleError(exception);
             exit(1);
         } catch (Exception exception) {
-            exception.printStackTrace();
+            if (Constants.verbose()) {
+                exception.printStackTrace();
+            } else {
+                Logger.error(exception.getMessage());
+            }
             exit(1);
         }
 

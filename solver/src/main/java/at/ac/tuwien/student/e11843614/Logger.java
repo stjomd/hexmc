@@ -6,7 +6,7 @@ package at.ac.tuwien.student.e11843614;
 public abstract class Logger {
 
     private static final String YELLOW = "\u001B[33m";
-    private static final String BLUE = "\u001B[34m";
+    private static final String CYAN = "\u001B[36m";
     private static final String RESET = "\u001B[0m";
 
     /**
@@ -23,7 +23,7 @@ public abstract class Logger {
      */
     public static void debug(Object x) {
         if (Constants.verbose()) {
-            System.out.println(BLUE + x.toString() + RESET);
+            System.out.println(CYAN + x.toString() + RESET);
         }
     }
 
