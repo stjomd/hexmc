@@ -25,7 +25,7 @@ The source code for the #SAT solver is located in the [solver directory](solver/
 ```
 solver input [--help] [--version] [--alg {psw,cw}] [--carving] [--timeout SECONDS] [--verbose]
 ```
-| Parameter | Description
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Parameter | Description
 | --: | :----
 | `input` | The path to the DIMACS CNF file.
 | `-h, --help` | Output usage, help information, and exit.
