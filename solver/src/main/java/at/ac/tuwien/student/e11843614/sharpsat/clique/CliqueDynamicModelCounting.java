@@ -83,10 +83,10 @@ public abstract class CliqueDynamicModelCounting {
         // colored with b. For every c of C, we add a disjunction of the negations of variables colored with c.
         CliqueTable table = new CliqueTable();
         // Since we're dealing with singletons and incidence graphs, the corresponding formula is either a
-        // single variable, or an empty clause. A single variable, and an empty clause, both have 1 model.
-        // The singleton is assigned a color, say x. This is how (A,B,C) will affect the corresponding formula.
+        // single variable, or an empty clause. A single variable has one model, an empty clause zero.
+        // The singleton is assigned a color, say r. This is how (A,B,C) will affect the corresponding formula.
         if (singleton.vertex() % 10 == 1) {
-            // The singleton is a variable of the formula. A, B don't affect the amount of models. If C contains x, we
+            // The singleton is a variable of the formula. A, B don't affect the amount of models. If C contains r, we
             // get an unsatisfiable formula with 0 models, otherwise it's unchanged.
             forEachSubset(k, (a, b, c) -> {
                 if (c.contains(singleton.color())) {
@@ -96,7 +96,7 @@ public abstract class CliqueDynamicModelCounting {
                 }
             });
         } else if (singleton.vertex() % 10 == 2) {
-            // The singleton is a clause. If A contains x, the clause is removed, and we get an empty
+            // The singleton is a clause. If A contains r, the clause is removed, and we get an empty
             // formula with inf models, otherwise it's unchanged. B, C do not affect the formula.
             forEachSubset(k, (a, b, c) -> {
                 if (a.contains(singleton.color())) {
