@@ -1,5 +1,6 @@
 package at.ac.tuwien.student.e11843614.sharpsat.clique;
 
+import at.ac.tuwien.student.e11843614.Logger;
 import at.ac.tuwien.student.e11843614.decomposition.clique.operation.CliqueEdgeCreation;
 import at.ac.tuwien.student.e11843614.decomposition.clique.operation.CliqueOperation;
 import at.ac.tuwien.student.e11843614.decomposition.clique.operation.CliqueRecoloring;
@@ -7,6 +8,7 @@ import at.ac.tuwien.student.e11843614.decomposition.clique.operation.CliqueSingl
 import at.ac.tuwien.student.e11843614.decomposition.clique.operation.CliqueUnion;
 import at.ac.tuwien.student.e11843614.struct.SubsetIterator;
 import at.ac.tuwien.student.e11843614.struct.tree.TreeNode;
+import org.apache.commons.lang3.time.StopWatch;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -38,9 +40,11 @@ public abstract class CliqueDynamicModelCounting {
         // Map each vertex of the decomposition to a table
         Map<TreeNode<CliqueOperation>, CliqueTable> tableMap = new HashMap<>();
         // Go through all nodes in post-order fashion
+        StopWatch stopwatch = StopWatch.createStarted();
         Iterator<TreeNode<CliqueOperation>> iterator = decomposition.depthIterator();
         while (iterator.hasNext()) {
             TreeNode<CliqueOperation> node = iterator.next();
+            Logger.debug(node.object() + " computing the clique table");
             CliqueTable table = null;
             if (node.object() instanceof CliqueSingleton) {
                 CliqueSingleton singleton = (CliqueSingleton) node.object();
@@ -61,9 +65,10 @@ public abstract class CliqueDynamicModelCounting {
             }
             tableMap.put(node, table);
         }
+        stopwatch.stop();
+        Logger.debug("Computed all clique tables in time: " + stopwatch.formatTime());
         // At the end, the number of models is at the root node
-        Set<Integer> empty = Set.of();
-        return tableMap.get(decomposition).get(empty, empty, empty);
+        return tableMap.get(decomposition).get(Set.of(), Set.of(), Set.of());
     }
 
     /**
@@ -81,7 +86,7 @@ public abstract class CliqueDynamicModelCounting {
         // single variable, or an empty clause. A single variable, and an empty clause, both have 1 model.
         // The singleton is assigned a color, say x. This is how (A,B,C) will affect the corresponding formula.
         if (singleton.vertex() % 10 == 1) {
-            // The singleton is a variable of the formula. A, B don't affect the formula. If C contains x, we
+            // The singleton is a variable of the formula. A, B don't affect the amount of models. If C contains x, we
             // get an unsatisfiable formula with 0 models, otherwise it's unchanged.
             forEachSubset(k, (a, b, c) -> {
                 if (c.contains(singleton.color())) {
@@ -92,12 +97,12 @@ public abstract class CliqueDynamicModelCounting {
             });
         } else if (singleton.vertex() % 10 == 2) {
             // The singleton is a clause. If A contains x, the clause is removed, and we get an empty
-            // formula with 1 model, otherwise it's unchanged. B, C do not affect the formula.
+            // formula with inf models, otherwise it's unchanged. B, C do not affect the formula.
             forEachSubset(k, (a, b, c) -> {
                 if (a.contains(singleton.color())) {
                     table.set(a, b, c, 1);
                 } else {
-                    table.set(a, b, c, 1);
+                    table.set(a, b, c, 0);
                 }
             });
         } else {
