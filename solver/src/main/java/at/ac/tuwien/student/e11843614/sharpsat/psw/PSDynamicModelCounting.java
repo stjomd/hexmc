@@ -67,11 +67,7 @@ public abstract class PSDynamicModelCounting {
             for (Set<Integer> c2 : psMap.getNegative(node)) {
                 if (vertex % 10 == 1) {
                     // variable vertex
-                    if (c1.isEmpty()) {
-                        table.set(c1, c2, 1);
-                    } else {
-                        table.set(c1, c2, 1);
-                    }
+                    table.set(c1, c2, 1);
                 } else {
                     // clause vertex
                     int clause = vertex / 10;
