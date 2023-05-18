@@ -40,7 +40,7 @@ public abstract class PSDynamicModelCounting {
         Iterator<TreeNode<Set<Integer>>> iterator = decomposition.depthIterator();
         while (iterator.hasNext()) {
             TreeNode<Set<Integer>> node = iterator.next();
-            Logger.debug(node.object() + " is having its PS table computed");
+            Logger.debug("v = " + node.object() + ": computing the PS table");
             PSTable table = new PSTable();
             if (node.children().isEmpty()) {
                 // leaf, base case
@@ -193,16 +193,16 @@ public abstract class PSDynamicModelCounting {
                     map.addToNegative(node, Set.of());
                     map.addToNegative(node, Set.of(clause));
                 }
-                Logger.debug(node.object() + " PS(F_v) = " + map.getPositive(node));
-                Logger.debug(node.object() + " PS(F_-v) = " + map.getNegative(node));
+                Logger.debug("v = " + node.object() + ": PS(F_v) = " + map.getPositive(node));
+                Logger.debug("v = " + node.object() + ": PS(F_-v) = " + map.getNegative(node));
             } else if (node.parent() == null) {
                 // root node, base case
                 // at the root node, F_v is an empty formula without any clauses.
                 map.addToPositive(node, Set.of());
                 // And F_-v is a formula with empty clauses.
                 map.addToNegative(node, Set.of());
-                Logger.debug(node.object() + " PS(F_v) = " + map.getPositive(node));
-                Logger.debug(node.object() + " PS(F_-v) = " + map.getNegative(node));
+                Logger.debug("v = " + node.object() + ": PS(F_v) = " + map.getPositive(node));
+                Logger.debug("v = " + node.object() + ": PS(F_-v) = " + map.getNegative(node));
             }
         }
     }
@@ -228,7 +228,7 @@ public abstract class PSDynamicModelCounting {
                     }
                 }
                 map.setPositive(node, l);
-                Logger.debug(node.object() + " PS(F_v) = " + map.getPositive(node));
+                Logger.debug("v = " + node.object() + ": PS(F_v) = " + map.getPositive(node));
             }
         }
     }
@@ -258,7 +258,7 @@ public abstract class PSDynamicModelCounting {
                     }
                 }
                 map.setNegative(node, l);
-                Logger.debug(node.object() + " PS(F_-v) = " + map.getNegative(node));
+                Logger.debug("v = " + node.object() + ": PS(F_-v) = " + map.getNegative(node));
             }
         }
     }

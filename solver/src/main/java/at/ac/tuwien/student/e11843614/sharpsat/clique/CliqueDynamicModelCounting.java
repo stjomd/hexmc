@@ -46,7 +46,7 @@ public abstract class CliqueDynamicModelCounting {
         Iterator<TreeNode<CliqueOperation>> iterator = decomposition.depthIterator();
         while (iterator.hasNext()) {
             TreeNode<CliqueOperation> node = iterator.next();
-            Logger.debug(node.object() + " computing the clique table");
+            Logger.debug("v = " + node.object() + ": computing the clique table");
             CliqueTable table = null;
             if (node.object() instanceof CliqueSingleton) {
                 CliqueSingleton singleton = (CliqueSingleton) node.object();
