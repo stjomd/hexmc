@@ -1,14 +1,11 @@
 package at.ac.tuwien.student.e11843614;
 
+import at.ac.tuwien.student.e11843614.sharpsat.ModelCounting;
 import net.sourceforge.argparse4j.inf.Namespace;
 
 public abstract class Constants {
 
-    public enum Parameter {
-        psw, cw
-    }
-
-    private static Parameter algorithm = Parameter.psw;
+    private static ModelCounting.Algorithm algorithm = ModelCounting.Algorithm.psw;
     private static boolean carving = false;
     private static int timeout = 0;
     private static boolean verbose = false;
@@ -20,7 +17,7 @@ public abstract class Constants {
         verbose = namespace.getBoolean("verbose");
     }
 
-    public static Parameter algorithm() {
+    public static ModelCounting.Algorithm algorithm() {
         return algorithm;
     }
 

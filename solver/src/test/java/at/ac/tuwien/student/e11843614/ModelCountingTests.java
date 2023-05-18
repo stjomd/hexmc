@@ -13,13 +13,15 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @DisplayName("Model counting")
 public class ModelCountingTests {
 
+    private final ModelCounting.Algorithm algorithm = ModelCounting.Algorithm.psw;
+
     // ----- Special cases ---------------------------------------------------------------------------------------------
 
     @Test
     @DisplayName("Empty formula has infinite models")
     public void emptyFormula_shouldReturnInf() {
         Formula formula = new Formula();
-        assertThrows(InfiniteModelsException.class, () -> ModelCounting.count(formula));
+        assertThrows(InfiniteModelsException.class, () -> ModelCounting.count(formula, algorithm));
     }
 
     @Test
@@ -29,7 +31,7 @@ public class ModelCountingTests {
         formula.addClause();
         formula.addClause();
         formula.addClause();
-        assertEquals(0, ModelCounting.count(formula));
+        assertEquals(0, ModelCounting.count(formula, algorithm));
     }
 
     @Test
@@ -39,7 +41,7 @@ public class ModelCountingTests {
         formula.addClause(1, 2, -3);
         formula.addClause();
         formula.addClause(-1, 3, 4, -5);
-        assertEquals(0, ModelCounting.count(formula));
+        assertEquals(0, ModelCounting.count(formula, algorithm));
     }
 
     @Test
@@ -56,7 +58,7 @@ public class ModelCountingTests {
             }
             amount *= 2;
             assertEquals(
-                amount - 1, ModelCounting.count(formula),
+                amount - 1, ModelCounting.count(formula, algorithm),
                 String.format("Formula %s does not have 2^%s-1 = %s models", formula, i, amount - 1)
             );
         }
@@ -75,7 +77,7 @@ public class ModelCountingTests {
         formula.addClause(-5);
         formula.addClause(6);
         formula.addClause(-7);
-        assertEquals(0, ModelCounting.count(formula));
+        assertEquals(0, ModelCounting.count(formula, algorithm));
     }
 
     @Test
@@ -87,7 +89,7 @@ public class ModelCountingTests {
         for (int i = 1; i <= 64; i++) {
             formula.clauses().get(0).addLiteral(i);
         }
-        assertThrows(ArithmeticException.class, () -> ModelCounting.count(formula));
+        assertThrows(ArithmeticException.class, () -> ModelCounting.count(formula, algorithm));
     }
 
     // ----- Regular cases ---------------------------------------------------------------------------------------------
@@ -99,7 +101,7 @@ public class ModelCountingTests {
         Formula formula = new Formula();
         formula.addClause(1, 2, 3);
         formula.addClause(-2, 3);
-        assertEquals(5, ModelCounting.count(formula));
+        assertEquals(5, ModelCounting.count(formula, algorithm));
     }
 
     @Test
@@ -111,7 +113,7 @@ public class ModelCountingTests {
         formula.addClause(3, -5, 6, 7, 8);
         formula.addClause(1, 2);
         formula.addClause(-3, 5, 6, -9);
-        assertEquals(332, ModelCounting.count(formula));
+        assertEquals(332, ModelCounting.count(formula, algorithm));
     }
 
     @Test
@@ -130,7 +132,7 @@ public class ModelCountingTests {
         formula.addClause(-17, 18, 19);
         formula.addClause(2, -16, -18, 19);
         formula.addClause(2, -3, 4, -5, -18, 19, 20);
-        assertEquals(432756, ModelCounting.count(formula));
+        assertEquals(432756, ModelCounting.count(formula, algorithm));
     }
 
     @Test
@@ -163,7 +165,7 @@ public class ModelCountingTests {
         formula.addClause(6);
         formula.addClause(7);
         formula.addClause(12);
-        assertEquals(32, ModelCounting.count(formula));
+        assertEquals(32, ModelCounting.count(formula, algorithm));
     }
 
     @Test
@@ -178,7 +180,7 @@ public class ModelCountingTests {
         formula.addClause(10, -14, 15, 16, -17, 18);
         formula.addClause(1, 3, 4, 19, 20);
         formula.addClause(1, 3, 20, 21, 22);
-        assertEquals(3684384, ModelCounting.count(formula));
+        assertEquals(3684384, ModelCounting.count(formula, algorithm));
     }
 
 }

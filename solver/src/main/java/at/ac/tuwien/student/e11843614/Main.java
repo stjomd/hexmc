@@ -38,8 +38,8 @@ public class Main {
             .action(Arguments.version())
             .help("output the version and exit");
         parser.addArgument("-a", "--alg")
-            .type(Constants.Parameter.class)
-            .setDefault(Constants.Parameter.psw)
+            .type(ModelCounting.Algorithm.class)
+            .setDefault(ModelCounting.Algorithm.psw)
             .help("specifies the algorithm to use for model counting (either utilizing ps-width or clique-width)."
                 + " WARNING! cw is experimental and does not return correct answers, use it only for debugging."
                 + " The standard value is psw (ps-width)");
@@ -64,7 +64,7 @@ public class Main {
             Constants.set(namespace);
             // Count models
             Formula formula = Formula.fromPath(path);
-            long models = ModelCounting.count(formula);
+            long models = ModelCounting.count(formula, Constants.algorithm());
             Logger.info(models);
         } catch (InfiniteModelsException exception) {
             Logger.info("inf");
