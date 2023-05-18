@@ -5,6 +5,8 @@ package at.ac.tuwien.student.e11843614.decomposition.clique.operation;
  */
 public class CliqueEdgeCreation implements CliqueOperation {
 
+    // TODO: support positive and negative edge creation
+
     private final int from, to;
 
     public CliqueEdgeCreation(int from, int to) {

@@ -20,6 +20,8 @@ import java.util.Set;
 
 public abstract class CliqueDynamicModelCounting {
 
+    // TODO: requires a signed parse tree on input
+
     /**
      * Runs a dynamic model counting algorithm for a propositional formula.
      * @param decomposition the clique decomposition of the incidence graph of a formula.
@@ -59,6 +61,7 @@ public abstract class CliqueDynamicModelCounting {
                 CliqueTable tableU = tableMap.get(node.children().iterator().next());
                 table = recoloringReduction(recoloring, tableU, k);
             } else if (node.object() instanceof CliqueEdgeCreation) {
+                // TODO: need to support positive and negative edge creation
                 CliqueEdgeCreation edgeCreation = (CliqueEdgeCreation) node.object();
                 CliqueTable tableU = tableMap.get(node.children().iterator().next());
                 table = edgeCreationReduction(edgeCreation, tableU, k);
@@ -90,8 +93,10 @@ public abstract class CliqueDynamicModelCounting {
             // get an unsatisfiable formula with 0 models, otherwise it's unchanged.
             forEachSubset(k, (a, b, c) -> {
                 if (c.contains(singleton.color())) {
+                    // F = {{x},{-x}} => 0 models
                     table.set(a, b, c, 0);
                 } else {
+                    // F = {{x}} => 1 model
                     table.set(a, b, c, 1);
                 }
             });
@@ -100,8 +105,12 @@ public abstract class CliqueDynamicModelCounting {
             // formula with inf models, otherwise it's unchanged. B, C do not affect the formula.
             forEachSubset(k, (a, b, c) -> {
                 if (a.contains(singleton.color())) {
+                    // F = {} => inf models
+                    // TODO: unclear base case (infinite amount of models)
                     table.set(a, b, c, 1);
                 } else {
+                    // F = {{}} => 0 models
+                    // TODO: if set to 0, the answer in the end is always 0
                     table.set(a, b, c, 0);
                 }
             });
@@ -175,6 +184,7 @@ public abstract class CliqueDynamicModelCounting {
      * @return the table.
      */
     private static CliqueTable edgeCreationReduction(CliqueEdgeCreation edgeCreation, CliqueTable tableU, int k) {
+        // TODO: need to support positive and negative edge creation
         int i = edgeCreation.from(), j = edgeCreation.to();
         CliqueTable table = new CliqueTable();
         forEachSubset(k, (a, b, c) -> {
@@ -196,9 +206,9 @@ public abstract class CliqueDynamicModelCounting {
     }
 
     /**
-     * Iterates over each subset of [1, ..., k]^3, and calls the specified lambda method.
+     * Iterates over each subset of (2^[1, ..., k])^3, and calls the specified lambda method.
      * @param k an integer.
-     * @param operation a lambda method that accepts (a, b, c) in [1, ..., k]^3 and returns void.
+     * @param operation a lambda method that accepts (a, b, c) in (2^[1, ..., k])^3 and returns void.
      */
     private static void forEachSubset(int k, TableLambda operation) {
         List<Integer> set = new ArrayList<>();
@@ -221,7 +231,7 @@ public abstract class CliqueDynamicModelCounting {
     }
 
     /**
-     * A functional interface for lambda methods that accept (a, b, c) in [1, ..., k]^3, fill out a table, and return
+     * A functional interface for lambda methods that accept (a, b, c) in (2^[1, ..., k])^3, fill out a table, and return
      * void.
      */
     private interface TableLambda {
