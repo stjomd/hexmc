@@ -26,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class CarvingTests {
 
     @Nested
-    @DisplayName("Derivation Tests")
+    @DisplayName("Derivations")
     public class CarvingDerivationTests {
 
         private Graph graph;
@@ -85,7 +85,7 @@ public class CarvingTests {
     }
 
     @Nested
-    @DisplayName("Decomposition Tests")
+    @DisplayName("Decompositions")
     public class CarvingDecompositionTests {
 
         private Graph graph;
