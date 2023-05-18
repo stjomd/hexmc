@@ -53,6 +53,7 @@ public abstract class CliqueDecompositionFactory {
      * @param root a normalized clique decomposition, where union nodes have exactly two children.
      */
     public static void makeDisjointColorSets(TreeNode<CliqueOperation> root) {
+        boolean amended = false;
         // Determine the maximum color label, also check that each union node has 2 children
         int shift = 0;
         for (TreeNode<CliqueOperation> node : root) {
@@ -92,9 +93,13 @@ public abstract class CliqueDecompositionFactory {
             // Insert recoloring nodes that revert the change above current union node
             for (Integer color : intersection) {
                 node.insertAbove(new CliqueRecoloring(color + shift, color));
+                amended = true;
             }
         }
         // Normalize again
+        if (amended) {
+            Logger.debug("Amended clique decomposition for union nodes to have disjoint color sets");
+        }
         colorSingletons(root);
     }
 
@@ -171,7 +176,7 @@ public abstract class CliqueDecompositionFactory {
             if (node.object() instanceof CliqueUnion) {
                 // If the conditions are already fulfilled, we don't have to insert anything.
                 if (fulfilsColorConditions(node, derivation)) {
-                    Logger.debug(node.object() + " fulfils color conditions");
+                    Logger.debug("v = " + node.object() + ": fulfils color conditions");
                     continue;
                 }
                 // If not, we try to paint the nodes.
@@ -240,7 +245,7 @@ public abstract class CliqueDecompositionFactory {
         }
         // Check conditions and revert if they fail
         if (fulfilsColorConditions(node, derivation)) {
-            Logger.debug(node.object() + " had each child repainted different color (shared color was " + sharedColor + ")");
+            Logger.debug("v = " + node.object() + ": each child repainted different color (shared color was " + sharedColor + ")");
             return true;
         } else {
             for (TreeNode<CliqueOperation> addedNode : addedRecoloringNodes) {
@@ -258,7 +263,7 @@ public abstract class CliqueDecompositionFactory {
      * @return true, if the recoloring nodes were added, and false otherwise.
      */
     private static boolean attemptEdgeRecolorings(TreeNode<CliqueOperation> node, CliqueDerivation derivation, int width) {
-        Logger.debug(node.object() + " is being recolored using one-child brute force");
+        Logger.debug("v = " + node.object() + ": being recolored using one-child brute force");
         StopWatch stopwatch = StopWatch.createStarted();
         Set<TreeNode<CliqueOperation>> children = new HashSet<>(node.children());
         for (TreeNode<CliqueOperation> child : children) {
@@ -275,7 +280,7 @@ public abstract class CliqueDecompositionFactory {
                     // Check if conditions are fulfilled, and if necessary, revert
                     if (fulfilsColorConditions(node, derivation)) {
                         stopwatch.stop();
-                        Logger.debug(node.object() + " had recoloring nodes inserted above one child, in time: " + stopwatch.formatTime());
+                        Logger.debug("v = " + node.object() + ": recoloring nodes inserted above one child, in time: " + stopwatch.formatTime());
                         return true;
                     } else {
                         for (TreeNode<CliqueOperation> addedNode : addedRecoloringNodes) {
@@ -286,7 +291,7 @@ public abstract class CliqueDecompositionFactory {
             }
         }
         stopwatch.stop();
-        Logger.debug(node.object() + " unsuccessful one-child brute force attempt took time: " + stopwatch.formatTime());
+        Logger.debug("v = " + node.object() + ": unsuccessful one-child brute force attempt took time: " + stopwatch.formatTime());
         return false;
     }
 
@@ -303,7 +308,7 @@ public abstract class CliqueDecompositionFactory {
     @SuppressWarnings({"UnusedReturnValue", "SameParameterValue"})
     private static boolean bruteforceRecolorings(TreeNode<CliqueOperation> node, CliqueDerivation derivation, int width,
                                                  boolean excludeSingleChildren) {
-        Logger.debug(node.object() + " is being recolored using full brute force");
+        Logger.debug("v = " + node.object() + ": being recolored using full brute force");
         StopWatch stopwatch = StopWatch.createStarted();
         Iterator<List<TreeNode<CliqueOperation>>> childSubsetIterator = new SubsetIterator<>(node.children());
         while (childSubsetIterator.hasNext()) {
@@ -325,7 +330,7 @@ public abstract class CliqueDecompositionFactory {
                 // Check conditions, and if they fail, revert
                 if (fulfilsColorConditions(node, derivation)) {
                     stopwatch.stop();
-                    Logger.debug(node.object() + " has been repainted using full brute force, in time: " + stopwatch.formatTime());
+                    Logger.debug("v = " + node.object() + ": repainted using full brute force, in time: " + stopwatch.formatTime());
                     return true;
                 } else {
                     for (TreeNode<CliqueOperation> addedNode : addedRecoloringNodes) {
@@ -335,7 +340,7 @@ public abstract class CliqueDecompositionFactory {
             }
         }
         stopwatch.stop();
-        Logger.warn(node.object() + " has not been repainted using full brute force, in time: " + stopwatch.formatTime());
+        Logger.warn("v = " + node.object() + ": unsuccessful full brute force attempt took time: " + stopwatch.formatTime());
         return false;
     }
 
@@ -428,6 +433,7 @@ public abstract class CliqueDecompositionFactory {
      * @param root the root of the tree.
      */
     private static void reduceUnionPaths(TreeNode<CliqueOperation> root) {
+        boolean amended = false;
         boolean reducable = true;
         while (reducable) {
             reducable = false;
@@ -438,6 +444,7 @@ public abstract class CliqueDecompositionFactory {
                 // If a union node only has one child, it is unnecessary
                 if (node.children().size() == 1) {
                     node.contract();
+                    amended = true;
                     reducable = true;
                 }
                 // To avoid errors due to concurrent iteration and mutation
@@ -446,6 +453,9 @@ public abstract class CliqueDecompositionFactory {
                 }
             }
         }
+        if (amended) {
+            Logger.debug("Amended clique decomposition to become succinct (reduced union node chains)");
+        }
     }
 
     /**
@@ -453,6 +463,7 @@ public abstract class CliqueDecompositionFactory {
      * @param root the root of the tree.
      */
     private static void colorSingletons(TreeNode<CliqueOperation> root) {
+        boolean amended = false;
         for (TreeNode<CliqueOperation> node : root) {
             if (!(node.object() instanceof CliqueSingleton)) {
                 continue;
@@ -468,7 +479,11 @@ public abstract class CliqueDecompositionFactory {
                 CliqueRecoloring recoloring = (CliqueRecoloring) parent.object();
                 singleton.setColor(recoloring.to());
                 parent.contract();
+                amended = true;
             }
+        }
+        if (amended) {
+            Logger.debug("Merged recoloring nodes into respective singleton nodes");
         }
     }
 
@@ -478,6 +493,7 @@ public abstract class CliqueDecompositionFactory {
      * @param root the root of the tree.
      */
     private static void binarizeUnionNodes(TreeNode<CliqueOperation> root) {
+        boolean amended = false;
         // Go through union nodes that have > 2 children
         Iterator<TreeNode<CliqueOperation>> iterator = root.depthIterator();
         while (iterator.hasNext()) {
@@ -512,7 +528,11 @@ public abstract class CliqueDecompositionFactory {
                 c.addChild(a);
                 c.addChild(b);
                 node.addChild(c);
+                amended = true;
             }
+        }
+        if (amended) {
+            Logger.debug("Amended clique decomposition for union nodes to have exactly two children");
         }
     }
 
