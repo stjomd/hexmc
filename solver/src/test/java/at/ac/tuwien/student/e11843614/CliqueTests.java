@@ -40,7 +40,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class CliqueTests {
 
     @Nested
-    @DisplayName("Derivation Tests")
+    @DisplayName("Derivations")
     public class CliqueDerivationTests {
 
         private Graph graph;
@@ -217,7 +217,7 @@ public class CliqueTests {
     }
 
     @Nested
-    @DisplayName("Decomposition Tests")
+    @DisplayName("Decompositions")
     public class CliqueDecompositionTests {
 
         @Test
@@ -325,8 +325,10 @@ public class CliqueTests {
                 }
             }
             // Decomposition must contain all vertices of the graph
-            assertTrue(visitedVertices.containsAll(graph.vertices()));
-            assertTrue(graph.vertices().containsAll(visitedVertices));
+            assertAll(
+                () -> assertTrue(visitedVertices.containsAll(graph.vertices())),
+                () -> assertTrue(graph.vertices().containsAll(visitedVertices))
+            );
             // Decomposition must create all edges of the graph
             Set<Edge> checkedEdges = new HashSet<>();
             for (Edge edge : createdEdges) {
@@ -344,8 +346,10 @@ public class CliqueTests {
                 }
                 assertTrue(found, String.format("Edge %s created by the k-expression does not appear in the graph", edge));
             }
-            assertTrue(checkedEdges.containsAll(graph.edges()));
-            assertTrue(graph.edges().containsAll(checkedEdges));
+            assertAll(
+                () -> assertTrue(checkedEdges.containsAll(graph.edges())),
+                () -> assertTrue(graph.edges().containsAll(checkedEdges))
+            );
         }
 
     }
