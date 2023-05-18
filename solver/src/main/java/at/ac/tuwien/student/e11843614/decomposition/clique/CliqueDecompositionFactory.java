@@ -25,6 +25,8 @@ import java.util.Set;
 
 public abstract class CliqueDecompositionFactory {
 
+    // TODO: figure out recoloring in poly time (currently: brute force)
+
     /**
      * Constructs a normalized clique decomposition (parse tree for clique-width) of a graph. Normalized in the context
      * means that union nodes have exactly two children.
@@ -161,6 +163,7 @@ public abstract class CliqueDecompositionFactory {
      * @param derivation the derivation.
      */
     private static void addRecoloringNodes(TreeNode<CliqueOperation> root, CliqueDerivation derivation) {
+        // TODO: figure out a polynomial algorithm (currently: brute force)
         int width = derivation.getWidth();
         Iterator<TreeNode<CliqueOperation>> iterator = root.depthIterator();
         while (iterator.hasNext()) {
