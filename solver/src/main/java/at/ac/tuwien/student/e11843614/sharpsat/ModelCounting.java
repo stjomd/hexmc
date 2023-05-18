@@ -18,14 +18,19 @@ import java.util.Set;
 
 public abstract class ModelCounting {
 
+    public enum Algorithm {
+        psw, cw
+    }
+
     /**
      * Returns the amount of models of a propositional formula.
      * @param formula the formula to count models of.
+     * @param algorithm the algorithm to use for the computation.
      * @return the amount of models.
      * @throws TimeoutException if the SAT solver takes too long.
      * @throws InfiniteModelsException if the formula has an infinite number of models.
      */
-    public static long count(Formula formula) throws TimeoutException, InfiniteModelsException {
+    public static long count(Formula formula, Algorithm algorithm) throws TimeoutException, InfiniteModelsException {
         if (formula.hasEmptyClauses()) {
             Logger.debug("Formula contains an empty (unsatisfiable) clause");
             return 0;
@@ -33,7 +38,7 @@ public abstract class ModelCounting {
             Logger.debug("Formula has no clauses");
             throw new InfiniteModelsException();
         }
-        switch (Constants.algorithm()) {
+        switch (algorithm) {
             case psw:
                 return psw(formula);
             case cw:
