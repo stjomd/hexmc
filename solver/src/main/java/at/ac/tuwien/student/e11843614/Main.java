@@ -1,5 +1,6 @@
 package at.ac.tuwien.student.e11843614;
 
+import at.ac.tuwien.student.e11843614.exception.FormulaParseException;
 import at.ac.tuwien.student.e11843614.exception.InfiniteModelsException;
 import at.ac.tuwien.student.e11843614.formula.Formula;
 import at.ac.tuwien.student.e11843614.counting.ModelCounting;
@@ -39,6 +40,9 @@ public class Main {
             Formula formula = Formula.fromPath(path);
             long models = ModelCounting.count(formula, Constants.algorithm());
             Logger.info(models);
+        } catch (FormulaParseException exception) {
+            Logger.error(exception.getMessage());
+            exit(1);
         } catch (InfiniteModelsException exception) {
             Logger.info("inf");
         } catch (TimeoutException exception) {
