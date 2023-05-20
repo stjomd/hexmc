@@ -4,6 +4,7 @@ import at.ac.tuwien.student.e11843614.Constants;
 import at.ac.tuwien.student.e11843614.Logger;
 import at.ac.tuwien.student.e11843614.decomposition.DecompositionFactory;
 import at.ac.tuwien.student.e11843614.decomposition.clique.operation.CliqueOperation;
+import at.ac.tuwien.student.e11843614.exception.TimeoutException;
 import at.ac.tuwien.student.e11843614.formula.Formula;
 import at.ac.tuwien.student.e11843614.counting.clique.CliqueDynamicModelCounting;
 import at.ac.tuwien.student.e11843614.counting.psw.PSDynamicModelCounting;
@@ -11,7 +12,6 @@ import at.ac.tuwien.student.e11843614.struct.graph.Graph;
 import at.ac.tuwien.student.e11843614.struct.graph.GraphFactory;
 import at.ac.tuwien.student.e11843614.struct.tree.TreeNode;
 import org.apache.commons.lang3.time.StopWatch;
-import org.sat4j.specs.TimeoutException;
 
 import java.util.Set;
 

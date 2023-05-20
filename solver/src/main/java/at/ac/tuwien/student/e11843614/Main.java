@@ -1,34 +1,30 @@
 package at.ac.tuwien.student.e11843614;
 
-import at.ac.tuwien.student.e11843614.exception.FormulaParseException;
 import at.ac.tuwien.student.e11843614.formula.Formula;
 import at.ac.tuwien.student.e11843614.counting.ModelCounting;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
 import net.sourceforge.argparse4j.inf.Namespace;
-import org.sat4j.specs.TimeoutException;
 
 import java.io.IOException;
 import java.util.Properties;
 
-import static java.lang.System.exit;
-
 public class Main {
 
     public static void main(String[] args) {
-
+        // Load properties file
         Properties properties = new Properties();
         try {
             properties.load(Main.class.getClassLoader().getResourceAsStream("project.properties"));
         } catch (IOException exception) {
             Logger.error("Unable to load the properties file");
-            exit(1);
+            System.exit(1);
         }
-
+        // Set up argument parser
         ArgumentParser parser = ArgumentParserFactory.parser(
             properties.getProperty("name"), properties.getProperty("version")
         );
-
+        // Perform operations & handle errors
         try {
             // Parse arguments
             Namespace namespace = parser.parseArgs(args);
@@ -38,29 +34,30 @@ public class Main {
             Formula formula = Formula.fromPath(path);
             long models = ModelCounting.count(formula, Constants.algorithm());
             Logger.info(models);
-        } catch (FormulaParseException exception) {
-            Logger.error(exception.getMessage());
-            exit(1);
-        } catch (TimeoutException exception) {
-            Logger.error("Timeout (" + Constants.timeout() + " s) exceeded");
-            exit(1);
         } catch (ArithmeticException exception) {
             Logger.debug("Long overflow occurred");
             Logger.info(">= " + Long.MAX_VALUE);
-            exit(1);
+            gracefulExit(exception);
         } catch (ArgumentParserException exception) {
             parser.handleError(exception);
-            exit(1);
+            System.exit(1);
         } catch (Exception exception) {
-            if (Constants.verbose()) {
-                exception.printStackTrace();
-            } else {
-                Logger.error(exception.getMessage());
-            }
-            exit(1);
+            Logger.error(exception.getMessage());
+            gracefulExit(exception);
         }
+        // Exit successfully
+        System.exit(0);
+    }
 
-        exit(0);
+    /**
+     * Prints the stack trace in verbose mode, and exists with exit code 1.
+     * @param exception the exception.
+     */
+    private static void gracefulExit(Exception exception) {
+        if (exception != null && Constants.verbose()) {
+            exception.printStackTrace();
+        }
+        System.exit(1);
     }
 
 }

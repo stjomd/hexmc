@@ -3,6 +3,7 @@ package at.ac.tuwien.student.e11843614;
 import at.ac.tuwien.student.e11843614.decomposition.DecompositionFactory;
 import at.ac.tuwien.student.e11843614.decomposition.DerivationFactory;
 import at.ac.tuwien.student.e11843614.decomposition.carving.CarvingDerivation;
+import at.ac.tuwien.student.e11843614.exception.TimeoutException;
 import at.ac.tuwien.student.e11843614.misc.GraphExamples;
 import at.ac.tuwien.student.e11843614.misc.PartitionChecks;
 import at.ac.tuwien.student.e11843614.struct.graph.Graph;
@@ -12,7 +13,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.sat4j.specs.TimeoutException;
 
 import java.util.HashSet;
 import java.util.LinkedList;

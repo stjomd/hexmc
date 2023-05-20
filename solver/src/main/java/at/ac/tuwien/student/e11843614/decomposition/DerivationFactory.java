@@ -3,12 +3,12 @@ package at.ac.tuwien.student.e11843614.decomposition;
 import at.ac.tuwien.student.e11843614.Logger;
 import at.ac.tuwien.student.e11843614.decomposition.carving.CarvingDerivation;
 import at.ac.tuwien.student.e11843614.decomposition.clique.CliqueDerivation;
+import at.ac.tuwien.student.e11843614.exception.TimeoutException;
 import at.ac.tuwien.student.e11843614.sat.SATEncoding;
 import at.ac.tuwien.student.e11843614.sat.SATSolver;
 import at.ac.tuwien.student.e11843614.sat.Variable;
 import at.ac.tuwien.student.e11843614.sat.factory.SATEncodingFactory;
 import at.ac.tuwien.student.e11843614.struct.graph.Graph;
-import org.sat4j.specs.TimeoutException;
 
 import java.util.Set;
 

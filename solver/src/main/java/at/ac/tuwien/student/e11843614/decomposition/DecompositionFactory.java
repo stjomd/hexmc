@@ -8,9 +8,9 @@ import at.ac.tuwien.student.e11843614.decomposition.clique.CliqueDerivation;
 import at.ac.tuwien.student.e11843614.decomposition.clique.operation.CliqueOperation;
 import at.ac.tuwien.student.e11843614.decomposition.clique.operation.CliqueSingleton;
 import at.ac.tuwien.student.e11843614.decomposition.clique.operation.CliqueUnion;
+import at.ac.tuwien.student.e11843614.exception.TimeoutException;
 import at.ac.tuwien.student.e11843614.struct.tree.TreeNode;
 import at.ac.tuwien.student.e11843614.struct.graph.Graph;
-import org.sat4j.specs.TimeoutException;
 
 import java.util.HashSet;
 import java.util.Iterator;
