@@ -1,6 +1,6 @@
 package at.ac.tuwien.student.e11843614;
 
-import at.ac.tuwien.student.e11843614.sharpsat.ModelCounting;
+import at.ac.tuwien.student.e11843614.counting.ModelCounting;
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.impl.Arguments;
 import net.sourceforge.argparse4j.inf.ArgumentParser;

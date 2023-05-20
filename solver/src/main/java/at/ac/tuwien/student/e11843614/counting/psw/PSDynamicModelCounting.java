@@ -1,4 +1,4 @@
-package at.ac.tuwien.student.e11843614.sharpsat.psw;
+package at.ac.tuwien.student.e11843614.counting.psw;
 
 import at.ac.tuwien.student.e11843614.Logger;
 import at.ac.tuwien.student.e11843614.formula.Clause;
