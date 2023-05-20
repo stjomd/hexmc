@@ -1,5 +1,6 @@
 package at.ac.tuwien.student.e11843614.formula;
 
+import at.ac.tuwien.student.e11843614.Logger;
 import at.ac.tuwien.student.e11843614.exception.FormulaParseException;
 
 import java.io.File;
@@ -14,7 +15,6 @@ public class FormulaReader {
     private final String path;
     private Integer variableBound = Integer.MAX_VALUE;
     private Integer clauseBound = Integer.MAX_VALUE;
-    private Integer clauses = 0;
 
     public FormulaReader(String path) {
         this.path = path;
@@ -32,6 +32,7 @@ public class FormulaReader {
         Formula formula = new Formula();
         int line = 0;
         int variables = 0;
+        int clauses = 0;
         while (scanner.hasNextLine()) {
             line++;
             String[] items = scanner.nextLine().split(" ");
@@ -75,9 +76,10 @@ public class FormulaReader {
                     } else {
                         try {
                             int literal = Integer.parseInt(item);
+                            int variable = Math.abs(literal);
                             clause.addLiteral(literal);
-                            if (literal > variables) {
-                                variables = literal;
+                            if (variable > variables) {
+                                variables = variable;
                             }
                             if (variables > variableBound) {
                                 throw new FormulaParseException(
@@ -93,6 +95,16 @@ public class FormulaReader {
             }
         }
         scanner.close();
+        if (variables != variableBound) {
+            Logger.warn(
+                String.format("Header specifies %d variables, parsed: %d", variableBound, variables)
+            );
+        }
+        if (clauses != clauseBound) {
+            Logger.warn(
+                String.format("Header specifies %d clauses, parsed: %d", clauseBound, clauses)
+            );
+        }
         return formula;
     }
 
