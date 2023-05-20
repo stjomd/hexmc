@@ -7,6 +7,7 @@ import at.ac.tuwien.student.e11843614.decomposition.clique.operation.CliqueOpera
 import at.ac.tuwien.student.e11843614.decomposition.clique.operation.CliqueRecoloring;
 import at.ac.tuwien.student.e11843614.decomposition.clique.operation.CliqueSingleton;
 import at.ac.tuwien.student.e11843614.decomposition.clique.operation.CliqueUnion;
+import at.ac.tuwien.student.e11843614.exception.TimeoutException;
 import at.ac.tuwien.student.e11843614.misc.GraphExamples;
 import at.ac.tuwien.student.e11843614.misc.PartitionChecks;
 import at.ac.tuwien.student.e11843614.sat.SATEncoding;
@@ -21,7 +22,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.sat4j.specs.TimeoutException;
 
 import java.util.HashMap;
 import java.util.HashSet;
