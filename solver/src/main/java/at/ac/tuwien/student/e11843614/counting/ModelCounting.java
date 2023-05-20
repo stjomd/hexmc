@@ -1,4 +1,4 @@
-package at.ac.tuwien.student.e11843614.sharpsat;
+package at.ac.tuwien.student.e11843614.counting;
 
 import at.ac.tuwien.student.e11843614.Constants;
 import at.ac.tuwien.student.e11843614.Logger;
@@ -6,8 +6,8 @@ import at.ac.tuwien.student.e11843614.decomposition.DecompositionFactory;
 import at.ac.tuwien.student.e11843614.decomposition.clique.operation.CliqueOperation;
 import at.ac.tuwien.student.e11843614.exception.InfiniteModelsException;
 import at.ac.tuwien.student.e11843614.formula.Formula;
-import at.ac.tuwien.student.e11843614.sharpsat.clique.CliqueDynamicModelCounting;
-import at.ac.tuwien.student.e11843614.sharpsat.psw.PSDynamicModelCounting;
+import at.ac.tuwien.student.e11843614.counting.clique.CliqueDynamicModelCounting;
+import at.ac.tuwien.student.e11843614.counting.psw.PSDynamicModelCounting;
 import at.ac.tuwien.student.e11843614.struct.graph.Graph;
 import at.ac.tuwien.student.e11843614.struct.graph.GraphFactory;
 import at.ac.tuwien.student.e11843614.struct.tree.TreeNode;

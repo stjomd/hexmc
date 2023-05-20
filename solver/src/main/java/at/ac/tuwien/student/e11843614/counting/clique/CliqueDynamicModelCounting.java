@@ -1,4 +1,4 @@
-package at.ac.tuwien.student.e11843614.sharpsat.clique;
+package at.ac.tuwien.student.e11843614.counting.clique;
 
 import at.ac.tuwien.student.e11843614.Logger;
 import at.ac.tuwien.student.e11843614.decomposition.clique.operation.CliqueEdgeCreation;

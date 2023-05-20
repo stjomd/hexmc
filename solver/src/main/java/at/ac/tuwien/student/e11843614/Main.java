@@ -2,7 +2,7 @@ package at.ac.tuwien.student.e11843614;
 
 import at.ac.tuwien.student.e11843614.exception.InfiniteModelsException;
 import at.ac.tuwien.student.e11843614.formula.Formula;
-import at.ac.tuwien.student.e11843614.sharpsat.ModelCounting;
+import at.ac.tuwien.student.e11843614.counting.ModelCounting;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
 import net.sourceforge.argparse4j.inf.Namespace;

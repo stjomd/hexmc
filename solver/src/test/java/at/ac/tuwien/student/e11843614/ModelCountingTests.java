@@ -3,7 +3,7 @@ package at.ac.tuwien.student.e11843614;
 import at.ac.tuwien.student.e11843614.exception.InfiniteModelsException;
 import at.ac.tuwien.student.e11843614.formula.Clause;
 import at.ac.tuwien.student.e11843614.formula.Formula;
-import at.ac.tuwien.student.e11843614.sharpsat.ModelCounting;
+import at.ac.tuwien.student.e11843614.counting.ModelCounting;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
