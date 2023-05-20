@@ -33,6 +33,7 @@ public class FormulaReader {
         while (scanner.hasNextLine()) {
             line++;
             String[] items = scanner.nextLine().split(" ");
+            String prefix = path + ":" + line + ": "; // for error messages
             if (items[0].equals("")) {
                 // empty line
                 continue;
@@ -42,23 +43,23 @@ public class FormulaReader {
             } else if (items[0].equals("p")) {
                 // header line
                 if (!items[1].equals("cnf")) {
-                    throw new FormulaParseException("Expected 'cnf' in header, got " + items[1]);
+                    throw new FormulaParseException(prefix + "expected 'cnf' in header, got \"" + items[1] + "\"");
                 }
                 try {
                     clauseBound = Integer.parseInt(items[3]);
                 } catch (NumberFormatException exception) {
-                    throw new FormulaParseException("Expected a number, " + exception.getMessage(), exception);
+                    throw new FormulaParseException(prefix + "expected a number, got \"" + items[3] + "\"", exception);
                 }
             } else {
                 // clause line
                 clauses++;
                 if (clauses > clauseBound) {
                     throw new FormulaParseException(
-                        String.format("Size specification mismatch (header specifies %d clauses)", clauseBound)
+                        String.format(prefix + "size specification mismatch (header specifies %d clauses)", clauseBound)
                     );
                 }
                 if (!items[items.length - 1].equals("0")) {
-                    throw new FormulaParseException("Line " + line + ": clause line does not terminate with zero");
+                    throw new FormulaParseException(prefix + "clause line does not terminate with zero");
                 }
                 Clause clause = new Clause();
                 for (String item : items) {
@@ -68,7 +69,7 @@ public class FormulaReader {
                         try {
                             clause.addLiteral(Integer.parseInt(item));
                         } catch (NumberFormatException exception) {
-                            throw new FormulaParseException("Expected a number, " + exception.getMessage(), exception);
+                            throw new FormulaParseException(prefix + "expected a number, got \"" + item + "\"", exception);
                         }
                     }
                 }
