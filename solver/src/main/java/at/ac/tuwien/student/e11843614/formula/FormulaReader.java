@@ -12,6 +12,7 @@ import java.util.Scanner;
 public class FormulaReader {
 
     private final String path;
+    private Integer variableBound = Integer.MAX_VALUE;
     private Integer clauseBound = Integer.MAX_VALUE;
     private Integer clauses = 0;
 
@@ -30,6 +31,7 @@ public class FormulaReader {
         Scanner scanner = new Scanner(file);
         Formula formula = new Formula();
         int line = 0;
+        int variables = 0;
         while (scanner.hasNextLine()) {
             line++;
             String[] items = scanner.nextLine().split(" ");
@@ -46,6 +48,11 @@ public class FormulaReader {
                     throw new FormulaParseException(prefix + "expected 'cnf' in header, got \"" + items[1] + "\"");
                 }
                 try {
+                    variableBound = Integer.parseInt(items[2]);
+                } catch (NumberFormatException exception) {
+                    throw new FormulaParseException(prefix + "expected a number, got \"" + items[2] + "\"", exception);
+                }
+                try {
                     clauseBound = Integer.parseInt(items[3]);
                 } catch (NumberFormatException exception) {
                     throw new FormulaParseException(prefix + "expected a number, got \"" + items[3] + "\"", exception);
@@ -55,7 +62,7 @@ public class FormulaReader {
                 clauses++;
                 if (clauses > clauseBound) {
                     throw new FormulaParseException(
-                        String.format(prefix + "size specification mismatch (header specifies %d clauses)", clauseBound)
+                        String.format(prefix + "exceeded the amount of clauses (header specifies %d clauses)", clauseBound)
                     );
                 }
                 if (!items[items.length - 1].equals("0")) {
@@ -67,7 +74,16 @@ public class FormulaReader {
                         break;
                     } else {
                         try {
-                            clause.addLiteral(Integer.parseInt(item));
+                            int literal = Integer.parseInt(item);
+                            clause.addLiteral(literal);
+                            if (literal > variables) {
+                                variables = literal;
+                            }
+                            if (variables > variableBound) {
+                                throw new FormulaParseException(
+                                    String.format(prefix + "exceeded the amount of variables (header specifies %d variables)", variableBound)
+                                );
+                            }
                         } catch (NumberFormatException exception) {
                             throw new FormulaParseException(prefix + "expected a number, got \"" + item + "\"", exception);
                         }
