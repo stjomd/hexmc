@@ -4,7 +4,6 @@ import at.ac.tuwien.student.e11843614.Constants;
 import at.ac.tuwien.student.e11843614.Logger;
 import at.ac.tuwien.student.e11843614.decomposition.DecompositionFactory;
 import at.ac.tuwien.student.e11843614.decomposition.clique.operation.CliqueOperation;
-import at.ac.tuwien.student.e11843614.exception.InfiniteModelsException;
 import at.ac.tuwien.student.e11843614.formula.Formula;
 import at.ac.tuwien.student.e11843614.counting.clique.CliqueDynamicModelCounting;
 import at.ac.tuwien.student.e11843614.counting.psw.PSDynamicModelCounting;
@@ -28,15 +27,14 @@ public abstract class ModelCounting {
      * @param algorithm the algorithm to use for the computation.
      * @return the amount of models.
      * @throws TimeoutException if the SAT solver takes too long.
-     * @throws InfiniteModelsException if the formula has an infinite number of models.
      */
-    public static long count(Formula formula, Algorithm algorithm) throws TimeoutException, InfiniteModelsException {
+    public static long count(Formula formula, Algorithm algorithm) throws TimeoutException {
         if (formula.hasEmptyClauses()) {
             Logger.debug("Formula contains an empty (unsatisfiable) clause");
             return 0;
         } else if (formula.clauses().isEmpty()) {
             Logger.debug("Formula has no clauses");
-            throw new InfiniteModelsException();
+            return 0;
         }
         switch (algorithm) {
             case psw:

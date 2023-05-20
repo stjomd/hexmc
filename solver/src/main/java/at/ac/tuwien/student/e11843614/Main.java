@@ -1,7 +1,6 @@
 package at.ac.tuwien.student.e11843614;
 
 import at.ac.tuwien.student.e11843614.exception.FormulaParseException;
-import at.ac.tuwien.student.e11843614.exception.InfiniteModelsException;
 import at.ac.tuwien.student.e11843614.formula.Formula;
 import at.ac.tuwien.student.e11843614.counting.ModelCounting;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
@@ -23,7 +22,6 @@ public class Main {
             properties.load(Main.class.getClassLoader().getResourceAsStream("project.properties"));
         } catch (IOException exception) {
             Logger.error("Unable to load the properties file");
-            exception.printStackTrace();
             exit(1);
         }
 
@@ -43,13 +41,11 @@ public class Main {
         } catch (FormulaParseException exception) {
             Logger.error(exception.getMessage());
             exit(1);
-        } catch (InfiniteModelsException exception) {
-            Logger.info("inf");
         } catch (TimeoutException exception) {
             Logger.error("Timeout (" + Constants.timeout() + " s) exceeded");
             exit(1);
         } catch (ArithmeticException exception) {
-            Logger.debug("Formula might have more than " + Long.MAX_VALUE + " models (long overflow occurred)");
+            Logger.debug("Long overflow occurred");
             Logger.info(">= " + Long.MAX_VALUE);
             exit(1);
         } catch (ArgumentParserException exception) {
