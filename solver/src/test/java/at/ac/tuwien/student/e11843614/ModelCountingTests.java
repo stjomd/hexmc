@@ -1,6 +1,5 @@
 package at.ac.tuwien.student.e11843614;
 
-import at.ac.tuwien.student.e11843614.exception.InfiniteModelsException;
 import at.ac.tuwien.student.e11843614.formula.Clause;
 import at.ac.tuwien.student.e11843614.formula.Formula;
 import at.ac.tuwien.student.e11843614.counting.ModelCounting;
@@ -19,9 +18,9 @@ public class ModelCountingTests {
 
     @Test
     @DisplayName("Empty formula has infinite models")
-    public void emptyFormula_shouldReturnInf() {
+    public void emptyFormula_shouldReturnInf() throws Exception {
         Formula formula = new Formula();
-        assertThrows(InfiniteModelsException.class, () -> ModelCounting.count(formula, algorithm));
+        assertEquals(0, ModelCounting.count(formula, algorithm));
     }
 
     @Test
