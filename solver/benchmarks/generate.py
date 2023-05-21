@@ -38,8 +38,8 @@ def construct_formula(variables, clauses):
         formula[clause_index].append(sign * variable)
     return formula
 
-def write_formula(formula, id, variables):
-    path = temp_path / (str(id) + ".cnf")
+def write_formula(formula, file_name, variables):
+    path = temp_path / file_name
     with open(path, "w") as file:
         file.write("p cnf " + str(variables) + " " + str(len(formula)) + "\n")
         for clause in formula:
@@ -47,8 +47,8 @@ def write_formula(formula, id, variables):
             string += " 0\n"
             file.write(string)
 
-def run_solver(id):
-    input_path = temp_path / (str(id) + ".cnf")
+def run_solver(file_name):
+    input_path = temp_path / file_name
     command = '"' + str(solver_path) + '" "' + str(input_path) + '" --verbose'
     stream = os.popen(command)
     output = stream.readlines()
@@ -61,12 +61,12 @@ def run_solver(id):
             width = int(trimmed.split()[-1])
         elif trimmed.startswith("[psw] Time elapsed:"):
             time = trimmed.split()[-1]
-    print(width)
-    print(time)
+    models = int(output[-1])
+    return [width, time, models]
 
 if __name__ == "__main__":
     if not os.path.exists(temp_path):
         os.makedirs(temp_path)
     formula = construct_formula(12, 3)
-    write_formula(formula, 1, 12)
-    run_solver(1)
+    write_formula(formula, "1.cnf", 12)
+    run_solver("1.cnf")
