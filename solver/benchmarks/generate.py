@@ -1,6 +1,8 @@
+import os
 import random
 
 max_width = 10
+temp_folder = "temp"
 
 def construct_formula(variables, clauses):
     formula = []
@@ -34,5 +36,17 @@ def construct_formula(variables, clauses):
         formula[clause_index].append(sign * variable)
     return formula
 
+def write_formula(formula, id, variables):
+    path = temp_folder + "/" + str(id) + ".cnf"
+    with open(path, "w") as file:
+        file.write("p cnf " + str(variables) + " " + str(len(formula)) + "\n")
+        for clause in formula:
+            string = ' '.join(str(x) for x in clause)
+            string += " 0\n"
+            file.write(string)
+
 if __name__ == "__main__":
-    print()
+    if not os.path.exists(temp_folder):
+        os.makedirs(temp_folder)
+    formula = construct_formula(12, 3)
+    write_formula(formula, 1, 12)
