@@ -1,5 +1,6 @@
 package at.ac.tuwien.student.e11843614.counting.psw;
 
+import at.ac.tuwien.student.e11843614.Constants;
 import at.ac.tuwien.student.e11843614.Logger;
 import at.ac.tuwien.student.e11843614.formula.Clause;
 import at.ac.tuwien.student.e11843614.formula.Formula;
@@ -138,6 +139,15 @@ public abstract class PSDynamicModelCounting {
         stopwatch.stop();
         Logger.debug("Computed PS(F_-v) sets");
         Logger.debug("Computed all PS sets in time: " + stopwatch.formatTime());
+        // Compute ps-width
+        if (Constants.verbose()) {
+            int width = 0;
+            for (TreeNode<Set<Integer>> node : decomposition) {
+                int psValue = Math.max(map.getPositive(node).size(), map.getNegative(node).size());
+                width = Math.max(width, psValue);
+            }
+            Logger.debug("ps-width of the decomposition is " + width);
+        }
         return map;
     }
 
