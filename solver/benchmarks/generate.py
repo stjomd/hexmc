@@ -10,6 +10,7 @@ tries_per_combination = 5
 # Paths (don't have to be changed if project structure not changed)
 temp_path = Path(__file__).parent / "temp"
 instances_path = Path(__file__).parent / "instances"
+failed_path = instances_path / "failed"
 solver_path = Path(__file__).parent.parent / "hexmc"
 
 # Constructs a random formula
@@ -91,10 +92,13 @@ if __name__ == "__main__":
         os.makedirs(temp_path)
     if not os.path.exists(instances_path):
         os.makedirs(instances_path)
+    if not os.path.exists(failed_path):
+        os.makedirs(failed_path)
     temp_file = temp_path / "temp.cnf"
     # Create a dict where we store how many instances for specific ps-width we obtained
     progress = {}
     # n is the amount of variables, m is the amount of clauses
+    fails = 0
     for n in range(2, size):
         for m in range(1, size):
             for i in range(tries_per_combination):
@@ -104,7 +108,12 @@ if __name__ == "__main__":
                 try:
                     width, time, models = run_solver(temp_file)
                 except Exception as exception:
+                    fails += 1
                     print("n = {}, m = {}, i = {}: solver reported error: {}".format(n, m, i, exception))
+                    write_formula(formula, failed_path / (str(fails) + ".cnf"), n, m, [
+                        "solver reported error:",
+                        str(exception)
+                    ])
                     continue
                 # Record in progress dict
                 if not width in progress:
