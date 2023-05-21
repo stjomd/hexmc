@@ -1,3 +1,11 @@
 #!/bin/bash
 
-java -jar target/hexmc-jar-with-dependencies.jar "$@"
+JAR=target/hexmc-jar-with-dependencies.jar
+
+if [ ! -f $JAR ]
+then
+    echo "The executable file does not exist. Run './build' to compile."
+    exit 1
+fi
+
+java -jar $JAR "$@"
