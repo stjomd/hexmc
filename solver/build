@@ -1,0 +1,3 @@
+#!/bin/zsh
+
+./mvnw clean compile assembly:single

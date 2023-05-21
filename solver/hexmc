@@ -1,0 +1,3 @@
+#!/bin/zsh
+
+java -jar target/solver.jar "$@"
