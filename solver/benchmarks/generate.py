@@ -51,7 +51,7 @@ def write_formula(formula, path, variables, clauses):
         file.write("p cnf " + str(variables) + " " + str(clauses) + "\n")
         for clause in formula:
             string = ' '.join(str(x) for x in clause)
-            string += " g0\n"
+            string += " 0\n"
             file.write(string)
 
 # Runs the solver, parses the output
