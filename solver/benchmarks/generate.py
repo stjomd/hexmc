@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 import random
+import subprocess
 import sys
 
 # Amount of formulas generated for each (n, m)
@@ -50,24 +51,29 @@ def write_formula(formula, path, variables, clauses):
         file.write("p cnf " + str(variables) + " " + str(clauses) + "\n")
         for clause in formula:
             string = ' '.join(str(x) for x in clause)
-            string += " 0\n"
+            string += " g0\n"
             file.write(string)
 
 # Runs the solver, parses the output
 def run_solver(path):
     command = '"' + str(solver_path) + '" "' + str(path) + '" --verbose'
-    stream = os.popen(command)
-    output = stream.readlines()
+    process = subprocess.Popen(command, shell = True, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+    stdout, stderr = process.communicate()
+    # Raise exception if solver reported error
+    if process.returncode != 0:
+        message = stderr.splitlines()[0].decode("UTF-8")
+        raise Exception(message)
     # Parse output
     width = -1
     time = ""
-    for line in output:
-        trimmed = line[5:-5]
+    lines = stdout.splitlines()
+    for line in lines:
+        trimmed = line.decode("UTF-8")[5:-4]
         if trimmed.startswith("ps-width of the decomposition is"):
             width = int(trimmed.split()[-1])
         elif trimmed.startswith("[psw] Time elapsed:"):
             time = trimmed.split()[-1]
-    models = int(output[-1])
+    models = int(lines[-1].decode("UTF-8"))
     return [width, time, models]
 
 if __name__ == "__main__":
@@ -93,7 +99,11 @@ if __name__ == "__main__":
                 formula = construct_formula(n, m)
                 # Create a temporary file, and run solver on it
                 write_formula(formula, temp_file, n, m)
-                width, time, models = run_solver(temp_file)
+                try:
+                    width, time, models = run_solver(temp_file)
+                except Exception as exception:
+                    print("n = {}, m = {}, i = {}: solver reported error: {}".format(n, m, i, exception))
+                    continue
                 # Record in progress dict
                 if not width in progress:
                     progress[width] = 0
