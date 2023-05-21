@@ -46,9 +46,11 @@ def construct_formula(variables, clauses):
     return formula
 
 # Writes the formula into a DIMACS format file
-def write_formula(formula, path, variables, clauses):
+def write_formula(formula, path, variables, clauses, comments):
     with open(path, "w") as file:
         file.write("p cnf " + str(variables) + " " + str(clauses) + "\n")
+        for comment in comments:
+            file.write("c " + comment + "\n")
         for clause in formula:
             string = ' '.join(str(x) for x in clause)
             string += " 0\n"
@@ -98,7 +100,7 @@ if __name__ == "__main__":
             for i in range(tries_per_combination):
                 formula = construct_formula(n, m)
                 # Create a temporary file, and run solver on it
-                write_formula(formula, temp_file, n, m)
+                write_formula(formula, temp_file, n, m, [])
                 try:
                     width, time, models = run_solver(temp_file)
                 except Exception as exception:
@@ -113,7 +115,11 @@ if __name__ == "__main__":
                 if not os.path.exists(path):
                     os.makedirs(path)
                 file_name = "psw-" + str(width) + "-order-" + str(progress[width]) + ".cnf"
-                write_formula(formula, path / file_name, n, m)
+                write_formula(formula, path / file_name, n, m, [
+                    "ps-width: " + str(width),
+                    "models: " + str(models),
+                    "time: " + time
+                ])
                 # Output to console
                 print("n = {}, m = {}, i = {}: decomposition had ps-width {}, elapsed time was {}".format(n, m, i, width, time))
     # Delete temporary files
