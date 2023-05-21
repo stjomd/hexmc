@@ -10,7 +10,7 @@ import java.util.Locale;
 public abstract class ArgumentParserFactory {
 
     public static ArgumentParser parser(String name, String version) {
-        ArgumentParser parser = ArgumentParsers.newFor(name)
+        ArgumentParser parser = ArgumentParsers.newFor("./" + name)
             .locale(Locale.US)
             .singleMetavar(true)
             .build()

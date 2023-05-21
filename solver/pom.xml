@@ -3,7 +3,7 @@
 
   <modelVersion>4.0.0</modelVersion>
   <groupId>at.ac.tuwien.student.e11843614</groupId>
-  <artifactId>solver</artifactId>
+  <artifactId>hexmc</artifactId>
   <packaging>jar</packaging>
 
   <properties>
@@ -13,9 +13,9 @@
     <maven.compiler.target>11</maven.compiler.target>
   </properties>
 
-  <version>1.0-SNAPSHOT</version>
-  <name>solver</name>
-  <url>http://maven.apache.org</url>
+  <version>1.0.0</version>
+  <name>hexmc</name>
+  <url>https://github.com/stjomd/hexmc</url>
 
   <dependencies>
     <dependency>
@@ -66,7 +66,6 @@
           <descriptorRefs>
             <descriptorRef>jar-with-dependencies</descriptorRef>
           </descriptorRefs>
-          <appendAssemblyId>false</appendAssemblyId>
         </configuration>
       </plugin>
     </plugins>
