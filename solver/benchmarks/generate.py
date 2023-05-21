@@ -13,6 +13,11 @@ instances_path = Path(__file__).parent / "instances"
 failed_path = instances_path / "failed"
 solver_path = Path(__file__).parent.parent / "hexmc"
 
+# Info about already stored instances
+# Refilled in restore_progress if continuing after a break
+progress = {}
+fails = 0
+
 # Constructs a random formula
 def construct_formula(variables, clauses):
     formula = []
@@ -79,14 +84,39 @@ def run_solver(path):
     models = int(lines[-1].decode("UTF-8"))
     return [width, time, models]
 
+# Fills the progress dict and fails value again, to ensure old instances are not overwritten
+def restore_progress():
+    global fails
+    for directory in os.listdir(instances_path):
+        if directory == "failed":
+            for instance in os.listdir(instances_path / directory):
+                if instance.endswith(".cnf"):
+                    fails += 1
+        elif directory.isdigit():
+            order = 0
+            for instance in os.listdir(instances_path / directory):
+                if instance.endswith(".cnf"):
+                    order = max(order, int(instance.split('.')[0].split('-')[-1]))
+            width = int(directory)
+            progress[width] = order
+
 if __name__ == "__main__":
     # Parse arguments
     size = 0
-    if len(sys.argv) != 2:
-        print("usage: python3 generate.py <size>")
-        exit(1)
-    else:
+    start_from_n = 2
+    start_from_m = None
+    if len(sys.argv) == 2:
         size = int(sys.argv[1])
+    elif len(sys.argv) == 4:
+        size = int(sys.argv[1])
+        start_from_n = int(sys.argv[2])
+        start_from_m = int(sys.argv[3])
+        print("Continuing from n = {}, m = {}".format(start_from_n, start_from_m))
+        # Restore progress values so that we don't overwrite any instances
+        restore_progress()
+    else:
+        print("usage: python3 generate.py <max size> [<start n> <start m>]")
+        exit(1)
     # Create directories
     if not os.path.exists(temp_path):
         os.makedirs(temp_path)
@@ -95,12 +125,14 @@ if __name__ == "__main__":
     if not os.path.exists(failed_path):
         os.makedirs(failed_path)
     temp_file = temp_path / "temp.cnf"
-    # Create a dict where we store how many instances for specific ps-width we obtained
-    progress = {}
     # n is the amount of variables, m is the amount of clauses
-    fails = 0
-    for n in range(2, size):
-        for m in range(1, size):
+    for n in range(start_from_n, size + 1):
+        # To start from (n,m), if n==start_from_n, we set range to [start_from_m, size]. Otherwise do as usual [1, size].
+        clause_range = range(1, size + 1)
+        if start_from_m != None and n == start_from_n:
+            clause_range = range(start_from_m, size + 1)
+        # Iterate over m
+        for m in clause_range:
             for i in range(tries_per_combination):
                 formula = construct_formula(n, m)
                 # Create a temporary file, and run solver on it
