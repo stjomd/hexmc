@@ -69,8 +69,16 @@ def run_solver(path):
     stdout, stderr = process.communicate()
     # Raise exception if solver reported error
     if process.returncode != 0:
+        # Get the error message
         message = stderr.splitlines()[0].decode("UTF-8")
-        raise Exception(message)
+        # Get the runtime from stdout
+        time = ""
+        lines = stdout.splitlines()
+        for line in lines:
+            trimmed = line.decode("UTF-8")[5:-4]
+            if trimmed.startswith("Total runtime:"):
+                time = trimmed.split()[-1]
+        raise RuntimeError(message, time)
     # Parse output
     width = -1
     time = ""
@@ -139,12 +147,13 @@ if __name__ == "__main__":
                 write_formula(formula, temp_file, n, m, [])
                 try:
                     width, time, models = run_solver(temp_file)
-                except Exception as exception:
+                except RuntimeError as error:
                     fails += 1
-                    print("n = {}, m = {}, i = {}: solver reported error: {}".format(n, m, i, exception))
+                    print("n = {}, m = {}, i = {}: runtime = {}, solver reported error: {}".format(n, m, i, error.args[1], error.args[0]))
                     write_formula(formula, failed_path / (str(fails) + ".cnf"), n, m, [
                         "solver reported error:",
-                        str(exception)
+                        str(error.args[0]),
+                        "runtime: " + error.args[1]
                     ])
                     continue
                 # Record in progress dict
