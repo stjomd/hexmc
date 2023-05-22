@@ -108,6 +108,38 @@ def restore_progress():
             width = int(directory)
             progress[width] = order
 
+def perform(n, m, i):
+    formula = construct_formula(n, m)
+    # Create a temporary file, and run solver on it
+    write_formula(formula, temp_file, n, m, [])
+    try:
+        width, time, models = run_solver(temp_file)
+    except RuntimeError as error:
+        fails += 1
+        print("n = {}, m = {}, i = {}: runtime = {}, solver reported error: {}".format(n, m, i, error.args[1], error.args[0]))
+        write_formula(formula, failed_path / (str(fails) + ".cnf"), n, m, [
+            "solver reported error:",
+            str(error.args[0]),
+            "runtime: " + error.args[1]
+        ])
+        return
+    # Record in progress dict
+    if not width in progress:
+        progress[width] = 0
+    progress[width] += 1
+    # Save to instances folder
+    path = instances_path / str(width)
+    if not os.path.exists(path):
+        os.makedirs(path)
+    file_name = "psw-" + str(width) + "-order-" + str(progress[width]) + ".cnf"
+    write_formula(formula, path / file_name, n, m, [
+        "ps-width: " + str(width),
+        "models: " + str(models),
+        "time: " + time
+    ])
+    # Output to console
+    print("n = {}, m = {}, i = {}: decomposition had ps-width {}, elapsed time was {}".format(n, m, i, width, time))
+
 if __name__ == "__main__":
     # Parse arguments
     size = 0
@@ -142,36 +174,7 @@ if __name__ == "__main__":
         # Iterate over m
         for m in clause_range:
             for i in range(tries_per_combination):
-                formula = construct_formula(n, m)
-                # Create a temporary file, and run solver on it
-                write_formula(formula, temp_file, n, m, [])
-                try:
-                    width, time, models = run_solver(temp_file)
-                except RuntimeError as error:
-                    fails += 1
-                    print("n = {}, m = {}, i = {}: runtime = {}, solver reported error: {}".format(n, m, i, error.args[1], error.args[0]))
-                    write_formula(formula, failed_path / (str(fails) + ".cnf"), n, m, [
-                        "solver reported error:",
-                        str(error.args[0]),
-                        "runtime: " + error.args[1]
-                    ])
-                    continue
-                # Record in progress dict
-                if not width in progress:
-                    progress[width] = 0
-                progress[width] += 1
-                # Save to instances folder
-                path = instances_path / str(width)
-                if not os.path.exists(path):
-                    os.makedirs(path)
-                file_name = "psw-" + str(width) + "-order-" + str(progress[width]) + ".cnf"
-                write_formula(formula, path / file_name, n, m, [
-                    "ps-width: " + str(width),
-                    "models: " + str(models),
-                    "time: " + time
-                ])
-                # Output to console
-                print("n = {}, m = {}, i = {}: decomposition had ps-width {}, elapsed time was {}".format(n, m, i, width, time))
+                perform(n, m, i)
     # Delete temporary files
     if os.path.isfile(temp_file):
         os.remove(temp_file)
