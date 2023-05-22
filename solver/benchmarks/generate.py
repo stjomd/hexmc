@@ -1,5 +1,6 @@
+import multiprocessing.pool
 import os
-from pathlib import Path
+import pathlib
 import random
 import subprocess
 import sys
@@ -7,12 +8,14 @@ import threading
 
 # Amount of formulas generated for each (n, m)
 tries_per_combination = 5
+# Amount of simultaneous threads
+simultaneous_threads = os.cpu_count() + 4
 
 # Paths (don't have to be changed if project structure not changed)
-temp_path = Path(__file__).parent / "temp"
-instances_path = Path(__file__).parent / "instances"
+temp_path = pathlib.Path(__file__).parent / "temp"
+instances_path = pathlib.Path(__file__).parent / "instances"
 failed_path = instances_path / "failed"
-solver_path = Path(__file__).parent.parent / "hexmc"
+solver_path = pathlib.Path(__file__).parent.parent / "hexmc"
 
 # Info about already stored instances
 # Refilled in restore_progress if continuing after a break
@@ -20,6 +23,11 @@ progress = {}
 fails = 0
 progress_lock = threading.Lock()
 fails_lock = threading.Lock()
+
+# Info about instances per (n, m) pair
+# Used to output a message when 'tries_per_combination' instances are processed
+pair_info = {}
+pair_info_lock = threading.Lock()
 
 # Constructs a random formula
 def construct_formula(variables, clauses):
@@ -111,6 +119,18 @@ def restore_progress():
             width = int(directory)
             progress[width] = order
 
+# Update pair info, thread safe
+def increment_pair_info(n, m):
+    pair_info_lock.acquire()
+    if n not in pair_info:
+        pair_info[n] = {}
+    if m not in pair_info[n]:
+        pair_info[n][m] = 0
+    pair_info[n][m] += 1
+    pair_info_lock.release()
+    if pair_info[n][m] == tries_per_combination:
+        print("n = {}, m = {}: processed {} instances".format(n, m, pair_info[n][m]))
+
 # Perform all the actions for the triple (n, m, i)
 def perform(n, m, i):
     global fails
@@ -130,6 +150,7 @@ def perform(n, m, i):
             str(error.args[0]),
             "runtime: " + error.args[1]
         ])
+        increment_pair_info(n, m)
         return
     # Record in progress dict
     progress_lock.acquire()
@@ -152,6 +173,7 @@ def perform(n, m, i):
         os.remove(temp_file)
     # Output to console
     print("n = {}, m = {}, i = {}: decomposition had ps-width {}, elapsed time was {}".format(n, m, i, width, time))
+    increment_pair_info(n, m)
 
 if __name__ == "__main__":
     # Parse arguments
@@ -177,27 +199,28 @@ if __name__ == "__main__":
         os.makedirs(instances_path)
     if not os.path.exists(failed_path):
         os.makedirs(failed_path)
+    # Use a thread pool to submit jobs to
+    pool = multiprocessing.pool.ThreadPool(processes = simultaneous_threads)
     # n is the amount of variables, m is the amount of clauses
-    for n in range(start_from_n, size + 1):
-        # To start from (n,m), if n==start_from_n, we set range to [start_from_m, size]. Otherwise do as usual [1, size].
-        clause_range = range(1, size + 1)
-        if start_from_m != None and n == start_from_n:
-            clause_range = range(start_from_m, size + 1)
-        # Iterate over m
-        for m in clause_range:
-            # Add threads to a list, so we can wait for them later
-            threads = []
-            for i in range(tries_per_combination):
-                thread = threading.Thread(target = perform, args = (n, m, i))
-                threads.append(thread)
-            # Start all threads, then wait for them. Thus for a pair (n, m) we run several threads at once.
-            print("n = {}, m = {}: started {} threads".format(n, m, len(threads)))
-            for thread in threads:
-                thread.start()
-            for thread in threads:
-                thread.join()
-            print("n = {}, m = {}: all {} threads finished".format(n, m, len(threads)))
-    # Delete temporary files
-    if os.path.isdir(temp_path):
-        os.rmdir(temp_path)
-    print("Done.")
+    try:
+        for n in range(start_from_n, size + 1):
+            # To start from (n,m), if n==start_from_n, we set range to [start_from_m, size]. Otherwise do as usual [1, size].
+            clause_range = range(1, size + 1)
+            if start_from_m != None and n == start_from_n:
+                clause_range = range(start_from_m, size + 1)
+            # Iterate over m
+            for m in clause_range:
+                # Submit jobs to the pool
+                for i in range(tries_per_combination):
+                    pool.apply_async(perform, args = (n, m, i))
+        pool.close()
+        pool.join()
+        # Delete temporary folder
+        if os.path.isdir(temp_path):
+            os.rmdir(temp_path)
+        print("Done.")
+    except KeyboardInterrupt as exception:
+        print(" KeyboardInterrupt")
+        pool.terminate()
+        print("Terminated all threads.")
+        exit(1)
