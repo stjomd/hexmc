@@ -3,6 +3,7 @@ from pathlib import Path
 import random
 import subprocess
 import sys
+import threading
 
 # Amount of formulas generated for each (n, m)
 tries_per_combination = 5
@@ -17,6 +18,8 @@ solver_path = Path(__file__).parent.parent / "hexmc"
 # Refilled in restore_progress if continuing after a break
 progress = {}
 fails = 0
+progress_lock = threading.Lock()
+fails_lock = threading.Lock()
 
 # Constructs a random formula
 def construct_formula(variables, clauses):
@@ -108,14 +111,19 @@ def restore_progress():
             width = int(directory)
             progress[width] = order
 
+# Perform all the actions for the triple (n, m, i)
 def perform(n, m, i):
+    global fails
+    temp_file = temp_path / "temp-{}-{}-{}.cnf".format(n, m, i)
     formula = construct_formula(n, m)
     # Create a temporary file, and run solver on it
     write_formula(formula, temp_file, n, m, [])
     try:
         width, time, models = run_solver(temp_file)
     except RuntimeError as error:
+        fails_lock.acquire()
         fails += 1
+        fails_lock.release()
         print("n = {}, m = {}, i = {}: runtime = {}, solver reported error: {}".format(n, m, i, error.args[1], error.args[0]))
         write_formula(formula, failed_path / (str(fails) + ".cnf"), n, m, [
             "solver reported error:",
@@ -124,9 +132,11 @@ def perform(n, m, i):
         ])
         return
     # Record in progress dict
+    progress_lock.acquire()
     if not width in progress:
         progress[width] = 0
     progress[width] += 1
+    progress_lock.release()
     # Save to instances folder
     path = instances_path / str(width)
     if not os.path.exists(path):
@@ -137,6 +147,9 @@ def perform(n, m, i):
         "models: " + str(models),
         "time: " + time
     ])
+    # Remove temporary file
+    if os.path.isfile(temp_file):
+        os.remove(temp_file)
     # Output to console
     print("n = {}, m = {}, i = {}: decomposition had ps-width {}, elapsed time was {}".format(n, m, i, width, time))
 
@@ -164,7 +177,6 @@ if __name__ == "__main__":
         os.makedirs(instances_path)
     if not os.path.exists(failed_path):
         os.makedirs(failed_path)
-    temp_file = temp_path / "temp.cnf"
     # n is the amount of variables, m is the amount of clauses
     for n in range(start_from_n, size + 1):
         # To start from (n,m), if n==start_from_n, we set range to [start_from_m, size]. Otherwise do as usual [1, size].
@@ -173,11 +185,19 @@ if __name__ == "__main__":
             clause_range = range(start_from_m, size + 1)
         # Iterate over m
         for m in clause_range:
+            # Add threads to a list, so we can wait for them later
+            threads = []
             for i in range(tries_per_combination):
-                perform(n, m, i)
+                thread = threading.Thread(target = perform, args = (n, m, i))
+                threads.append(thread)
+            # Start all threads, then wait for them. Thus for a pair (n, m) we run several threads at once.
+            print("n = {}, m = {}: started {} threads".format(n, m, len(threads)))
+            for thread in threads:
+                thread.start()
+            for thread in threads:
+                thread.join()
+            print("n = {}, m = {}: all {} threads finished".format(n, m, len(threads)))
     # Delete temporary files
-    if os.path.isfile(temp_file):
-        os.remove(temp_file)
     if os.path.isdir(temp_path):
         os.rmdir(temp_path)
     print("Done.")
