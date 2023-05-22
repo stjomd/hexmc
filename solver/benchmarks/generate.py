@@ -74,34 +74,37 @@ def write_formula(formula, path, variables, clauses, comments):
             file.write(string)
 
 # Runs the solver, parses the output
-def run_solver(path):
-    command = '"' + str(solver_path) + '" "' + str(path) + '" --verbose'
+def run_solver(input_path):
+    command = '"' + str(solver_path) + '" "' + str(input_path) + '" --verbose'
     process = subprocess.Popen(command, shell = True, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
     stdout, stderr = process.communicate()
     # Raise exception if solver reported error
     if process.returncode != 0:
         # Get the error message
         message = stderr.splitlines()[0].decode("UTF-8")
-        # Get the runtime from stdout
-        time = ""
+        # Get the runtime, and psw if available from stdout
+        time = "unknown"
+        width = "unknown"
         lines = stdout.splitlines()
         for line in lines:
             trimmed = line.decode("UTF-8")[5:-4]
             if trimmed.startswith("Total runtime:"):
                 time = trimmed.split()[-1]
-        raise RuntimeError(message, time)
+            elif trimmed.startswith("ps-width of the decomposition is"):
+                width = trimmed.split()[-1]
+        raise RuntimeError(message, time, width)
     # Parse output
-    width = -1
     time = ""
+    width = -1
     lines = stdout.splitlines()
     for line in lines:
         trimmed = line.decode("UTF-8")[5:-4]
-        if trimmed.startswith("ps-width of the decomposition is"):
-            width = int(trimmed.split()[-1])
-        elif trimmed.startswith("[psw] Time elapsed:"):
+        if trimmed.startswith("[psw] Time elapsed:"):
             time = trimmed.split()[-1]
+        elif trimmed.startswith("ps-width of the decomposition is"):
+            width = int(trimmed.split()[-1])
     models = int(lines[-1].decode("UTF-8"))
-    return [width, time, models]
+    return [time, width, models]
 
 # Fills the progress dict and fails value again, to ensure old instances are not overwritten
 def restore_progress():
@@ -139,7 +142,7 @@ def perform(n, m, i):
     # Create a temporary file, and run solver on it
     write_formula(formula, temp_file, n, m, [])
     try:
-        width, time, models = run_solver(temp_file)
+        time, width, models = run_solver(temp_file)
     except RuntimeError as error:
         fails_lock.acquire()
         fails += 1
@@ -148,7 +151,8 @@ def perform(n, m, i):
         write_formula(formula, failed_path / (str(fails) + ".cnf"), n, m, [
             "solver reported error:",
             str(error.args[0]),
-            "runtime: " + error.args[1]
+            "runtime: " + error.args[1],
+            "ps-width of the decomposition: " + error.args[2]
         ])
         increment_pair_info(n, m)
         return
