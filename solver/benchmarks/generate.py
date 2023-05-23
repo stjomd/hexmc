@@ -109,6 +109,8 @@ def run_solver(input_path):
 # Fills the progress dict and fails value again, to ensure old instances are not overwritten
 def restore_progress():
     global fails
+    if not os.path.exists(instances_path):
+        return
     for directory in os.listdir(instances_path):
         if directory == "failed":
             for instance in os.listdir(instances_path / directory):
