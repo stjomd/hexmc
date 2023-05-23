@@ -149,10 +149,10 @@ def perform(n, m, i):
         fails_lock.release()
         print("n = {}, m = {}, i = {}: runtime = {}, solver reported error: {}".format(n, m, i, error.args[1], error.args[0]))
         write_formula(formula, failed_path / (str(fails) + ".cnf"), n, m, [
-            "solver reported error:",
-            str(error.args[0]),
+            "ps-width of the decomposition: " + error.args[2],
             "runtime: " + error.args[1],
-            "ps-width of the decomposition: " + error.args[2]
+            "solver reported error:",
+            str(error.args[0])
         ])
         increment_pair_info(n, m)
         return
@@ -168,7 +168,7 @@ def perform(n, m, i):
         os.makedirs(path)
     file_name = "psw-" + str(width) + "-order-" + str(progress[width]) + ".cnf"
     write_formula(formula, path / file_name, n, m, [
-        "ps-width: " + str(width),
+        "ps-width of the decomposition: " + str(width),
         "models: " + str(models),
         "time: " + time
     ])
