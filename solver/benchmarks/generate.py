@@ -12,10 +12,10 @@ tries_per_combination = 5
 simultaneous_threads = os.cpu_count() + 4
 
 # Paths (don't have to be changed if project structure not changed)
-temp_path = pathlib.Path(__file__).parent / "temp"
-instances_path = pathlib.Path(__file__).parent / "instances"
-failed_path = instances_path / "failed"
-solver_path = pathlib.Path(__file__).parent.parent / "hexmc"
+temp_path = pathlib.Path(__file__).parent/"temp"
+instances_path = pathlib.Path(__file__).parent/"instances"
+failed_path = instances_path/"failed"
+solver_path = pathlib.Path(__file__).parent.parent/"hexmc"
 
 # Info about already stored instances
 # Refilled in restore_progress if continuing after a break
@@ -65,9 +65,9 @@ def construct_formula(variables, clauses):
 # Writes the formula into a DIMACS format file
 def write_formula(formula, path, variables, clauses, comments):
     with open(path, "w") as file:
-        file.write("p cnf " + str(variables) + " " + str(clauses) + "\n")
+        file.write("p cnf {} {}\n".format(variables, clauses))
         for comment in comments:
-            file.write("c " + comment + "\n")
+            file.write("c {}\n".format(comment))
         for clause in formula:
             string = ' '.join(str(x) for x in clause)
             string += " 0\n"
@@ -75,7 +75,7 @@ def write_formula(formula, path, variables, clauses, comments):
 
 # Runs the solver, parses the output
 def run_solver(input_path):
-    command = '"' + str(solver_path) + '" "' + str(input_path) + '" --verbose'
+    command = '"{}" "{}" --verbose'.format(solver_path, input_path)
     process = subprocess.Popen(command, shell = True, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
     stdout, stderr = process.communicate()
     # Raise exception if solver reported error
@@ -113,12 +113,12 @@ def restore_progress():
         return
     for directory in os.listdir(instances_path):
         if directory == "failed":
-            for instance in os.listdir(instances_path / directory):
+            for instance in os.listdir(instances_path/directory):
                 if instance.endswith(".cnf"):
                     fails += 1
         elif directory.isdigit():
             order = 0
-            for instance in os.listdir(instances_path / directory):
+            for instance in os.listdir(instances_path/directory):
                 if instance.endswith(".cnf"):
                     order = max(order, int(instance.split('.')[0].split('-')[-1]))
             width = int(directory)
@@ -139,7 +139,7 @@ def increment_pair_info(n, m):
 # Perform all the actions for the triple (n, m, i)
 def perform(n, m, i):
     global fails
-    temp_file = temp_path / "temp-{}-{}-{}.cnf".format(n, m, i)
+    temp_file = temp_path/("temp-{}-{}-{}.cnf".format(n, m, i))
     formula = construct_formula(n, m)
     # Create a temporary file, and run solver on it
     write_formula(formula, temp_file, n, m, [])
@@ -150,13 +150,16 @@ def perform(n, m, i):
         fails += 1
         fails_lock.release()
         print("n = {}, m = {}, i = {}: runtime = {}, solver reported error: {}".format(n, m, i, error.args[1], error.args[0]))
-        write_formula(formula, failed_path / (str(fails) + ".cnf"), n, m, [
+        write_formula(formula, failed_path/(str(fails) + ".cnf"), n, m, [
             "ps-width of the decomposition: " + error.args[2],
             "runtime: " + error.args[1],
             "solver reported error:",
             str(error.args[0])
         ])
         increment_pair_info(n, m)
+        # Remove temporary file
+        if os.path.isfile(temp_file):
+            os.remove(temp_file)
         return
     # Record in progress dict
     progress_lock.acquire()
@@ -165,11 +168,11 @@ def perform(n, m, i):
     progress[width] += 1
     progress_lock.release()
     # Save to instances folder
-    path = instances_path / str(width)
+    path = instances_path/str(width)
     if not os.path.exists(path):
         os.makedirs(path)
-    file_name = "psw-" + str(width) + "-order-" + str(progress[width]) + ".cnf"
-    write_formula(formula, path / file_name, n, m, [
+    file_name = "psw-{}-order-{}.cnf".format(width, progress[width])
+    write_formula(formula, path/file_name, n, m, [
         "ps-width of the decomposition: " + str(width),
         "models: " + str(models),
         "time: " + time
