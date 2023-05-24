@@ -31,12 +31,12 @@ public abstract class ArgumentParserFactory {
         parser.addArgument("-c", "--carving")
             .type(boolean.class)
             .action(Arguments.storeTrue())
-            .help("use a carving decomposition as input for the psw algorithm. By default computes a decomposition heuristically");
+            .help("use a carving decomposition as input for the psw algorithm. By default computes a quick, non-optimal decomposition");
         parser.addArgument("-t", "--timeout")
             .metavar("SECONDS")
             .type(int.class)
             .setDefault(0)
-            .help("timeout in seconds for the SAT solver");
+            .help("timeout in seconds");
         parser.addArgument("-v", "--verbose")
             .type(boolean.class)
             .action(Arguments.storeTrue()) // defaults to... false
