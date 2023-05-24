@@ -32,15 +32,13 @@ public class Main {
         try {
             // Parse arguments
             Namespace namespace = parser.parseArgs(args);
-            String path = namespace.getString("input");
-            Constants.set(namespace);
+            Arguments.set(namespace);
             // Count models
-            Formula formula = Formula.fromPath(path);
-            long models = ModelCounting.count(formula, Constants.algorithm(), Constants.timeout());
+            Formula formula = Formula.fromPath(Arguments.path());
+            long models = ModelCounting.count(formula, Arguments.algorithm(), Arguments.timeout());
             Logger.info(models);
         } catch (ArgumentParserException exception) {
             parser.handleError(exception);
-            System.exit(1);
         } catch (Throwable exception) {
             Logger.error(exception.getMessage());
             gracefulExit(exception);
@@ -57,7 +55,7 @@ public class Main {
     private static void gracefulExit(Throwable exception) {
         stopwatch.stop();
         Logger.debug("Total runtime: " + stopwatch.formatTime());
-        if (exception != null && Constants.verbose()) {
+        if (exception != null && Arguments.verbose()) {
             exception.printStackTrace();
         }
         System.exit(1);

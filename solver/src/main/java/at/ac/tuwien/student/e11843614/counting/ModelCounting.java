@@ -1,6 +1,6 @@
 package at.ac.tuwien.student.e11843614.counting;
 
-import at.ac.tuwien.student.e11843614.Constants;
+import at.ac.tuwien.student.e11843614.Arguments;
 import at.ac.tuwien.student.e11843614.Logger;
 import at.ac.tuwien.student.e11843614.decomposition.DecompositionFactory;
 import at.ac.tuwien.student.e11843614.decomposition.clique.operation.CliqueOperation;
@@ -112,7 +112,7 @@ public abstract class ModelCounting {
         // Compute a branch decomposition (as defined in the psw paper)
         StopWatch stopwatch = StopWatch.createStarted();
         TreeNode<Set<Integer>> decomposition;
-        if (Constants.carving()) {
+        if (Arguments.carving()) {
             decomposition = DecompositionFactory.pswBranchFromCarving(incidenceGraph);
         } else {
             decomposition = DecompositionFactory.pswBranch(incidenceGraph);
