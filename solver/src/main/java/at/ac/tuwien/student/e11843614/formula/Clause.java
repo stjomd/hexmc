@@ -58,7 +58,7 @@ public class Clause {
 
     @Override
     public String toString() {
-        return "cl" + this.literals;
+        return this.literals.toString();
     }
 
     @Override
