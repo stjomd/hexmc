@@ -22,7 +22,7 @@ public abstract class Logger {
      * @param x the object to be output.
      */
     public static void debug(Object x) {
-        if (Constants.verbose()) {
+        if (Arguments.verbose()) {
             System.out.println(CYAN + x.toString() + RESET);
         }
     }
@@ -32,7 +32,7 @@ public abstract class Logger {
      * @param x the object to be output.
      */
     public static void warn(Object x) {
-        if (Constants.verbose()) {
+        if (Arguments.verbose()) {
             System.out.println(YELLOW + x.toString() + RESET);
         }
     }
