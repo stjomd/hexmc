@@ -36,15 +36,11 @@ public class Main {
             Constants.set(namespace);
             // Count models
             Formula formula = Formula.fromPath(path);
-            long models = ModelCounting.count(formula, Constants.algorithm());
+            long models = ModelCounting.count(formula, Constants.algorithm(), Constants.timeout());
             Logger.info(models);
         } catch (ArgumentParserException exception) {
             parser.handleError(exception);
             System.exit(1);
-        } catch (ArithmeticException exception) {
-            Logger.error("Long overflow occurred");
-            Logger.info(">= " + Long.MAX_VALUE);
-            gracefulExit(exception);
         } catch (Throwable exception) {
             Logger.error(exception.getMessage());
             gracefulExit(exception);
