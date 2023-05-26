@@ -169,7 +169,7 @@ def runtime_of_psw(instances_folder):
     plt.savefig(graphics_dir/"runtime_of_psw.pdf")
 
 if __name__ == "__main__":
-    # Call one function at a
+    # Call one function at a time
     # psw_heatmap(mdir/"instances")
     # runtime_of_clauses(mdir/"instances")
     # runtime_of_variables(mdir/"instances")
