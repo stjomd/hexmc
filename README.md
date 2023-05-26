@@ -18,7 +18,14 @@ For more information on the underlying algorithms, refer to:
 - *Neha Lodha, Sebastian Ordyniak, Stefan Szeider:* A SAT Approach to Branchwidth. ACM Trans. Comput. Log. 20(3): 15:1-15:24 (2019)
 - *Marijn Heule, Stefan Szeider:* A SAT Approach to Clique-Width. ACM Trans. Comput. Log. 16(3): 24:1-24:27 (2015)
 
-The source code for the #SAT solver is located in the [solver directory](solver/). You will need Maven 4.x and JDK 11 to build and run the solver.
+The source code for the #SAT solver is located in the [solver directory](solver/). You will need JDK 11 to build and run the solver.
+
+### Installation
+```
+git clone https://github.com/stjomd/bachelor.git
+&& cd solver
+&& ./build
+```
 
 ### Usage
 
