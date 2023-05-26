@@ -8,8 +8,8 @@ import threading
 
 # Amount of formulas generated for each (n, m)
 tries_per_combination = 5
-# Amount of simultaneous threads
-simultaneous_threads = os.cpu_count() + 4
+# Amount of simultaneous processes
+simultaneous_processes = os.cpu_count() + 5
 
 # Paths (don't have to be changed if project structure not changed)
 temp_path = pathlib.Path(__file__).parent/"temp"
@@ -85,6 +85,7 @@ def run_solver(input_path):
         # Get the runtime, and psw if available from stdout
         time = "unknown"
         width = "unknown"
+        memory = -1
         lines = stdout.splitlines()
         for line in lines:
             trimmed = line.decode("UTF-8")[5:-4]
@@ -92,10 +93,16 @@ def run_solver(input_path):
                 time = trimmed.split()[-1]
             elif trimmed.startswith("ps-width of the decomposition is"):
                 width = trimmed.split()[-1]
-        raise RuntimeError(message, time, width)
+            elif trimmed.startswith("[psw] Memory usage:"):
+                value = float(trimmed.split()[-2])
+                memory = max(memory, value)
+        if memory == -1:
+            memory = "unknown"
+        raise RuntimeError(message, time, width, str(memory) + " GB")
     # Parse output
     time = ""
     width = -1
+    memory = -1
     lines = stdout.splitlines()
     for line in lines:
         trimmed = line.decode("UTF-8")[5:-4]
@@ -103,8 +110,13 @@ def run_solver(input_path):
             time = trimmed.split()[-1]
         elif trimmed.startswith("ps-width of the decomposition is"):
             width = int(trimmed.split()[-1])
+        elif trimmed.startswith("[psw] Memory usage:"):
+            value = float(trimmed.split()[-2])
+            memory = max(memory, value)
     models = int(lines[-1].decode("UTF-8"))
-    return [time, width, models]
+    if memory == -1:
+        memory = "unknown"
+    return [time, width, models, str(memory) + " GB"]
 
 # Fills the progress dict and fails value again, to ensure old instances are not overwritten
 def restore_progress():
@@ -144,7 +156,7 @@ def perform(n, m, i):
     # Create a temporary file, and run solver on it
     write_formula(formula, temp_file, n, m, [])
     try:
-        time, width, models = run_solver(temp_file)
+        time, width, models, memory = run_solver(temp_file)
     except RuntimeError as error:
         fails_lock.acquire()
         fails += 1
@@ -153,6 +165,7 @@ def perform(n, m, i):
         write_formula(formula, failed_path/(str(fails) + ".cnf"), n, m, [
             "ps-width of the decomposition: " + error.args[2],
             "runtime: " + error.args[1],
+            "peak memory usage: " + error.args[3],
             "solver reported error:",
             str(error.args[0])
         ])
@@ -175,7 +188,8 @@ def perform(n, m, i):
     write_formula(formula, path/file_name, n, m, [
         "ps-width of the decomposition: " + str(width),
         "models: " + str(models),
-        "time: " + time
+        "time: " + time,
+        "peak memory usage: " + memory
     ])
     # Remove temporary file
     if os.path.isfile(temp_file):
@@ -209,7 +223,7 @@ if __name__ == "__main__":
     if not os.path.exists(failed_path):
         os.makedirs(failed_path)
     # Use a thread pool to submit jobs to
-    pool = multiprocessing.pool.ThreadPool(processes = simultaneous_threads)
+    pool = multiprocessing.Pool(processes = simultaneous_processes)
     # n is the amount of variables, m is the amount of clauses
     try:
         for n in range(start_from_n, size + 1):
@@ -231,5 +245,5 @@ if __name__ == "__main__":
     except KeyboardInterrupt as exception:
         print(" KeyboardInterrupt")
         pool.terminate()
-        print("Terminated all threads.")
+        print("Terminated all subprocesses.")
         exit(1)
