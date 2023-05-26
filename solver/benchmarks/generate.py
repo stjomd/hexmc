@@ -6,6 +6,9 @@ import subprocess
 import sys
 import threading
 
+# To capture memory usage in the output, call debugMemoryUsage() method in the solver source code.
+# Otherwise this script will just write "unknown" instead of the peak memory usage.
+
 # Amount of formulas generated for each (n, m)
 tries_per_combination = 5
 # Amount of simultaneous processes
