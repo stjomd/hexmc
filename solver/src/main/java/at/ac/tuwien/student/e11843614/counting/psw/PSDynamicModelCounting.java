@@ -348,4 +348,14 @@ public abstract class PSDynamicModelCounting {
         return List.of(positive, negative);
     }
 
+    /**
+     * Outputs memory usage at the point of call to the console.
+     * Call this method where necessary and recompile to see output.
+     */
+    private static void debugMemoryUsage() {
+        double memory = (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024.0;
+        double gb = memory / 1000000;
+        Logger.debug("[psw] Memory usage: " + gb + " GB");
+    }
+
 }
