@@ -31,6 +31,6 @@ solver input [--help] [--version] [--alg {psw,cw}] [--carving] [--timeout SECOND
 | `-h, --help` | Output usage, help information, and exit.
 | `--version` | Output the current version and exit.
 | `-a, --alg {psw,cw}` | The algorithm to use for model counting (ps-width or clique-width).
-| `-c, --carving` | Compute a carving decomposition to use in the dynamic algorithm w.r.t. ps-width (often increases runtime significantly). By default uses a heuristically obtained decomposition.
-| `-t, --timeout SECONDS` | The timeout (in seconds) for the SAT solver – effective when computing decompositions.
+| `-c, --carving` | Compute a carving decomposition to use in the dynamic algorithm utilizing ps-width (often increases runtime significantly). By default uses a random decomposition.
+| `-t, --timeout SECONDS` | The timeout (in seconds).
 | `-v, --verbose` | Output additional information to the console.
