@@ -3,34 +3,29 @@ import os
 import pathlib
 import random
 import subprocess
-import sys
 import threading
 
 # To capture memory usage in the output, call debugMemoryUsage() method in the solver source code.
 # Otherwise this script will just write "unknown" instead of the peak memory usage.
 
-# Amount of formulas generated for each (n, m)
-tries_per_combination = 5
-# Amount of simultaneous processes
-simultaneous_processes = os.cpu_count() + 5
-
-# Paths (don't have to be changed if project structure not changed)
+# ----- Arguments ----------------------------------------------------
+# Generate formulas for each (n,m) in ns x ms
+ns = range(2, 4)
+ms = range(1, 31)
+# Amount of solver runs for each (n, m)
+runs_per_pair = 5
+# Amount of simultaneous threads
+simultaneous_threads = os.cpu_count() + 5
+# Paths (don't have to be changed if project structure is not changed)
 temp_path = pathlib.Path(__file__).parent/"temp"
 instances_path = pathlib.Path(__file__).parent/"instances"
-failed_path = instances_path/"failed"
+reports_path = pathlib.Path(__file__).parent/"reports"
 solver_path = pathlib.Path(__file__).parent.parent/"hexmc"
+# ----- End of Arguments ---------------------------------------------
 
-# Info about already stored instances
-# Refilled in restore_progress if continuing after a break
-progress = {}
-fails = 0
-progress_lock = threading.Lock()
-fails_lock = threading.Lock()
-
-# Info about instances per (n, m) pair
-# Used to output a message when 'tries_per_combination' instances are processed
-pair_info = {}
-pair_info_lock = threading.Lock()
+# Report information
+report = {}
+report_lock = threading.Lock()
 
 # Constructs a random formula
 def construct_formula(variables, clauses):
@@ -101,7 +96,7 @@ def run_solver(input_path):
                 memory = max(memory, value)
         if memory == -1:
             memory = "unknown"
-        raise RuntimeError(message, time, width, str(memory) + " GB")
+        raise RuntimeError(message, time, width, memory)
     # Parse output
     time = ""
     width = -1
@@ -119,128 +114,86 @@ def run_solver(input_path):
     models = int(lines[-1].decode("UTF-8"))
     if memory == -1:
         memory = "unknown"
-    return [time, width, models, str(memory) + " GB"]
+    return [time, width, models, memory]
 
-# Fills the progress dict and fails value again, to ensure old instances are not overwritten
-def restore_progress():
-    global fails
-    if not os.path.exists(instances_path):
-        return
-    for directory in os.listdir(instances_path):
-        if directory == "failed":
-            for instance in os.listdir(instances_path/directory):
-                if instance.endswith(".cnf"):
-                    fails += 1
-        elif directory.isdigit():
-            order = 0
-            for instance in os.listdir(instances_path/directory):
-                if instance.endswith(".cnf"):
-                    order = max(order, int(instance.split('.')[0].split('-')[-1]))
-            width = int(directory)
-            progress[width] = order
-
-# Update pair info, thread safe
-def increment_pair_info(n, m):
-    pair_info_lock.acquire()
-    if n not in pair_info:
-        pair_info[n] = {}
-    if m not in pair_info[n]:
-        pair_info[n][m] = 0
-    pair_info[n][m] += 1
-    pair_info_lock.release()
-    if pair_info[n][m] == tries_per_combination:
-        print("n = {}, m = {}: processed {} instances".format(n, m, pair_info[n][m]))
-
-# Perform all the actions for the triple (n, m, i)
-def perform(n, m, i):
-    global fails
-    temp_file = temp_path/("temp-{}-{}-{}.cnf".format(n, m, i))
+# Perform all the actions for the pair (n, m), thread safe
+def perform(n, m, runs):
     formula = construct_formula(n, m)
     # Create a temporary file, and run solver on it
+    temp_file = temp_path/("temp-{}-{}.cnf".format(n, m))
     write_formula(formula, temp_file, n, m, [])
-    try:
-        time, width, models, memory = run_solver(temp_file)
-    except RuntimeError as error:
-        fails_lock.acquire()
-        fails += 1
-        fails_lock.release()
-        print("n = {}, m = {}, i = {}: runtime = {}, solver reported error: {}".format(n, m, i, error.args[1], error.args[0]))
-        write_formula(formula, failed_path/(str(fails) + ".cnf"), n, m, [
-            "ps-width of the decomposition: " + error.args[2],
-            "runtime: " + error.args[1],
-            "peak memory usage: " + error.args[3],
-            "solver reported error:",
-            str(error.args[0])
-        ])
-        increment_pair_info(n, m)
-        # Remove temporary file
-        if os.path.isfile(temp_file):
-            os.remove(temp_file)
-        return
-    # Record in progress dict
-    progress_lock.acquire()
-    if not width in progress:
-        progress[width] = 0
-    progress[width] += 1
-    progress_lock.release()
+    times, widths, answers, memories = [], [], [], []
+    for i in range(runs):
+        try:
+            time, width, answer, memory = run_solver(temp_file)
+            print("n = {}, m = {}, i = {}: decomposition had ps-width {}, elapsed time was {}".format(n, m, i, width, time))
+            times.append(time)
+            widths.append(width)
+            answers.append(answer)
+            memories.append(memory)
+        except RuntimeError as error:
+            print("n = {}, m = {}, i = {}: runtime = {}, solver reported error: {}".format(n, m, i, error.args[1], error.args[0]))
+            times.append(error.args[1])
+            widths.append(error.args[2])
+            answers.append("unknown")
+            memories.append(error.args[3])
+    print("n = {}, m = {}: ran solver {} times".format(n, m, runs))
+    # Add to report
+    report_lock.acquire()
+    if n not in report:
+        report[n] = {}
+    if m not in report[n]:
+        report[n][m] = {}
+    report[n][m]['runtime'] = [str(x) for x in times]
+    report[n][m]['ps-width'] = [str(x) for x in widths]
+    report[n][m]['models'] = [str(x) for x in answers]
+    report[n][m]['memory'] = [str(x) for x in memories]
+    report_lock.release()
     # Save to instances folder
-    path = instances_path/str(width)
+    path = instances_path/str(n)
     if not os.path.exists(path):
         os.makedirs(path)
-    file_name = "psw-{}-order-{}.cnf".format(width, progress[width])
-    write_formula(formula, path/file_name, n, m, [
-        "ps-width of the decomposition: " + str(width),
-        "models: " + str(models),
-        "time: " + time,
-        "peak memory usage: " + memory
-    ])
+    file_name = "formula-{}-{}.cnf".format(n, m)
+    write_formula(formula, path/file_name, n, m, [])
     # Remove temporary file
     if os.path.isfile(temp_file):
         os.remove(temp_file)
-    # Output to console
-    print("n = {}, m = {}, i = {}: decomposition had ps-width {}, elapsed time was {}".format(n, m, i, width, time))
-    increment_pair_info(n, m)
+
+# Writes results to report file
+def write_report():
+    if not os.path.exists(reports_path):
+        os.makedirs(reports_path)
+    for n in report:
+        name = "report-{}.txt".format(n)
+        with open(reports_path/name, "w") as file:
+            for m in ms:
+                if m not in report[n]:
+                    continue
+                file.write("n {} m {} ({} runs)\n".format(n, m, runs_per_pair))
+                file.write("runtime {}\n".format(' '.join(report[n][m]['runtime'])))
+                file.write("decomposition ps-width {}\n".format(' '.join(report[n][m]['ps-width'])))
+                file.write("models {}\n".format(' '.join(report[n][m]['models'])))
+                file.write("peak memory {}\n".format(' '.join(report[n][m]['memory'])))
+                file.write("\n")
 
 if __name__ == "__main__":
-    # Parse arguments
-    size = 0
-    start_from_n = 2
-    start_from_m = None
-    if len(sys.argv) == 2:
-        size = int(sys.argv[1])
-    elif len(sys.argv) == 4:
-        size = int(sys.argv[1])
-        start_from_n = int(sys.argv[2])
-        start_from_m = int(sys.argv[3])
-        print("Continuing from n = {}, m = {}".format(start_from_n, start_from_m))
-        # Restore progress values so that we don't overwrite any instances
-        restore_progress()
-    else:
-        print("usage: python3 generate.py <max size> [<start n> <start m>]")
-        exit(1)
     # Create directories
     if not os.path.exists(temp_path):
         os.makedirs(temp_path)
     if not os.path.exists(instances_path):
         os.makedirs(instances_path)
-    if not os.path.exists(failed_path):
-        os.makedirs(failed_path)
     # Use a thread pool to submit jobs to
-    pool = multiprocessing.Pool(processes = simultaneous_processes)
+    pool = multiprocessing.pool.ThreadPool(processes = simultaneous_threads)
     # n is the amount of variables, m is the amount of clauses
     try:
-        for n in range(start_from_n, size + 1):
-            # To start from (n,m), if n==start_from_n, we set range to [start_from_m, size]. Otherwise do as usual [1, size].
-            clause_range = range(1, size + 1)
-            if start_from_m != None and n == start_from_n:
-                clause_range = range(start_from_m, size + 1)
-            # Iterate over m
-            for m in clause_range:
-                # Submit jobs to the pool
-                for i in range(tries_per_combination):
-                    pool.apply_async(perform, args = (n, m, i))
+        for n in ns:
+            for m in ms:
+                pool.apply_async(perform, args = (n, m, runs_per_pair))
         pool.close()
         pool.join()
+        # Write report
+        write_report()
+        print("Wrote a report.")
         # Delete temporary folder
         if os.path.isdir(temp_path):
             os.rmdir(temp_path)
@@ -248,5 +201,7 @@ if __name__ == "__main__":
     except KeyboardInterrupt as exception:
         print(" KeyboardInterrupt")
         pool.terminate()
-        print("Terminated all subprocesses.")
+        print("Please kill remaining solver (java) processes.")
+        write_report()
+        print("Wrote a report.")
         exit(1)
