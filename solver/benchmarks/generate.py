@@ -23,6 +23,11 @@ reports_path = pathlib.Path(__file__).parent/"reports"
 solver_path = pathlib.Path(__file__).parent.parent/"hexmc"
 # ----- End of Arguments ---------------------------------------------
 
+# Progress information: progress[n] := amount of m processed
+# When progress[n] = len(ms), we're finished with n, and can write the report
+progress = {}
+progress_lock = threading.Lock()
+
 # Report information
 report = {}
 report_lock = threading.Lock()
@@ -138,6 +143,12 @@ def perform(n, m, runs):
             answers.append("unknown")
             memories.append(error.args[3])
     print("n = {}, m = {}: ran solver {} times".format(n, m, runs))
+    # Update progress
+    progress_lock.acquire()
+    if n not in progress:
+        progress[n] = 0
+    progress[n] += 1
+    progress_lock.release()
     # Add to report
     report_lock.acquire()
     if n not in report:
@@ -149,32 +160,39 @@ def perform(n, m, runs):
     report[n][m]['models'] = [str(x) for x in answers]
     report[n][m]['memory'] = [str(x) for x in memories]
     report_lock.release()
-    # Save to instances folder
+    # Save formula to instances folder
     path = instances_path/str(n)
     if not os.path.exists(path):
         os.makedirs(path)
     file_name = "formula-{}-{}.cnf".format(n, m)
     write_formula(formula, path/file_name, n, m, [])
+    # If all m have been processed for this n, write a report, and remove n from 'report' dict
+    if progress[n] == len(ms):
+        write_report(n)
+        print("n = {}: wrote a report")
+        report_lock.acquire()
+        report.pop(n)
+        report_lock.release()
     # Remove temporary file
     if os.path.isfile(temp_file):
         os.remove(temp_file)
 
 # Writes results to report file
-def write_report():
-    if not os.path.exists(reports_path):
-        os.makedirs(reports_path)
-    for n in report:
-        name = "report-{}.txt".format(n)
-        with open(reports_path/name, "w") as file:
-            for m in ms:
-                if m not in report[n]:
-                    continue
-                file.write("n {} m {} ({} runs)\n".format(n, m, runs_per_pair))
-                file.write("runtime {}\n".format(' '.join(report[n][m]['runtime'])))
-                file.write("decomposition ps-width {}\n".format(' '.join(report[n][m]['ps-width'])))
-                file.write("models {}\n".format(' '.join(report[n][m]['models'])))
-                file.write("peak memory {}\n".format(' '.join(report[n][m]['memory'])))
-                file.write("\n")
+def write_report(n):
+    if n not in report:
+        print("warn: attempted to write report for n = {}, but no results are available".format(n))
+        return
+    name = "report-{}.txt".format(n)
+    with open(reports_path/name, "w") as file:
+        for m in ms:
+            if m not in report[n]:
+                continue
+            file.write("n {} m {} ({} runs)\n".format(n, m, runs_per_pair))
+            file.write("runtime {}\n".format(' '.join(report[n][m]['runtime'])))
+            file.write("decomposition ps-width {}\n".format(' '.join(report[n][m]['ps-width'])))
+            file.write("models {}\n".format(' '.join(report[n][m]['models'])))
+            file.write("peak memory {}\n".format(' '.join(report[n][m]['memory'])))
+            file.write("\n")
 
 if __name__ == "__main__":
     # Create directories
@@ -182,6 +200,8 @@ if __name__ == "__main__":
         os.makedirs(temp_path)
     if not os.path.exists(instances_path):
         os.makedirs(instances_path)
+    if not os.path.exists(reports_path):
+        os.makedirs(reports_path)
     # Use a thread pool to submit jobs to
     pool = multiprocessing.pool.ThreadPool(processes = simultaneous_threads)
     # n is the amount of variables, m is the amount of clauses
@@ -191,9 +211,6 @@ if __name__ == "__main__":
                 pool.apply_async(perform, args = (n, m, runs_per_pair))
         pool.close()
         pool.join()
-        # Write report
-        write_report()
-        print("Wrote a report.")
         # Delete temporary folder
         if os.path.isdir(temp_path):
             os.rmdir(temp_path)
@@ -202,6 +219,4 @@ if __name__ == "__main__":
         print(" KeyboardInterrupt")
         pool.terminate()
         print("Terminated.")
-        write_report()
-        print("Wrote a report.")
         exit(1)
