@@ -136,7 +136,7 @@ def perform(n, m, runs):
             widths.append(width)
             answers.append(answer)
             memories.append(memory)
-            errors.append("None")
+            errors.append(None)
         except RuntimeError as error:
             print("n = {}, m = {}, i = {}: runtime = {}, solver reported error: {}".format(n, m, i, error.args[1], error.args[0]))
             times.append(error.args[1])
@@ -161,7 +161,7 @@ def perform(n, m, runs):
     results[n][m]['ps-width'] = [str(x) for x in widths]
     results[n][m]['models'] = [str(x) for x in answers]
     results[n][m]['memory'] = [str(x) for x in memories]
-    results[n][m]['errors'] = [str(x) for x in errors]
+    results[n][m]['errors'] = errors
     results_lock.release()
     # Save formula to instances folder
     path = instances_path/str(n)
@@ -198,7 +198,7 @@ def write_report(n):
             # Only write the errors part if they occurred
             runs_with_error = []
             for i in range(len(results[n][m]['errors'])):
-                if results[n][m]['errors'][i] != "None":
+                if results[n][m]['errors'][i] != None:
                     runs_with_error.append(i)
             if len(runs_with_error) > 0:
                 file.write("errors:\n")
