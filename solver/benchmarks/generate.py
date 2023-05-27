@@ -17,6 +17,7 @@ runs_per_pair = 5
 # Amount of simultaneous threads
 simultaneous_threads = os.cpu_count() + 5
 # Paths (don't have to be changed if project structure is not changed)
+temp_path = pathlib.Path(__file__).parent/"temp"
 instances_path = pathlib.Path(__file__).parent/"instances"
 reports_path = pathlib.Path(__file__).parent/"reports"
 solver_path = pathlib.Path(__file__).parent.parent/"hexmc"
@@ -123,17 +124,13 @@ def run_solver(input_path):
 # Perform all the actions for the pair (n, m), thread safe
 def perform(n, m, runs):
     formula = construct_formula(n, m)
-    # Save formula to instances folder
-    path = instances_path/str(n)
-    if not os.path.exists(path):
-        os.makedirs(path)
-    file_name = "formula-{}-{}.cnf".format(n, m)
-    write_formula(formula, path/file_name, n, m, [])
-    # Run solver
+    # Create a temporary file, and run solver on it
+    temp_file = temp_path/("temp-{}-{}.cnf".format(n, m))
+    write_formula(formula, temp_file, n, m, [])
     times, widths, answers, memories, errors = [], [], [], [], []
     for i in range(runs):
         try:
-            time, width, answer, memory = run_solver(path/file_name)
+            time, width, answer, memory = run_solver(temp_file)
             print("n = {}, m = {}, i = {}: decomposition had ps-width {}, elapsed time was {}".format(n, m, i, width, time))
             times.append(time)
             widths.append(width)
@@ -166,13 +163,22 @@ def perform(n, m, runs):
     results[n][m]['memory'] = [str(x) for x in memories]
     results[n][m]['errors'] = errors
     results_lock.release()
-    # If all m have been processed for this n, write a report, and remove n from 'results' dict
+    # Save formula to instances folder
+    path = instances_path/str(n)
+    if not os.path.exists(path):
+        os.makedirs(path)
+    file_name = "formula-{}-{}.cnf".format(n, m)
+    write_formula(formula, path/file_name, n, m, [])
+    # If all m have been processed for this n, write a report, and remove n from 'report' dict
     if progress[n] == len(ms):
         write_report(n)
-        print("n = {}: wrote a report".format(n))
+        print("n = {}: wrote a report")
         results_lock.acquire()
         results.pop(n)
         results_lock.release()
+    # Remove temporary file
+    if os.path.isfile(temp_file):
+        os.remove(temp_file)
 
 # Writes results to report file
 def write_report(n):
@@ -202,6 +208,8 @@ def write_report(n):
 
 if __name__ == "__main__":
     # Create directories
+    if not os.path.exists(temp_path):
+        os.makedirs(temp_path)
     if not os.path.exists(instances_path):
         os.makedirs(instances_path)
     if not os.path.exists(reports_path):
@@ -215,6 +223,9 @@ if __name__ == "__main__":
                 pool.apply_async(perform, args = (n, m, runs_per_pair))
         pool.close()
         pool.join()
+        # Delete temporary folder
+        if os.path.isdir(temp_path):
+            os.rmdir(temp_path)
         print("Done.")
     except KeyboardInterrupt as exception:
         print(" KeyboardInterrupt")
