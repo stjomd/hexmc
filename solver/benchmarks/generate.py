@@ -28,9 +28,9 @@ solver_path = pathlib.Path(__file__).parent.parent/"hexmc"
 progress = {}
 progress_lock = threading.Lock()
 
-# Report information
-report = {}
-report_lock = threading.Lock()
+# Results information: results[n][m] contains benchmarking results for (n,m)
+results = {}
+results_lock = threading.Lock()
 
 # Constructs a random formula
 def construct_formula(variables, clauses):
@@ -149,17 +149,17 @@ def perform(n, m, runs):
         progress[n] = 0
     progress[n] += 1
     progress_lock.release()
-    # Add to report
-    report_lock.acquire()
-    if n not in report:
-        report[n] = {}
-    if m not in report[n]:
-        report[n][m] = {}
-    report[n][m]['runtime'] = [str(x) for x in times]
-    report[n][m]['ps-width'] = [str(x) for x in widths]
-    report[n][m]['models'] = [str(x) for x in answers]
-    report[n][m]['memory'] = [str(x) for x in memories]
-    report_lock.release()
+    # Add to results
+    results_lock.acquire()
+    if n not in results:
+        results[n] = {}
+    if m not in results[n]:
+        results[n][m] = {}
+    results[n][m]['runtime'] = [str(x) for x in times]
+    results[n][m]['ps-width'] = [str(x) for x in widths]
+    results[n][m]['models'] = [str(x) for x in answers]
+    results[n][m]['memory'] = [str(x) for x in memories]
+    results_lock.release()
     # Save formula to instances folder
     path = instances_path/str(n)
     if not os.path.exists(path):
@@ -170,28 +170,28 @@ def perform(n, m, runs):
     if progress[n] == len(ms):
         write_report(n)
         print("n = {}: wrote a report")
-        report_lock.acquire()
-        report.pop(n)
-        report_lock.release()
+        results_lock.acquire()
+        results.pop(n)
+        results_lock.release()
     # Remove temporary file
     if os.path.isfile(temp_file):
         os.remove(temp_file)
 
 # Writes results to report file
 def write_report(n):
-    if n not in report:
+    if n not in results:
         print("warn: attempted to write report for n = {}, but no results are available".format(n))
         return
     name = "report-{}.txt".format(n)
     with open(reports_path/name, "w") as file:
         for m in ms:
-            if m not in report[n]:
+            if m not in results[n]:
                 continue
             file.write("n {} m {} ({} runs)\n".format(n, m, runs_per_pair))
-            file.write("runtime {}\n".format(' '.join(report[n][m]['runtime'])))
-            file.write("decomposition ps-width {}\n".format(' '.join(report[n][m]['ps-width'])))
-            file.write("models {}\n".format(' '.join(report[n][m]['models'])))
-            file.write("peak memory {}\n".format(' '.join(report[n][m]['memory'])))
+            file.write("runtime {}\n".format(' '.join(results[n][m]['runtime'])))
+            file.write("decomposition ps-width {}\n".format(' '.join(results[n][m]['ps-width'])))
+            file.write("models {}\n".format(' '.join(results[n][m]['models'])))
+            file.write("peak memory {}\n".format(' '.join(results[n][m]['memory'])))
             file.write("\n")
 
 if __name__ == "__main__":
