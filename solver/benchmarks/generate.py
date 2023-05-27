@@ -10,7 +10,7 @@ import threading
 
 # ----- Arguments ----------------------------------------------------
 # Generate formulas for each (n,m) in ns x ms
-ns = range(2, 101)
+ns = range(1, 101)
 ms = range(1, 101)
 # Amount of solver runs for each (n, m)
 runs_per_pair = 5
