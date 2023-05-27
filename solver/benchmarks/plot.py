@@ -12,7 +12,7 @@ def timestr_to_seconds(string):
     units = [float(x) for x in string.split(":")]
     return 3600*units[0] + 60*units[1] + units[2]
 
-def psw_heatmap(instances_folder):
+def psw_heatmap(instances_folder, save_name):
     indices = {}
     # In data[n][m], store the ps-widths
     data = np.zeros((31, 101, 5))
@@ -34,6 +34,7 @@ def psw_heatmap(instances_folder):
                 data[n, m, indices[n][m] - 1] = int(subdir)
     # Reduce the array of ps-widths to a single value
     table = np.zeros((31, 101))
+    table.fill(np.nan)
     for x in range(31):
         for y in range(101):
             if x < 2 or y < 1:
@@ -58,9 +59,9 @@ def psw_heatmap(instances_folder):
     plt.xlabel('m')
     plt.ylabel('n')
     # Save
-    plt.savefig(graphics_dir/"heat_k_from_nm.pdf", bbox_inches = 'tight')
+    plt.savefig(graphics_dir/save_name, bbox_inches = 'tight')
 
-def runtime_of_clauses(instances_folder):
+def runtime_of_clauses(instances_folder, fixed_ns, max_clauses, save_name, xticks = None):
     data = {}
     for subdir in os.listdir(instances_folder):
         if subdir == ".DS_Store":
@@ -83,19 +84,23 @@ def runtime_of_clauses(instances_folder):
                 if m not in data[n]:
                     data[n][m] = []
                 data[n][m].append(time)
-    # Reduce the array of ps-widths to a single value
-    for n in [20, 25, 30]:
-        table = np.zeros((101,))
-        for m in range(1, 101):
+    # Reduce the array of values to a single value
+    fig, ax = plt.subplots(1, 1)
+    for n in fixed_ns:
+        table = np.zeros((max_clauses+1,))
+        table.fill(np.nan)
+        for m in range(1, max_clauses+1):
             table[m] = sum(data[n][m])/len(data[n][m])
-        plt.plot(np.arange(101), table, label = 'n = {}'.format(n))
+        plt.plot(np.arange(max_clauses+1), table, label = 'n = {}'.format(n), marker = '.')
     plt.legend(loc = 'upper left')
     plt.xlabel('m')
     plt.ylabel('average runtime (seconds)')
+    if xticks != None:
+        ax.set_xticks(xticks)
     # Save
-    plt.savefig(graphics_dir/"runtime_of_clauses.pdf")
+    plt.savefig(graphics_dir/save_name)
 
-def runtime_of_variables(instances_folder):
+def runtime_of_variables(instances_folder, fixed_ms, max_variables, save_name, xticks = None):
     data = {}
     for subdir in os.listdir(instances_folder):
         if subdir == ".DS_Store":
@@ -118,19 +123,23 @@ def runtime_of_variables(instances_folder):
                 if m not in data[n]:
                     data[n][m] = []
                 data[n][m].append(time)
-    # Reduce the array of ps-widths to a single value
-    for m in [50, 60, 75, 100]:
-        table = np.zeros((31,))
-        for n in range(2, 31):
+    # Reduce the array of values to a single value
+    fig, ax = plt.subplots(1, 1)
+    for m in fixed_ms:
+        table = np.zeros((max_variables + 1,))
+        table.fill(np.nan)
+        for n in range(2, max_variables + 1):
             table[n] = sum(data[n][m])/len(data[n][m])
-        plt.plot(np.arange(31), table, label = 'm = {}'.format(m))
+        plt.plot(np.arange(max_variables + 1), table, label = 'm = {}'.format(m), marker = '.')
     plt.legend(loc = 'upper left')
     plt.xlabel('n')
     plt.ylabel('average runtime (seconds)')
+    if xticks != None:
+        ax.set_xticks(xticks)
     # Save
-    plt.savefig(graphics_dir/"runtime_of_variables.pdf")
+    plt.savefig(graphics_dir/save_name)
 
-def runtime_of_psw(instances_folder):
+def runtime_of_psw(instances_folder, save_name):
     data = {}
     max_psw = 0
     for subdir in os.listdir(instances_folder):
@@ -157,20 +166,21 @@ def runtime_of_psw(instances_folder):
                 if psw not in data:
                     data[psw] = []
                 data[psw].append(time)
-    y = np.full((max_psw+1,), -1000)
-    # Reduce the array of ps-widths to a single value
+    y = np.full((max_psw+1,), np.nan)
+    # Fill table
     for k in data:
         y[k] = sum(data[k])/len(data[k])
+    fig, ax = plt.subplots(1, 1)
     plt.scatter(np.arange(max_psw+1), y, marker = '.')
     plt.xlabel('k')
     plt.ylabel('average runtime (seconds)')
-    plt.ylim(-250,)
+    ax.set_xticks([2, 500, 1000, 1500, 2000, 2500, 3000])
     # Save
-    plt.savefig(graphics_dir/"runtime_of_psw.pdf")
+    plt.savefig(graphics_dir/save_name)
 
 if __name__ == "__main__":
     # Call one function at a time
-    # psw_heatmap(mdir/"instances")
-    # runtime_of_clauses(mdir/"instances")
-    # runtime_of_variables(mdir/"instances")
-    runtime_of_psw(mdir/"instances")
+    # psw_heatmap(mdir/"instances", "heat_k_from_nm.pdf")
+    # runtime_of_clauses(mdir/"instances", [20, 25, 30], 100, "runtime_of_clauses.pdf", xticks = [1, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100])
+    # runtime_of_variables(mdir/"instances", [50, 60, 75, 100], 30, "runtime_of_variables.pdf", xticks = [2, 5, 10, 15, 20, 25, 30])
+    runtime_of_psw(mdir/"instances", "runtime_of_psw.pdf")
