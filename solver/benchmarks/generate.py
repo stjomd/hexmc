@@ -127,7 +127,7 @@ def perform(n, m, runs):
     # Create a temporary file, and run solver on it
     temp_file = temp_path/("temp-{}-{}.cnf".format(n, m))
     write_formula(formula, temp_file, n, m, [])
-    times, widths, answers, memories = [], [], [], []
+    times, widths, answers, memories, errors = [], [], [], [], []
     for i in range(runs):
         try:
             time, width, answer, memory = run_solver(temp_file)
@@ -136,12 +136,14 @@ def perform(n, m, runs):
             widths.append(width)
             answers.append(answer)
             memories.append(memory)
+            errors.append("None")
         except RuntimeError as error:
             print("n = {}, m = {}, i = {}: runtime = {}, solver reported error: {}".format(n, m, i, error.args[1], error.args[0]))
             times.append(error.args[1])
             widths.append(error.args[2])
             answers.append("unknown")
             memories.append(error.args[3])
+            errors.append(error.args[0])
     print("n = {}, m = {}: ran solver {} times".format(n, m, runs))
     # Update progress
     progress_lock.acquire()
@@ -159,6 +161,7 @@ def perform(n, m, runs):
     results[n][m]['ps-width'] = [str(x) for x in widths]
     results[n][m]['models'] = [str(x) for x in answers]
     results[n][m]['memory'] = [str(x) for x in memories]
+    results[n][m]['errors'] = [str(x) for x in errors]
     results_lock.release()
     # Save formula to instances folder
     path = instances_path/str(n)
@@ -188,10 +191,19 @@ def write_report(n):
             if m not in results[n]:
                 continue
             file.write("n {} m {} ({} runs)\n".format(n, m, runs_per_pair))
-            file.write("runtime {}\n".format(' '.join(results[n][m]['runtime'])))
-            file.write("decomposition ps-width {}\n".format(' '.join(results[n][m]['ps-width'])))
-            file.write("models {}\n".format(' '.join(results[n][m]['models'])))
-            file.write("peak memory {}\n".format(' '.join(results[n][m]['memory'])))
+            file.write("runtime: {}\n".format(' '.join(results[n][m]['runtime'])))
+            file.write("decomposition ps-width: {}\n".format(' '.join(results[n][m]['ps-width'])))
+            file.write("models: {}\n".format(' '.join(results[n][m]['models'])))
+            file.write("peak memory: {}\n".format(' '.join(results[n][m]['memory'])))
+            # Only write the errors part if they occurred
+            runs_with_error = []
+            for i in range(len(results[n][m]['errors'])):
+                if results[n][m]['errors'][i] != "None":
+                    runs_with_error.append(i)
+            if len(runs_with_error) > 0:
+                file.write("errors:\n")
+                for i in runs_with_error:
+                    file.write("\trun {}: {}\n".format(i + 1, results[n][m]['errors'][i]))
             file.write("\n")
 
 if __name__ == "__main__":
