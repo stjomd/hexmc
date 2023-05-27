@@ -1,9 +1,14 @@
+import enum
+import math
 import os
 import pathlib
-import math
 
 import matplotlib.pyplot as plt
 import numpy as np
+
+class DataType(enum.Enum):
+    runtime = 1
+    memory = 2
 
 mdir = pathlib.Path(__file__).parent
 graphics_dir = mdir/"graphics"
@@ -52,16 +57,16 @@ def psw_heatmap(instances_folder, save_name):
     ax.set_xticks(xt)
     ax.set_yticks(yt)
     # Add legend/colorbar
-    plt.colorbar(heatmap, label = "log(k)", location = 'top')
+    plt.colorbar(heatmap, label = r"$\log(k)$", location = 'top')
     # Limits
-    plt.ylim(2, 30)
-    plt.xlim(1, 100)
-    plt.xlabel('m')
-    plt.ylabel('n')
+    plt.ylim(1.5, 30.5)
+    plt.xlim(0.5, 100.5)
+    plt.xlabel(r'$m$')
+    plt.ylabel(r'$n$', rotation = 0, labelpad = 10)
     # Save
     plt.savefig(graphics_dir/save_name, bbox_inches = 'tight')
 
-def runtime_of_clauses(instances_folder, fixed_ns, max_clauses, save_name, xticks = None):
+def data_of_clauses(instances_folder, fixed_ns, max_clauses, save_name, xticks = None, data_type = DataType.runtime):
     data = {}
     for subdir in os.listdir(instances_folder):
         if subdir == ".DS_Store":
@@ -75,32 +80,41 @@ def runtime_of_clauses(instances_folder, fixed_ns, max_clauses, save_name, xtick
                 header = lines[0].split()
                 n, m = int(header[2]), int(header[3])
                 time = 0.0
+                memory = 0.0
                 for line in lines:
                     if line.startswith("c time:"):
                         time = timestr_to_seconds(line.split()[-1])
+                    elif line.startswith("c peak memory usage:"):
+                        memory = float(line.split()[-2])
                 # Write to data
                 if n not in data:
                     data[n] = {}
                 if m not in data[n]:
                     data[n][m] = []
-                data[n][m].append(time)
+                if data_type == DataType.runtime:
+                    data[n][m].append(time)
+                elif data_type == DataType.memory:
+                    data[n][m].append(memory)
     # Reduce the array of values to a single value
     fig, ax = plt.subplots(1, 1)
     for n in fixed_ns:
         table = np.zeros((max_clauses+1,))
         table.fill(np.nan)
         for m in range(1, max_clauses+1):
-            table[m] = sum(data[n][m])/len(data[n][m])
-        plt.plot(np.arange(max_clauses+1), table, label = 'n = {}'.format(n), marker = '.')
+            table[m] = sum(data[n][m])/len(data[n][m]) # average
+        plt.plot(np.arange(max_clauses+1), table, label = r'$n$ = {}'.format(n), marker = '.')
     plt.legend(loc = 'upper left')
-    plt.xlabel('m')
-    plt.ylabel('average runtime (seconds)')
+    plt.xlabel(r'$m$')
+    if data_type == DataType.runtime:
+        plt.ylabel('average runtime (seconds)')
+    elif data_type == DataType.memory:
+        plt.ylabel('average peak memory usage (GiB)')
     if xticks != None:
         ax.set_xticks(xticks)
     # Save
     plt.savefig(graphics_dir/save_name)
 
-def runtime_of_variables(instances_folder, fixed_ms, max_variables, save_name, xticks = None):
+def data_of_variables(instances_folder, fixed_ms, max_variables, save_name, xticks = None, data_type = DataType.runtime):
     data = {}
     for subdir in os.listdir(instances_folder):
         if subdir == ".DS_Store":
@@ -114,15 +128,21 @@ def runtime_of_variables(instances_folder, fixed_ms, max_variables, save_name, x
                 header = lines[0].split()
                 n, m = int(header[2]), int(header[3])
                 time = 0.0
+                memory = 0.0
                 for line in lines:
                     if line.startswith("c time:"):
                         time = timestr_to_seconds(line.split()[-1])
+                    elif line.startswith("c peak memory usage:"):
+                        memory = float(line.split()[-2])
                 # Write to data
                 if n not in data:
                     data[n] = {}
                 if m not in data[n]:
                     data[n][m] = []
-                data[n][m].append(time)
+                if data_type == DataType.runtime:
+                    data[n][m].append(time)
+                elif data_type == DataType.memory:
+                    data[n][m].append(memory)
     # Reduce the array of values to a single value
     fig, ax = plt.subplots(1, 1)
     for m in fixed_ms:
@@ -130,16 +150,19 @@ def runtime_of_variables(instances_folder, fixed_ms, max_variables, save_name, x
         table.fill(np.nan)
         for n in range(2, max_variables + 1):
             table[n] = sum(data[n][m])/len(data[n][m])
-        plt.plot(np.arange(max_variables + 1), table, label = 'm = {}'.format(m), marker = '.')
+        plt.plot(np.arange(max_variables + 1), table, label = r'$m$ = {}'.format(m), marker = '.')
     plt.legend(loc = 'upper left')
-    plt.xlabel('n')
-    plt.ylabel('average runtime (seconds)')
+    plt.xlabel(r'$n$')
+    if data_type == DataType.runtime:
+        plt.ylabel('average runtime (seconds)')
+    elif data_type == DataType.memory:
+        plt.ylabel('average peak memory usage (GiB)')
     if xticks != None:
         ax.set_xticks(xticks)
     # Save
     plt.savefig(graphics_dir/save_name)
 
-def runtime_of_psw(instances_folder, save_name):
+def data_of_psw(instances_folder, save_name, xticks = None, data_type = DataType.runtime):
     data = {}
     max_psw = 0
     for subdir in os.listdir(instances_folder):
@@ -158,29 +181,47 @@ def runtime_of_psw(instances_folder, save_name):
                 header = lines[0].split()
                 n, m = int(header[2]), int(header[3])
                 time = 0.0
+                memory = 0.0
                 for line in lines:
                     if line.startswith("c time:"):
                         time = timestr_to_seconds(line.split()[-1])
+                    elif line.startswith("c peak memory usage:"):
+                        memory = float(line.split()[-2])
                 # Write to data
                 psw = int(subdir)
                 if psw not in data:
                     data[psw] = []
-                data[psw].append(time)
+                if data_type == DataType.runtime:
+                    data[psw].append(time)
+                elif data_type == DataType.memory:
+                    data[psw].append(memory)
     y = np.full((max_psw+1,), np.nan)
     # Fill table
     for k in data:
         y[k] = sum(data[k])/len(data[k])
     fig, ax = plt.subplots(1, 1)
     plt.scatter(np.arange(max_psw+1), y, marker = '.')
-    plt.xlabel('k')
-    plt.ylabel('average runtime (seconds)')
-    ax.set_xticks([2, 500, 1000, 1500, 2000, 2500, 3000])
+    plt.xlabel(r'$k$')
+    if data_type == DataType.runtime:
+        plt.ylabel('average runtime (seconds)')
+    elif data_type == DataType.memory:
+        plt.ylabel('average peak memory usage (GiB)')
+    if xticks != None:
+        ax.set_xticks(xticks)
     # Save
     plt.savefig(graphics_dir/save_name)
 
 if __name__ == "__main__":
+    plt.rcParams['text.usetex'] = True
+    plt.rcParams['mathtext.fontset'] = 'stix'
+    plt.rcParams['font.family'] = 'STIXGeneral'
     # Call one function at a time
+    # ----- set: instances; runtime -----
     # psw_heatmap(mdir/"instances", "heat_k_from_nm.pdf")
-    # runtime_of_clauses(mdir/"instances", [20, 25, 30], 100, "runtime_of_clauses.pdf", xticks = [1, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100])
-    # runtime_of_variables(mdir/"instances", [50, 60, 75, 100], 30, "runtime_of_variables.pdf", xticks = [2, 5, 10, 15, 20, 25, 30])
-    runtime_of_psw(mdir/"instances", "runtime_of_psw.pdf")
+    # data_of_clauses(mdir/"instances", [20, 25, 30], 100, "runtime_of_clauses.pdf", xticks = [1, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100])
+    # data_of_variables(mdir/"instances", [50, 60, 75, 100], 30, "runtime_of_variables.pdf", xticks = [2, 5, 10, 15, 20, 25, 30])
+    # data_of_psw(mdir/"instances", "runtime_of_psw.pdf", xticks = [2, 500, 1000, 1500, 2000, 2500, 3000])
+    # ----- set: instances; memory -----
+    # data_of_clauses(mdir/"instances", [20, 25, 30], 100, "memory_of_clauses.pdf", data_type = DataType.memory, xticks = [1, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100])
+    # data_of_variables(mdir/"instances", [50, 60, 75, 100], 30, "memory_of_variables.pdf", data_type = DataType.memory, xticks = [2, 5, 10, 15, 20, 25, 30])
+    data_of_psw(mdir/"instances", "memory_of_psw.pdf", data_type = DataType.memory, xticks = [2, 500, 1000, 1500, 2000, 2500, 3000])
