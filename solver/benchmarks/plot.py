@@ -212,10 +212,13 @@ def data_of_psw(instances_folder, save_name, xticks = None, data_type = DataType
     plt.savefig(graphics_dir/save_name)
 
 if __name__ == "__main__":
+    # Use LaTeX font
     plt.rcParams['text.usetex'] = True
     plt.rcParams['mathtext.fontset'] = 'stix'
     plt.rcParams['font.family'] = 'STIXGeneral'
+
     # Call one function at a time
+
     # ----- set: instances; runtime -----
     # psw_heatmap(mdir/"instances", "heat_k_from_nm.pdf")
     # data_of_clauses(mdir/"instances", [20, 25, 30], 100, "runtime_of_clauses.pdf", xticks = [1, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100])
@@ -224,4 +227,11 @@ if __name__ == "__main__":
     # ----- set: instances; memory -----
     # data_of_clauses(mdir/"instances", [20, 25, 30], 100, "memory_of_clauses.pdf", data_type = DataType.memory, xticks = [1, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100])
     # data_of_variables(mdir/"instances", [50, 60, 75, 100], 30, "memory_of_variables.pdf", data_type = DataType.memory, xticks = [2, 5, 10, 15, 20, 25, 30])
-    data_of_psw(mdir/"instances", "memory_of_psw.pdf", data_type = DataType.memory, xticks = [2, 500, 1000, 1500, 2000, 2500, 3000])
+    # data_of_psw(mdir/"instances", "memory_of_psw.pdf", data_type = DataType.memory, xticks = [2, 500, 1000, 1500, 2000, 2500, 3000])
+
+    # ----- set: instances-n63; runtime -----
+    # data_of_clauses(mdir/"instances-n63", [63], 50, "runtime_of_clauses-n63.pdf", xticks = [1, 10, 20, 30, 40, 50])
+    # data_of_psw(mdir/"instances-n63", "runtime_of_psw-n63.pdf", xticks = [2, 200, 400, 600, 800, 1000, 1200, 1400])
+    # ----- set: instances-n63; memory -----
+    # data_of_clauses(mdir/"instances-n63", [63], 50, "memory_of_clauses-n63.pdf", data_type = DataType.memory, xticks = [1, 10, 20, 30, 40, 50])
+    # data_of_psw(mdir/"instances-n63", "memory_of_psw-n63.pdf", data_type = DataType.memory, xticks = [2, 200, 400, 600, 800, 1000, 1200, 1400])
