@@ -10,8 +10,8 @@ import threading
 
 # ----- Arguments ----------------------------------------------------
 # Generate formulas for each (n,m) in ns x ms
-ns = range(2, 4)
-ms = range(1, 31)
+ns = range(2, 101)
+ms = range(1, 101)
 # Amount of solver runs for each (n, m)
 runs_per_pair = 5
 # Amount of simultaneous threads
@@ -201,7 +201,7 @@ if __name__ == "__main__":
     except KeyboardInterrupt as exception:
         print(" KeyboardInterrupt")
         pool.terminate()
-        print("Please kill remaining solver (java) processes.")
+        print("Terminated.")
         write_report()
         print("Wrote a report.")
         exit(1)
