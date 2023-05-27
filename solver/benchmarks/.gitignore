@@ -1,5 +1,6 @@
 temp/
 graphics/
 instances*/
+reports*/
 
 !instances*.zip
