@@ -172,7 +172,7 @@ def perform(n, m, runs):
     # If all m have been processed for this n, write a report, and remove n from 'report' dict
     if progress[n] == len(ms):
         write_report(n)
-        print("n = {}: wrote a report")
+        print("n = {}: wrote a report".format(n))
         results_lock.acquire()
         results.pop(n)
         results_lock.release()
