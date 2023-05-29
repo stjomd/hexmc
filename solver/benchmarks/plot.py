@@ -103,13 +103,13 @@ def psw_heatmap(reports_path, save_name):
     xt = ax.get_xticks() 
     xt = np.append(xt, [1, 10, 30, 50, 70, 90])
     yt = ax.get_yticks() 
-    yt = np.append(yt, 2)
+    yt = np.append(yt, 1)
     ax.set_xticks(xt)
     ax.set_yticks(yt)
     # Add legend/colorbar
     plt.colorbar(heatmap, label = r"$\log(k)$", location = 'top')
     # Limits
-    plt.ylim(1.5, 30.5)
+    plt.ylim(0.5, 30.5)
     plt.xlim(0.5, 100.5)
     plt.xlabel(r'$m$')
     plt.ylabel(r'$n$', rotation = 0, labelpad = 10)
@@ -312,12 +312,12 @@ if __name__ == "__main__":
 
     # Call one function at a time
 
-    # ----- set: bm; runtime -----
+    # ----- set: bm-n-1-30; runtime -----
     # psw_heatmap(main_dir/"reports", "heat_k_from_nm.pdf")
     # data_of_clauses(main_dir/"reports", [20, 25, 30], 100, "runtime_of_clauses.pdf", xticks = [1, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100])
     # data_of_variables(main_dir/"reports", [80, 90, 100], 30, "runtime_of_variables.pdf", xticks = [1, 5, 10, 15, 20, 25, 30])
     # data_of_psw(main_dir/"reports", "runtime_of_psw.pdf", xticks = [2, 500, 1000, 1500, 2000, 2500, 3000, 3500])
-    # ----- set: bm; memory -----
+    # ----- set: bm-n-1-30; memory -----
     # data_of_clauses(main_dir/"reports", [20, 25, 30], 100, "memory_of_clauses.pdf", data_type = DataType.memory, xticks = [1, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100])
     # data_of_variables(main_dir/"reports", [80, 90, 100], 30, "memory_of_variables.pdf", data_type = DataType.memory, xticks = [1, 5, 10, 15, 20, 25, 30])
     # data_of_psw(main_dir/"reports", "memory_of_psw.pdf", data_type = DataType.memory, xticks = [2, 500, 1000, 1500, 2000, 2500, 3000, 3500])
