@@ -119,29 +119,58 @@ def psw_heatmap(reports_path, save_name):
 def data_of_clauses(reports_path, fixed_ns, max_clauses, save_name, xticks = None, data_type = DataType.runtime):
     # Define function passed into parse_reports
     data = {}
+    timeout = {}
     def fill_table(n, m, runs):
         values = []
+        errors = [run.error for run in runs]
         if data_type == DataType.runtime:
-            values = [run.runtime for run in runs]
+            values = [run.runtime for run in runs if run != None]
         elif data_type == DataType.memory:
-            values = [run.memory for run in runs]
-        average = sum(values) / len(values)
+            values = [run.memory for run in runs if run != None]
+        # Only compute average over non-error runs (for runtime)
+        if data_type == DataType.runtime:
+            for i in reversed(range(len(errors))):
+                if errors[i] != None:
+                    values.pop(i)
+        average = 0
+        if len(values) > 0:
+            average = sum(values) / len(values)
+        # Fill tables
         if n not in data:
             data[n] = {}
+            timeout[n] = {}
         if m not in data[n]:
             data[n][m] = 0
+            timeout[n][m] = None
         data[n][m] = average
+        # If all runs returned errors (timed out), set error to the timeout
+        if len(values) == 0:
+            timeout[n][m] = 3600
     # Parse reports
     parse_reports(reports_path, fill_table)
     # Matplotlib
     fig, ax = plt.subplots(1, 1)
+    plotted_crosses = False
     for n in fixed_ns:
         table = np.zeros((max_clauses+1,))
         table.fill(np.nan)
+        crosses = [] # 'x' markers for timed out instances
         for m in range(1, max_clauses+1):
-            table[m] = data[n][m]
-        plt.plot(np.arange(max_clauses+1), table, label = r'$n$ = {}'.format(n), marker = '.')
-    plt.legend(loc = 'upper left')
+            if timeout[n][m] == None:
+                table[m] = data[n][m]
+            else:
+                table[m] = timeout[n][m]
+                crosses.append(m)
+        p = plt.plot(np.arange(max_clauses+1), table, label = r'$n$ = {}'.format(n), marker = '.')
+        for m in crosses:
+            plotted_crosses = True
+            plt.plot([m], timeout[n][m], marker = 'x', mec = p[-1].get_color(), ms = 7)
+    # Add legend
+    handles, labels = ax.get_legend_handles_labels()
+    if plotted_crosses:
+        point = plt.Line2D([0], [0], label='timeout', marker='x', markeredgecolor='k', linestyle='')
+        handles.extend([point])
+    plt.legend(loc = 'upper left', handles = handles)
     plt.xlabel(r'$m$')
     if data_type == DataType.runtime:
         plt.ylabel('average runtime (seconds)')
@@ -155,29 +184,58 @@ def data_of_clauses(reports_path, fixed_ns, max_clauses, save_name, xticks = Non
 def data_of_variables(reports_path, fixed_ms, max_variables, save_name, xticks = None, data_type = DataType.runtime):
     # Define function passed into parse_reports
     data = {}
+    timeout = {}
     def fill_table(n, m, runs):
         values = []
+        errors = [run.error for run in runs]
         if data_type == DataType.runtime:
             values = [run.runtime for run in runs]
         elif data_type == DataType.memory:
             values = [run.memory for run in runs]
-        average = sum(values) / len(values)
+        # Only compute average over non-error runs (for runtime)
+        if data_type == DataType.runtime:
+            for i in reversed(range(len(errors))):
+                if errors[i] != None:
+                    values.pop(i)
+        average = 0
+        if len(values) > 0:
+            average = sum(values) / len(values)
+        # Fill tables
         if n not in data:
             data[n] = {}
+            timeout[n] = {}
         if m not in data[n]:
             data[n][m] = 0
+            timeout[n][m] = None
         data[n][m] = average
+        # If all runs returned errors (timed out), set error to the timeout
+        if len(values) == 0:
+            timeout[n][m] = 3600
     # Parse reports
     parse_reports(reports_path, fill_table)
     # Matplotlib
     fig, ax = plt.subplots(1, 1)
+    plotted_crosses = False
     for m in fixed_ms:
         table = np.zeros((max_variables + 1,))
         table.fill(np.nan)
-        for n in range(2, max_variables + 1):
-            table[n] = data[n][m]
-        plt.plot(np.arange(max_variables + 1), table, label = r'$m$ = {}'.format(m), marker = '.')
-    plt.legend(loc = 'upper left')
+        crosses = [] # 'x' markers for timed out instances
+        for n in range(1, max_variables + 1):
+            if timeout[n][m] == None:
+                table[n] = data[n][m]
+            else:
+                table[n] = timeout[n][m]
+                crosses.append(n)
+        p = plt.plot(np.arange(max_variables + 1), table, label = r'$m$ = {}'.format(m), marker = '.')
+        for n in crosses:
+            plotted_crosses = True
+            plt.plot([n], timeout[n][m], marker = 'x', mec = p[-1].get_color(), ms = 8)
+    # Add legend
+    handles, labels = ax.get_legend_handles_labels()
+    if plotted_crosses:
+        point = plt.Line2D([0], [0], label='timeout', marker='x', markeredgecolor='k', linestyle='')
+        handles.extend([point])
+    plt.legend(loc = 'upper left', handles = handles)
     plt.xlabel(r'$n$')
     if data_type == DataType.runtime:
         plt.ylabel('average runtime (seconds)')
@@ -191,18 +249,24 @@ def data_of_variables(reports_path, fixed_ms, max_variables, save_name, xticks =
 def data_of_psw(reports_path, save_name, xticks = None, data_type = DataType.runtime):
     # Define function passed into parse_reports
     data = {}
+    timeout = {}
     def fill_table(n, m, runs):
         values = []
         widths = [run.width for run in runs]
+        errors = [run.error for run in runs]
         if data_type == DataType.runtime:
             values = [run.runtime for run in runs]
         elif data_type == DataType.memory:
             values = [run.memory for run in runs]
         for i in range(len(runs)):
-            k, value = widths[i], values[i]
+            k, value, error = widths[i], values[i], errors[i]
             if k not in data:
                 data[k] = []
-            data[k].append(value)
+                timeout[k] = None
+            if error != None and data_type == DataType.runtime:
+                timeout[k] = 3600
+            else:
+                data[k].append(value)
     # Parse reports
     parse_reports(reports_path, fill_table)
     # Determine max ps-width
@@ -211,10 +275,23 @@ def data_of_psw(reports_path, save_name, xticks = None, data_type = DataType.run
         max_psw = max(max_psw, k)
     # Matplotlib
     table = np.full((max_psw+1,), np.nan)
+    crosses = []
     for k in data:
-        table[k] = sum(data[k]) / len(data[k])
+        if timeout[k] == None:
+            table[k] = sum(data[k]) / len(data[k])
+        else:
+            table[k] = timeout[k]
+            crosses.append(k)
     fig, ax = plt.subplots(1, 1)
     plt.scatter(np.arange(max_psw+1), table, marker = '.')
+    for k in crosses:
+        plt.plot([k], timeout[k], marker = 'x', mec = 'C0', ms = 8)
+    # Add legend
+    handles, labels = ax.get_legend_handles_labels()
+    if len(crosses) > 0:
+        point = plt.Line2D([0], [0], label='timeout', marker='x', markeredgecolor='C0', linestyle='')
+        handles.extend([point])
+        plt.legend(loc = 'lower right', handles = handles)
     plt.xlabel(r'$k$')
     if data_type == DataType.runtime:
         plt.ylabel('average runtime (seconds)')
@@ -238,16 +315,16 @@ if __name__ == "__main__":
     # ----- set: bm; runtime -----
     # psw_heatmap(main_dir/"reports", "heat_k_from_nm.pdf")
     # data_of_clauses(main_dir/"reports", [20, 25, 30], 100, "runtime_of_clauses.pdf", xticks = [1, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100])
-    # data_of_variables(main_dir/"reports", [50, 60, 75, 100], 30, "runtime_of_variables.pdf", xticks = [2, 5, 10, 15, 20, 25, 30])
-    # data_of_psw(main_dir/"reports", "runtime_of_psw.pdf", xticks = [2, 500, 1000, 1500, 2000, 2500, 3000])
+    # data_of_variables(main_dir/"reports", [80, 90, 100], 30, "runtime_of_variables.pdf", xticks = [1, 5, 10, 15, 20, 25, 30])
+    # data_of_psw(main_dir/"reports", "runtime_of_psw.pdf", xticks = [2, 500, 1000, 1500, 2000, 2500, 3000, 3500])
     # ----- set: bm; memory -----
     # data_of_clauses(main_dir/"reports", [20, 25, 30], 100, "memory_of_clauses.pdf", data_type = DataType.memory, xticks = [1, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100])
-    # data_of_variables(main_dir/"reports", [50, 60, 75, 100], 30, "memory_of_variables.pdf", data_type = DataType.memory, xticks = [2, 5, 10, 15, 20, 25, 30])
-    # data_of_psw(main_dir/"reports", "memory_of_psw.pdf", data_type = DataType.memory, xticks = [2, 500, 1000, 1500, 2000, 2500, 3000])
+    # data_of_variables(main_dir/"reports", [80, 90, 100], 30, "memory_of_variables.pdf", data_type = DataType.memory, xticks = [1, 5, 10, 15, 20, 25, 30])
+    # data_of_psw(main_dir/"reports", "memory_of_psw.pdf", data_type = DataType.memory, xticks = [2, 500, 1000, 1500, 2000, 2500, 3000, 3500])
 
     # ----- set: bm-n-63; runtime -----
-    # data_of_clauses(main_dir/"reports-n63", [63], 50, "runtime_of_clauses-n63.pdf", xticks = [1, 10, 20, 30, 40, 50])
-    # data_of_psw(main_dir/"reports-n63", "runtime_of_psw-n63.pdf", xticks = [2, 200, 400, 600, 800, 1000, 1200, 1400])
+    # data_of_clauses(main_dir/"reports-n63", [63], 100, "runtime_of_clauses-n63.pdf", xticks = [1, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100])
+    # data_of_psw(main_dir/"reports-n63", "runtime_of_psw-n63.pdf", xticks = [2, 2000, 4000, 6000, 8000, 10000, 12000, 14000])
     # ----- set: bm-n-63; memory -----
-    # data_of_clauses(main_dir/"reports-n63", [63], 50, "memory_of_clauses-n63.pdf", data_type = DataType.memory, xticks = [1, 10, 20, 30, 40, 50])
-    # data_of_psw(main_dir/"reports-n63", "memory_of_psw-n63.pdf", data_type = DataType.memory, xticks = [2, 200, 400, 600, 800, 1000, 1200, 1400])
+    # data_of_clauses(main_dir/"reports-n63", [63], 100, "memory_of_clauses-n63.pdf", data_type = DataType.memory, xticks = [1, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100])
+    # data_of_psw(main_dir/"reports-n63", "memory_of_psw-n63.pdf", data_type = DataType.memory, xticks = [2, 2000, 4000, 6000, 8000, 10000, 12000, 14000])
