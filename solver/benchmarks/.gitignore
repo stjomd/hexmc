@@ -3,4 +3,4 @@ graphics/
 instances*/
 reports*/
 
-!instances*.zip
+!generated/*.zip
