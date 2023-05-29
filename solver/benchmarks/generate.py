@@ -78,7 +78,7 @@ def write_formula(formula, path, variables, clauses, comments):
 
 # Runs the solver, parses the output
 def run_solver(input_path):
-    command = '"{}" "{}" --verbose'.format(solver_path, input_path)
+    command = '"{}" "{}" --verbose --timeout 3600'.format(solver_path, input_path)
     process = subprocess.Popen(command, shell = True, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
     stdout, stderr = process.communicate()
     # Raise exception if solver reported error
