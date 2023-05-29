@@ -6,16 +6,88 @@ import pathlib
 import matplotlib.pyplot as plt
 import numpy as np
 
+main_dir = pathlib.Path(__file__).parent
+graphics_dir = main_dir/"graphics"
+
+# ----- Helpers -------------------------------------------------
+
 class DataType(enum.Enum):
     runtime = 1
     memory = 2
 
-mdir = pathlib.Path(__file__).parent
-graphics_dir = mdir/"graphics"
+class SolverRun:
+    n, m = None, None
+    runtime = None
+    ps_width = None
+    models = None
+    memory = None
+    error = None
+    def __init__(self, n, m):
+        self.n = n
+        self.m = m
+    def __repr__(self):
+        return "Run({}, {}; time = {}, psw = {}, models = {}, memory = {}, error = {})" \
+            .format(self.n, self.m, self.runtime, self.ps_width, self.models, self.memory, self.error)
 
 def timestr_to_seconds(string):
     units = [float(x) for x in string.split(":")]
     return 3600*units[0] + 60*units[1] + units[2]
+
+# Parses the reports in the specified folders, calls action for each (n, m)
+# action(n, m, runs): n -- #variables, m -- #clauses, runs -- array with the data
+def parse_reports(reports_path, action):
+    for report in os.listdir(reports_path):
+        if not (report.startswith("report-") and report.endswith(".txt")):
+            continue
+        current_n = int(report.split('-')[1][:-4])
+        with open(reports_path/report, "r") as file:
+            current_m = 0
+            runs = [] # runs data for (current_n, current_m)
+            for line in file.readlines():
+                items = line.split()
+                if line.startswith("n ") and line.endswith("runs)\n"):
+                    # New data line
+                    runs = []
+                    current_m = int(items[3])
+                elif line.startswith("runtime"):
+                    # Runtime line
+                    for runtime in items[1:]:
+                        run = SolverRun(current_n, current_m)
+                        run.runtime = timestr_to_seconds(runtime)
+                        runs.append(run)
+                elif line.startswith("decomposition ps-width"):
+                    # Decomposition ps-width line
+                    i = 0
+                    for width in items[2:]:
+                        if width != "unknown":
+                            runs[i].ps_width = int(width)
+                        i += 1
+                elif line.startswith("models"):
+                    # Model amount line
+                    i = 0
+                    for models in items[1:]:
+                        if models != "unknown":
+                            runs[i].models = int(models)
+                        i += 1
+                elif line.startswith("peak memory"):
+                    # Peak memory usage line
+                    i = 0
+                    for memory in items[2:]:
+                        if memory != "unknown":
+                            runs[i].memory = float(memory)
+                        i += 1
+                elif line.startswith("\trun "):
+                    # Error message line
+                    run_number = int(items[1][:-1])
+                    message = ' '.join(items[2:])
+                    runs[run_number - 1].error = message
+                elif line == "\n":
+                    # Empty line, parsing (n, m) finished
+                    if len(runs) > 0:
+                        action(current_n, current_m, runs)
+                    runs = []
+
+# ----- Plots -------------------------------------------------
 
 def psw_heatmap(instances_folder, save_name):
     indices = {}
@@ -211,6 +283,8 @@ def data_of_psw(instances_folder, save_name, xticks = None, data_type = DataType
     # Save
     plt.savefig(graphics_dir/save_name)
 
+# ----- Main -------------------------------------------------
+
 if __name__ == "__main__":
     # Use LaTeX font
     plt.rcParams['text.usetex'] = True
@@ -220,18 +294,18 @@ if __name__ == "__main__":
     # Call one function at a time
 
     # ----- set: instances; runtime -----
-    # psw_heatmap(mdir/"instances", "heat_k_from_nm.pdf")
-    # data_of_clauses(mdir/"instances", [20, 25, 30], 100, "runtime_of_clauses.pdf", xticks = [1, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100])
-    # data_of_variables(mdir/"instances", [50, 60, 75, 100], 30, "runtime_of_variables.pdf", xticks = [2, 5, 10, 15, 20, 25, 30])
-    # data_of_psw(mdir/"instances", "runtime_of_psw.pdf", xticks = [2, 500, 1000, 1500, 2000, 2500, 3000])
+    # psw_heatmap(main_dir/"instances", "heat_k_from_nm.pdf")
+    # data_of_clauses(main_dir/"instances", [20, 25, 30], 100, "runtime_of_clauses.pdf", xticks = [1, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100])
+    # data_of_variables(main_dir/"instances", [50, 60, 75, 100], 30, "runtime_of_variables.pdf", xticks = [2, 5, 10, 15, 20, 25, 30])
+    # data_of_psw(main_dir/"instances", "runtime_of_psw.pdf", xticks = [2, 500, 1000, 1500, 2000, 2500, 3000])
     # ----- set: instances; memory -----
-    # data_of_clauses(mdir/"instances", [20, 25, 30], 100, "memory_of_clauses.pdf", data_type = DataType.memory, xticks = [1, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100])
-    # data_of_variables(mdir/"instances", [50, 60, 75, 100], 30, "memory_of_variables.pdf", data_type = DataType.memory, xticks = [2, 5, 10, 15, 20, 25, 30])
-    # data_of_psw(mdir/"instances", "memory_of_psw.pdf", data_type = DataType.memory, xticks = [2, 500, 1000, 1500, 2000, 2500, 3000])
+    # data_of_clauses(main_dir/"instances", [20, 25, 30], 100, "memory_of_clauses.pdf", data_type = DataType.memory, xticks = [1, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100])
+    # data_of_variables(main_dir/"instances", [50, 60, 75, 100], 30, "memory_of_variables.pdf", data_type = DataType.memory, xticks = [2, 5, 10, 15, 20, 25, 30])
+    # data_of_psw(main_dir/"instances", "memory_of_psw.pdf", data_type = DataType.memory, xticks = [2, 500, 1000, 1500, 2000, 2500, 3000])
 
     # ----- set: instances-n63; runtime -----
-    # data_of_clauses(mdir/"instances-n63", [63], 50, "runtime_of_clauses-n63.pdf", xticks = [1, 10, 20, 30, 40, 50])
-    # data_of_psw(mdir/"instances-n63", "runtime_of_psw-n63.pdf", xticks = [2, 200, 400, 600, 800, 1000, 1200, 1400])
+    # data_of_clauses(main_dir/"instances-n63", [63], 50, "runtime_of_clauses-n63.pdf", xticks = [1, 10, 20, 30, 40, 50])
+    # data_of_psw(main_dir/"instances-n63", "runtime_of_psw-n63.pdf", xticks = [2, 200, 400, 600, 800, 1000, 1200, 1400])
     # ----- set: instances-n63; memory -----
-    # data_of_clauses(mdir/"instances-n63", [63], 50, "memory_of_clauses-n63.pdf", data_type = DataType.memory, xticks = [1, 10, 20, 30, 40, 50])
-    # data_of_psw(mdir/"instances-n63", "memory_of_psw-n63.pdf", data_type = DataType.memory, xticks = [2, 200, 400, 600, 800, 1000, 1200, 1400])
+    # data_of_clauses(main_dir/"instances-n63", [63], 50, "memory_of_clauses-n63.pdf", data_type = DataType.memory, xticks = [1, 10, 20, 30, 40, 50])
+    # data_of_psw(main_dir/"instances-n63", "memory_of_psw-n63.pdf", data_type = DataType.memory, xticks = [2, 200, 400, 600, 800, 1000, 1200, 1400])
