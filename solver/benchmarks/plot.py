@@ -150,6 +150,8 @@ def data_of_clauses(reports_path, fixed_ns, max_clauses, save_name, xticks = Non
     parse_reports(reports_path, fill_table)
     # Matplotlib
     fig, ax = plt.subplots(1, 1)
+    fig.set_figwidth(2/3 * fig.get_figwidth())
+    fig.set_figheight(2/3 * fig.get_figheight())
     plotted_crosses = False
     for n in fixed_ns:
         table = np.zeros((max_clauses+1,))
@@ -179,7 +181,7 @@ def data_of_clauses(reports_path, fixed_ns, max_clauses, save_name, xticks = Non
     if xticks != None:
         ax.set_xticks(xticks)
     # Save
-    plt.savefig(graphics_dir/save_name)
+    plt.savefig(graphics_dir/save_name, bbox_inches = 'tight', pad_inches = 0)
 
 def data_of_variables(reports_path, fixed_ms, max_variables, save_name, xticks = None, data_type = DataType.runtime):
     # Define function passed into parse_reports
@@ -215,6 +217,8 @@ def data_of_variables(reports_path, fixed_ms, max_variables, save_name, xticks =
     parse_reports(reports_path, fill_table)
     # Matplotlib
     fig, ax = plt.subplots(1, 1)
+    fig.set_figwidth(2/3 * fig.get_figwidth())
+    fig.set_figheight(2/3 * fig.get_figheight())
     plotted_crosses = False
     for m in fixed_ms:
         table = np.zeros((max_variables + 1,))
@@ -244,7 +248,7 @@ def data_of_variables(reports_path, fixed_ms, max_variables, save_name, xticks =
     if xticks != None:
         ax.set_xticks(xticks)
     # Save
-    plt.savefig(graphics_dir/save_name)
+    plt.savefig(graphics_dir/save_name, bbox_inches = 'tight', pad_inches = 0)
 
 def data_of_psw(reports_path, save_name, xticks = None, data_type = DataType.runtime):
     # Define function passed into parse_reports
@@ -283,6 +287,8 @@ def data_of_psw(reports_path, save_name, xticks = None, data_type = DataType.run
             table[k] = timeout[k]
             crosses.append(k)
     fig, ax = plt.subplots(1, 1)
+    fig.set_figwidth(2/3 * fig.get_figwidth())
+    fig.set_figheight(2/3 * fig.get_figheight())
     plt.scatter(np.arange(max_psw+1), table, marker = '.')
     for k in crosses:
         plt.plot([k], timeout[k], marker = 'x', mec = 'C0', ms = 8)
@@ -300,7 +306,7 @@ def data_of_psw(reports_path, save_name, xticks = None, data_type = DataType.run
     if xticks != None:
         ax.set_xticks(xticks)
     # Save
-    plt.savefig(graphics_dir/save_name)
+    plt.savefig(graphics_dir/save_name, bbox_inches = 'tight', pad_inches = 0)
 
 # ----- Main -------------------------------------------------
 
