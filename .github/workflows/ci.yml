@@ -16,11 +16,10 @@ jobs:
           distribution: 'adopt'
       - name: Build and run tests
         run: |
-          cd solver
           mvn --batch-mode clean install
       - name: Upload report
         if: ${{ always() }}
         uses: actions/upload-artifact@v3
         with:
           name: Report
-          path: solver/target/surefire-reports/*.txt
+          path: target/surefire-reports/*.txt
