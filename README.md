@@ -1,16 +1,16 @@
-# bachelor
+# hexmc
 
-This repository contains the source code for my bachelor thesis that I wrote at the Vienna University of Technology in the winter semester of 2022 and the summer semester of 2023.
-This includes the LaTeX files as well as Java code.
+hexmc is a #SAT solver implemented as part of my bachelor thesis at the Vienna University of Technology.
+The submitted version is `v1.0.0`.
 
-In my bachelor thesis, I studied FPT algorithms for the problem #SAT (propositional model counting). The goal was then to implement a simple #SAT solver using these algorithms.
+In my bachelor thesis, I studied dynamic algorithms for the problem #SAT (propositional model counting). The goal was then to implement a #SAT solver using these algorithms.
 
-## solver
+## Details
 
-The solver utilizes a dynamic algorithm w.r.t. the ps-width of a formula. I also attempted to implement an algorithm w.r.t. the clique-width of the formula's incidence graph, however there was/is no algorithm known to me at the time that would compute the necessary inputs for it.
-The Java code includes this implementation too, and it can be run by setting `--alg=cw`.
-This, of course, will return false answers, but might be useful in case anyone wants to complete the implementation.
-Note that this solver was not optimized for efficiency, but rather for readability of the source code, and will require extremely long times and/or will run out of memory for larger formulas.
+The implementation includes two dynamic algorithms, one parameterized by the ps-width of the formula, and one parameterized by the clique-width of the formula's signed incidence graph.
+However, the latter requires inputs for which, to my knowledge, there exist no computation methods yet, and therefore it is not used.
+It can still be run by setting `--alg=cw` for studying purposes, but this returns false answers at the time.
+
 
 For more information on the underlying algorithms, refer to:
 - *Sigve Hortemo Sæther, Jan Arne Telle, Martin Vatshelle:* Solving #SAT and MaxSAT by Dynamic Programming. J. Artif. Intell. Res. 54: 59-82 (2015)
@@ -18,16 +18,21 @@ For more information on the underlying algorithms, refer to:
 - *Neha Lodha, Sebastian Ordyniak, Stefan Szeider:* A SAT Approach to Branchwidth. ACM Trans. Comput. Log. 20(3): 15:1-15:24 (2019)
 - *Marijn Heule, Stefan Szeider:* A SAT Approach to Clique-Width. ACM Trans. Comput. Log. 16(3): 24:1-24:27 (2015)
 
-The source code for the #SAT solver is located in the [solver directory](solver/). You will need JDK 11 to build and run the solver.
+## Installation
+You will need JDK 11 to compile the source code and run the solver.
+Maven is used for build automation and comes as a wrapper with this project, and does not have to be additionally installed.
 
-### Installation
-```
-git clone https://github.com/stjomd/bachelor.git
-&& cd solver
-&& ./build
-```
+The following command clones the repository and compiles the source code:
 
-### Usage
+```
+git clone https://github.com/stjomd/hexmc.git && cd hexmc && ./build
+```
+It produces a `.jar` file in the `target` directory.
+You can use the script `./hexmc` to run the solver.
+It should remain in the main directory.
+If you wish to run the solver from other directories, you should create another script that runs `./hexmc`.
+
+## Usage
 
 ```
 solver input [--help] [--version] [--alg {psw,cw}] [--carving] [--timeout SECONDS] [--verbose]
@@ -37,7 +42,34 @@ solver input [--help] [--version] [--alg {psw,cw}] [--carving] [--timeout SECOND
 | `input` | The path to the DIMACS CNF file.
 | `-h, --help` | Output usage, help information, and exit.
 | `--version` | Output the current version and exit.
-| `-a, --alg {psw,cw}` | The algorithm to use for model counting (ps-width or clique-width).
+| `-a, --alg {psw,cw}` | The algorithm to use for model counting (parameterized by ps-width or clique-width).
 | `-c, --carving` | Compute a carving decomposition to use in the dynamic algorithm utilizing ps-width (often increases runtime significantly). By default uses a random decomposition.
 | `-t, --timeout SECONDS` | The timeout (in seconds).
 | `-v, --verbose` | Output additional information to the console.
+
+## Input Format
+
+hexmc uses the DIMACS format for CNF formulas with slight modifications (weaker requirements).
+```
+p cnf 7 3
+c Comment line
+1 2 -3 -4 0
+3 -4 5 0
+-4 6 7 0
+```
+The header line `p cnf n m` states that the formula has at most `n` variables and at most `m` clauses.
+It is optional, and the values `n` and `m` are inferred if it is not present.
+Any line starting with `c` is a comment line, which is ignored by the parser.
+Any other line represents a clause, with literals being non-zero integers separated by spaces, and negative signs denoting negation.
+Clause lines must be terminated by `0` (zero).
+
+## Limitations
+
+- No optimization for efficiency.
+hexmc was easily beaten by even older #SAT solvers on all inputs in our tests, and is not suitable for practical use.
+- Computation with the `cw` algorithm is incomplete, due to lack of computation of signed parse trees (unsigned parse trees are calculated instead at the time), and returns false answers.
+- Decompositions are calculated using SAT encodings, which is a major bottleneck due to the encoding size.
+Because of this, for the `psw` algorithm, a quick, non-optimal decomposition is computed.
+- In the computation of unsigned parse trees, the recoloring nodes are currently determined using brute force, not in polynomial time.
+- Big number libraries were not used, thus `long` overflows can only be avoided on inputs with at most 63 variables.
+hexmc does detect overflows and exits with an error should one occur.
