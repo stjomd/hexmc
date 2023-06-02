@@ -25,7 +25,7 @@ import java.util.Set;
 
 public abstract class CliqueDecompositionFactory {
 
-    // TODO: figure out recoloring in poly time (currently: brute force)
+    // TODO: figure out recoloring in polynomial time (currently: brute force)
 
     /**
      * Constructs a normalized clique decomposition (parse tree for clique-width) of a graph. Normalized in the context
