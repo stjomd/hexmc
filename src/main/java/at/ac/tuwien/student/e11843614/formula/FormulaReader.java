@@ -14,8 +14,9 @@ public class FormulaReader {
 
     private final String path;
 
-    private Integer variableBound = Integer.MAX_VALUE;
-    private Integer clauseBound = Integer.MAX_VALUE;
+    private boolean hasHeader = false;
+    private int variableBound = Integer.MAX_VALUE;
+    private int clauseBound = Integer.MAX_VALUE;
 
     private int variables = 0;
     private int clauses = 0;
@@ -46,6 +47,7 @@ public class FormulaReader {
                 // comment line, skip
             } else if (items[0].equals("p")) {
                 // header line
+                hasHeader = true;
                 parseHeaderLine(items, prefix);
             } else {
                 // clause line
@@ -53,12 +55,12 @@ public class FormulaReader {
             }
         }
         scanner.close();
-        if (variables != variableBound) {
+        if (hasHeader && variables != variableBound) {
             Logger.warn(
                 String.format("Header specifies %d variables, parsed: %d", variableBound, variables)
             );
         }
-        if (clauses != clauseBound) {
+        if (hasHeader && clauses != clauseBound) {
             Logger.warn(
                 String.format("Header specifies %d clauses, parsed: %d", clauseBound, clauses)
             );
