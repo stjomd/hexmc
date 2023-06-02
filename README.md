@@ -1,15 +1,14 @@
 # hexmc
 
 hexmc is a #SAT solver implemented as part of my bachelor thesis at the Vienna University of Technology.
+#SAT, or propositional model counting, is the problem of counting the amount of satisfying assignments, or models, of a propositional formula.
 The submitted version is `v1.0.0`.
-
-In my bachelor thesis, I studied dynamic algorithms for the problem #SAT (propositional model counting). The goal was then to implement a #SAT solver using these algorithms.
 
 ## Details
 
-The implementation includes two dynamic algorithms, one parameterized by the ps-width of the formula, and one parameterized by the clique-width of the formula's signed incidence graph.
+The implementation is based on two dynamic algorithms, one parameterized by the ps-width of the formula, and one parameterized by the clique-width of the formula's signed incidence graph.
 However, the latter requires inputs for which, to my knowledge, there exist no computation methods yet, and therefore it is not used.
-It can still be run by setting `--alg=cw` for studying purposes, but this returns false answers at the time.
+It is still included with the source code and can be run by setting `--alg=cw` for studying purposes, but this returns false answers at the time.
 
 
 For more information on the underlying algorithms, refer to:
@@ -29,8 +28,8 @@ git clone https://github.com/stjomd/hexmc.git && cd hexmc && ./build
 ```
 It produces a `.jar` file in the `target` directory.
 You can use the script `./hexmc` to run the solver.
-It should remain in the main directory.
-If you wish to run the solver from other directories, you should create another script that runs `./hexmc`.
+This script should remain in the main directory.
+If you wish to run the solver from other directories, it is recommended you create another script that runs `./hexmc`.
 
 ## Usage
 
