@@ -1,0 +1,6 @@
+temp/
+graphics/
+instances*/
+reports*/
+
+!generated/*.zip

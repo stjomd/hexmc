@@ -1,0 +1,16 @@
+#!/bin/bash
+
+# Location of the .jar file
+BASEDIR=$(dirname "$0")
+JAR="${BASEDIR}/target/hexmc-jar-with-dependencies.jar"
+
+# This script relies on the variables above, and therefore should not be placed in another directory.
+# If you want to run the solver from other directories, create another script that runs this script.
+
+if [ ! -f "$JAR" ]
+then
+    echo "The executable file does not exist. Run './build' to compile."
+    exit 1
+fi
+
+java -jar "$JAR" "$@"
