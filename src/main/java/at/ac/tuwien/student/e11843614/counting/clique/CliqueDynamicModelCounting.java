@@ -160,7 +160,7 @@ public abstract class CliqueDynamicModelCounting {
             b1.add(i); b1.remove(j); b3.add(i);
             Set<Integer> c1 = new HashSet<>(c), c2 = c, c3 = new HashSet<>(c);
             c1.add(i); c1.remove(j); c3.add(i);
-            int x = 0;
+            int x;
             if (!b.contains(j) && !c.contains(j)) {
                 x = tableU.get(aPrime, b, c);
             } else if (b.contains(j) && !c.contains(j)) {
@@ -188,7 +188,7 @@ public abstract class CliqueDynamicModelCounting {
         int i = edgeCreation.from(), j = edgeCreation.to();
         CliqueTable table = new CliqueTable();
         forEachSubset(k, (a, b, c) -> {
-            int x = 0;
+            int x;
             if (a.contains(i)) {
                 x = tableU.get(a, b, c);
             } else if (b.contains(j)) {
