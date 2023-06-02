@@ -141,6 +141,12 @@ public abstract class ModelCounting {
         stopwatch.split();
         Logger.debug("[cw] Time elapsed: " + stopwatch.formatSplitTime());
         // Solve #SAT
+        if (decomposition == null) {
+            // Only the case if the incidence graph has no vertices. However, this case (empty formula) is caught
+            // in pre-checks, therefore decomposition is guaranteed to be not null.
+            throw new IllegalStateException("Decomposition is null");
+            // Throw exception to avoid warnings.
+        }
         int models = CliqueDynamicModelCounting.count(decomposition);
         stopwatch.stop();
         Logger.debug("[cw] Time elapsed: " + stopwatch.formatTime());
