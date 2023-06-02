@@ -114,6 +114,7 @@ public class TreeNode<T> implements Iterable<TreeNode<T>> {
      * @param object the object to be inserted above.
      * @return the inserted node.
      */
+    @SuppressWarnings("IfStatementWithIdenticalBranches")
     public TreeNode<T> insertAbove(T object) {
         TreeNode<T> node = new TreeNode<>(object);
         if (this.parent == null) {

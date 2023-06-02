@@ -52,6 +52,7 @@ public abstract class CliqueDecompositionFactory {
      * Transforms a clique decomposition into one where graphs under union nodes use disjoint sets of colors.
      * @param root a normalized clique decomposition, where union nodes have exactly two children.
      */
+    @SuppressWarnings("DuplicatedCode")
     public static void makeDisjointColorSets(TreeNode<CliqueOperation> root) {
         boolean amended = false;
         // Determine the maximum color label, also check that each union node has 2 children

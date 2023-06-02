@@ -233,6 +233,11 @@ public class CliqueTests {
         public void decompositionWithDisjointColorSetsShouldBeValid() throws TimeoutException {
             Graph graph = GraphExamples.triangularPrism();
             TreeNode<CliqueOperation> decomposition = DecompositionFactory.clique(graph, true);
+            if (decomposition == null) {
+                // Only the case if the incidence graph has no vertices. This is not the case in this test.
+                throw new IllegalStateException("Decomposition is null");
+                // Throw exception to avoid warnings.
+            }
             checkIfValidDecomposition(decomposition, graph);
             // For every union node, check which colors appear under its children
             for (TreeNode<CliqueOperation> node : decomposition) {

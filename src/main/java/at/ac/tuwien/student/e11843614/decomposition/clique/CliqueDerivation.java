@@ -14,7 +14,7 @@ import java.util.Set;
  */
 public class CliqueDerivation {
 
-    List<Template> templates = new ArrayList<>();
+    private final List<Template> templates = new ArrayList<>();
 
     /**
      * Constructs a strict derivation from the component and group variables of the assignment.

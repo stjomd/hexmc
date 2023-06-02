@@ -14,7 +14,7 @@ import java.util.Set;
  */
 public class CarvingDerivation {
 
-    List<Partition<Integer>> derivation = new ArrayList<>();
+    private final List<Partition<Integer>> derivation = new ArrayList<>();
 
     /**
      * Constructs a derivation from the set and leader variables of the assignment.

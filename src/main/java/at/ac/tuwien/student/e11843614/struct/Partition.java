@@ -31,7 +31,7 @@ public class Partition<T> implements Iterable<Set<T>> {
 
     /**
      * Adds elements to this partition. If there is an equivalence class that contains one element, adds the other to
-     * that equivalence class. Otherwise creates a new equivalence class. Also ensures that all equivalence classes are
+     * that equivalence class. Otherwise, creates a new equivalence class. Also ensures that all equivalence classes are
      * disjoint.
      * @param a an element.
      * @param b an element.

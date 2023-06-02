@@ -27,6 +27,7 @@ public abstract class CliqueDynamicModelCounting {
      * @param decomposition the clique decomposition of the incidence graph of a formula.
      * @return the amount of the formula's models.
      */
+    @SuppressWarnings("DuplicatedCode")
     public static int count(TreeNode<CliqueOperation> decomposition) {
         // Determine the clique-width (amount of colors in the decomposition)
         int k = 1;
@@ -142,6 +143,7 @@ public abstract class CliqueDynamicModelCounting {
      * @param k the width of the decomposition.
      * @return the table.
      */
+    @SuppressWarnings("UnnecessaryLocalVariable")
     private static CliqueTable recoloringReduction(CliqueRecoloring recoloring, CliqueTable tableU, int k) {
         int i = recoloring.from(), j = recoloring.to();
         CliqueTable table = new CliqueTable();
@@ -160,7 +162,7 @@ public abstract class CliqueDynamicModelCounting {
             b1.add(i); b1.remove(j); b3.add(i);
             Set<Integer> c1 = new HashSet<>(c), c2 = c, c3 = new HashSet<>(c);
             c1.add(i); c1.remove(j); c3.add(i);
-            int x = 0;
+            int x;
             if (!b.contains(j) && !c.contains(j)) {
                 x = tableU.get(aPrime, b, c);
             } else if (b.contains(j) && !c.contains(j)) {
@@ -188,7 +190,7 @@ public abstract class CliqueDynamicModelCounting {
         int i = edgeCreation.from(), j = edgeCreation.to();
         CliqueTable table = new CliqueTable();
         forEachSubset(k, (a, b, c) -> {
-            int x = 0;
+            int x;
             if (a.contains(i)) {
                 x = tableU.get(a, b, c);
             } else if (b.contains(j)) {
