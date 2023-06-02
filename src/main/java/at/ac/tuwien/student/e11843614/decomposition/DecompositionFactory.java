@@ -18,6 +18,8 @@ import java.util.Set;
 
 public abstract class DecompositionFactory {
 
+    // TODO: Compute signed parse tree (signed clique decomposition)
+
     /**
      * Constructs a carving decomposition of a graph.
      * @param graph the graph.
