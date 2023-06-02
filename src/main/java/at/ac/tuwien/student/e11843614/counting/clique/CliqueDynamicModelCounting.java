@@ -27,6 +27,7 @@ public abstract class CliqueDynamicModelCounting {
      * @param decomposition the clique decomposition of the incidence graph of a formula.
      * @return the amount of the formula's models.
      */
+    @SuppressWarnings("DuplicatedCode")
     public static int count(TreeNode<CliqueOperation> decomposition) {
         // Determine the clique-width (amount of colors in the decomposition)
         int k = 1;
@@ -142,6 +143,7 @@ public abstract class CliqueDynamicModelCounting {
      * @param k the width of the decomposition.
      * @return the table.
      */
+    @SuppressWarnings("UnnecessaryLocalVariable")
     private static CliqueTable recoloringReduction(CliqueRecoloring recoloring, CliqueTable tableU, int k) {
         int i = recoloring.from(), j = recoloring.to();
         CliqueTable table = new CliqueTable();
