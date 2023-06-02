@@ -1,6 +1,6 @@
 # hexmc
 
-hexmc is a #SAT solver implemented as part of my bachelor thesis at the Vienna University of Technology.
+hexmc is a #SAT solver implemented as part of my bachelor thesis at TU Wien.
 #SAT, or propositional model counting, is the problem of counting the amount of satisfying assignments, or models, of a propositional formula.
 The submitted version is `v1.0.0`.
 
