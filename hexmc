@@ -1,10 +1,9 @@
-#!/bin/bash
+#!/usr/bin/env sh
 
 # Location of the .jar file
-BASEDIR=$(dirname "$0")
-JAR="${BASEDIR}/target/hexmc-jar-with-dependencies.jar"
+JAR="$(dirname $0)/target/hexmc-jar-with-dependencies.jar"
 
-# This script relies on the variables above, and therefore should not be placed in another directory.
+# This script relies on the JAR variable above, and therefore should not be placed in another directory.
 # If you want to run the solver from other directories, create another script that runs this script.
 
 if [ ! -f "$JAR" ]
