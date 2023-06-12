@@ -18,15 +18,11 @@ class DataType(enum.Enum):
     memory = 2
 
 class SolverRun:
-    n, m = None, None
-    runtime = None
-    width = None
-    models = None
-    memory = None
-    error = None
     def __init__(self, n, m):
         self.n = n
         self.m = m
+        self.runtime, self.memory = None, None
+        self.width, self.models, self.error = None, None, None
 
 def timestr_to_seconds(string):
     units = [float(x) for x in string.split(":")]
